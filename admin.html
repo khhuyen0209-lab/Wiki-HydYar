@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Wiki Admin</title>
+
+<link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+
+</head>
+
+
+<body>
+
+
+<main>
+
+
+<!-- TẠO BÀI -->
+
+<section class="page active" id="page-create">
+
+
+<div class="banner">
+
+<h1>
+<iconify-icon icon="solar:pen-bold"></iconify-icon>
+Tạo bài viết
+</h1>
+
+
+<input id="slug"
+class="search-box"
+placeholder="ID bài viết">
+
+
+<br><br>
+
+
+<input id="title"
+class="search-box"
+placeholder="Tiêu đề">
+
+
+<br><br>
+
+
+<textarea id="desc"
+class="search-box"
+placeholder="mo ta"></textarea>
+
+
+<br><br>
+
+
+<input id="category"
+class="search-box"
+placeholder="Danh mục">
+
+
+<br><br>
+
+
+<input id="views"
+class="search-box"
+type="number"
+placeholder="Lượt xem">
+
+
+<br><br>
+
+
+<label>
+
+<input id="featured" type="checkbox">
+
+Bài nổi bật
+
+</label>
+
+
+<button id="createBtn"
+class="create-btn">
+
+Tạo bài viết
+
+</button>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+<!-- TẠO DANH MỤC -->
+
+<section class="page" id="page-category">
+
+
+<div class="banner">
+
+
+<h1>
+<iconify-icon icon="solar:folder-bold"></iconify-icon>
+Tạo danh mục
+</h1>
+
+
+<input id="catId"
+class="search-box"
+placeholder="ID danh mục">
+
+
+<br><br>
+
+
+<input id="catName"
+class="search-box"
+placeholder="Tên danh mục">
+
+
+<br><br>
+
+
+<input id="catIcon"
+class="search-box"
+placeholder="Iconify icon">
+
+<br><br>
+
+
+<button id="categoryBtn"
+class="create-btn">
+
+Tạo danh mục
+
+</button>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+<!-- BÀI NỔI BẬT -->
+
+<section class="page" id="page-featured">
+
+
+<div class="section">
+
+<h2>
+⭐ Bài viết nổi bật
+</h2>
+
+
+<div id="featuredList"
+class="card-grid">
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+<!-- BÀI GẦN ĐÂY -->
+
+<section class="page" id="page-latest">
+
+
+<div class="section">
+
+
+<h2>
+🕒 Bài viết gần đây
+</h2>
+
+
+<div id="latestList"
+class="card-grid">
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+
+</main>
+
+
+
+
+
+<!-- Bottom -->
+
+<nav class="bottom-nav">
+
+
+<button class="nav-item active"
+data-page="create">
+
+<iconify-icon icon="solar:add-circle-bold"></iconify-icon>
+
+<span>Tạo</span>
+
+</button>
+
+
+
+<button class="nav-item"
+data-page="category">
+
+<iconify-icon icon="solar:folder-bold"></iconify-icon>
+
+<span>Danh mục</span>
+
+</button>
+
+
+
+<button class="nav-item"
+data-page="featured">
+
+<iconify-icon icon="solar:star-bold"></iconify-icon>
+
+<span>Nổi bật</span>
+
+</button>
+
+
+
+<button class="nav-item"
+data-page="latest">
+
+<iconify-icon icon="solar:clock-circle-bold"></iconify-icon>
+
+<span>Gần đây</span>
+
+</button>
+
+
+
+</nav>
+
+
+
+<script type="module" src="admin.js"></script>
+
+
+</body>
+
+</html>

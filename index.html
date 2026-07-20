@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiki - Tri thức mở rộng</title>
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Iconify -->
+    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
+    <!-- CSS -->
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/responsive.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="header-inner">
+            <div class="logo">
+                <span class="logo-text">Wiki</span>
+            </div>
+            <div class="header-search">
+                <iconify-icon icon="solar:magnifer-bold"></iconify-icon>
+                <input type="text" placeholder="Tìm kiếm...">
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn">
+                    <iconify-icon icon="solar:bell-bold"></iconify-icon>
+                </button>
+                <div class="user-avatar" id="userAvatar"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Nội dung chính -->
+    <main class="main-content" id="mainContent">
+        <!-- Trang Chủ -->
+        <section class="page active" id="page-home">
+            <div class="banner">
+                <h1>Khám phá tri thức vô tận</h1>
+                <p>Cộng đồng chia sẻ và xác minh kiến thức đáng tin cậy</p>
+                <div class="search-box">
+                    <iconify-icon icon="solar:magnifer-bold"></iconify-icon>
+                    <input type="text" placeholder="Tìm kiếm bất kỳ điều gì...">
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2>Bài viết nổi bật</h2>
+                    <button class="see-all">Xem tất cả</button>
+                </div>
+                <div class="card-grid" id="featuredArticles"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2>Mới cập nhật</h2>
+                    <button class="see-all">Xem tất cả</button>
+                </div>
+                <div class="card-grid" id="latestArticles"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2>Danh mục nổi bật</h2>
+                </div>
+                <div class="category-grid" id="featuredCategories"></div>
+            </div>
+        </section>
+
+        <!-- Danh mục -->
+        <section class="page" id="page-categories">
+            <div class="page-header">
+                <h1>Tất cả danh mục</h1>
+            </div>
+            <div class="category-grid" id="allCategories"></div>
+        </section>
+
+        <!-- Tìm kiếm -->
+        <section class="page" id="page-search">
+            <div class="page-header">
+                <div class="large-search">
+                    <iconify-icon icon="solar:magnifer-bold"></iconify-icon>
+                    <input type="text" id="searchInput" placeholder="Nhập từ khóa cần tìm...">
+                </div>
+                <div class="search-filters">
+                    <button class="filter-btn active">Tất cả</button>
+                    <button class="filter-btn">Mới nhất</button>
+                    <button class="filter-btn">Xem nhiều</button>
+                    <button class="filter-btn">Độ tin cậy cao</button>
+                </div>
+                <div class="search-history" id="searchHistory"></div>
+                <div class="search-results" id="searchResults"></div>
+            </div>
+        </section>
+
+        <!-- Cộng đồng -->
+        <section class="page" id="page-community">
+            <div class="page-header">
+                <div class="tab-group">
+                    <button class="tab-btn active">Việt Nam</button>
+                    <button class="tab-btn">Toàn cầu</button>
+                </div>
+                <button class="create-btn">+ Tạo bài viết</button>
+            </div>
+            <div class="community-feed" id="communityFeed"></div>
+        </section>
+
+        <!-- Tài khoản -->
+        <section class="page" id="page-profile">
+            <div class="profile-header">
+                <div class="profile-avatar" id="profileAvatar"></div>
+                <h2 class="profile-name" id="profileName">Người dùng</h2>
+                <p class="profile-uid" id="profileUID">@user000000</p>
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">0</span>
+                        <span class="stat-label">Điểm</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">0</span>
+                        <span class="stat-label">Bài đã lưu</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">0</span>
+                        <span class="stat-label">Đóng góp</span>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-list">
+                <div class="menu-item">
+                    <iconify-icon icon="solar:bookmark-bold"></iconify-icon>
+                    <span>Bài viết đã lưu</span>
+                    <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
+                </div>
+                <div class="menu-item">
+                    <iconify-icon icon="solar:clock-circle-bold"></iconify-icon>
+                    <span>Lịch sử đọc</span>
+                    <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
+                </div>
+                <div class="menu-item" id="darkModeToggle">
+                    <iconify-icon icon="solar:moon-bold"></iconify-icon>
+                    <span>Chế độ tối</span>
+                    <div class="toggle-switch"></div>
+                </div>
+              <div class="menu-item" id="optimizeToggle">
+    <iconify-icon icon="solar:bolt-bold"></iconify-icon>
+    <span>Tối ưu hiệu năng</span>
+    <div class="toggle-switch"></div>
+</div>
+                <div class="menu-item">
+                    <iconify-icon icon="solar:settings-bold"></iconify-icon>
+                    <span>Cài đặt</span>
+                    <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
+                </div>
+                <div class="menu-item text-danger">
+                    <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
+                    <span>Đăng xuất</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trang bài viết chi tiết -->
+        <section class="page" id="page-article">
+            <div class="article-container" id="articleContent"></div>
+        </section>
+    </main>
+
+    <!-- Thanh điều hướng dưới -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-page="home">
+            <iconify-icon icon="solar:home-2-bold"></iconify-icon>
+            <span>Trang chủ</span>
+        </button>
+        <button class="nav-item" data-page="categories">
+            <iconify-icon icon="solar:library-bold"></iconify-icon>
+            <span>Danh mục</span>
+        </button>
+        <button class="nav-item" data-page="search">
+            <iconify-icon icon="solar:magnifer-bold"></iconify-icon>
+            <span>Tìm kiếm</span>
+        </button>
+        <button class="nav-item" data-page="community">
+            <iconify-icon icon="solar:chat-round-dots-bold"></iconify-icon>
+            <span>Cộng đồng</span>
+        </button>
+        <button class="nav-item" data-page="profile">
+            <iconify-icon icon="solar:user-circle-bold"></iconify-icon>
+            <span>Tài khoản</span>
+        </button>
+    </nav>
+
+    <!-- Skeleton Loading -->
+    <div class="skeleton" id="skeleton" style="display: none;"></div>
+
+    <!-- JavaScript -->
+    <script src="/firebase.js" type="module"></script>
+    <script src="/seo.js"></script>
+    <script type="module" src="/script.js"></script>
+    <script src="/testData.js"></script>
+</body>
+</html>

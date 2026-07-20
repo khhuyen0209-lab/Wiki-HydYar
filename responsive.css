@@ -1,0 +1,30 @@
+/* Tablet */
+@media (min-width: 768px) {
+    body { padding: 90px 24px 30px; }
+    .header { height: 80px; }
+    .header-inner { padding: 0 32px; }
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+    .category-grid { grid-template-columns: repeat(3, 1fr); }
+    .bottom-nav {
+        left: auto;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 90px;
+        height: auto;
+        border-radius: 24px;
+        flex-direction: column;
+        padding: 20px 0;
+        gap: 16px;
+    }
+    .nav-item.active { transform: translateX(4px) translateY(0); }
+    .main-content { padding-left: 120px; }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+    body { max-width: 1400px; margin: 0 auto; }
+    .card-grid { grid-template-columns: repeat(3, 1fr); }
+    .category-grid { grid-template-columns: repeat(4, 1fr); }
+    .banner { padding: 48px; }
+    .banner h1 { font-size: 36px; }
+}
