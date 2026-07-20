@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const fs = require("fs");
 const admin = require("firebase-admin");
 
 const app = express();
@@ -9,7 +10,6 @@ const app = express();
 // FIREBASE ADMIN
 // ==============================
 
-// Dùng biến môi trường Railway
 const serviceAccount = JSON.parse(
     process.env.FIREBASE_SERVICE_ACCOUNT
 );
@@ -58,61 +58,47 @@ app.get("/:category/:slug", async (req, res) => {
         }
 
 
-        const html = `
-<!DOCTYPE html>
-<html lang="vi">
+        // Lấy index.html gốc
+        let html = fs.readFileSync(
+            path.join(__dirname, "public", "index.html"),
+            "utf8"
+        );
 
-<head>
 
-<meta charset="UTF-8">
+        // Đổi title
+        html = html.replace(
+            /<title>.*?<\/title>/,
+            `<title>${title}</title>`
+        );
 
-<title>${title}</title>
 
+        // Thêm OG Meta cho Zalo/Facebook
+        html = html.replace(
+            "</head>",
+            `
 <meta name="description" content="${desc}">
 
-
-<!-- Open Graph (Zalo/Facebook) -->
-
 <meta property="og:type" content="article">
-
 <meta property="og:title" content="${title}">
-
 <meta property="og:description" content="${desc}">
-
 <meta property="og:url" content="${req.protocol}://${req.get("host")}${req.originalUrl}">
 
-
-<!-- Twitter -->
-
 <meta name="twitter:card" content="summary">
-
 <meta name="twitter:title" content="${title}">
-
 <meta name="twitter:description" content="${desc}">
 
-
 </head>
+`
+        );
 
-
-<body>
-
-<div id="app"></div>
-
-
-<script type="module" src="/script.js"></script>
-
-
-</body>
-
-</html>
-`;
 
         res.send(html);
 
 
     } catch (err) {
 
-        console.error(err);
+        console.error("SEO ERROR:", err);
+
 
         res.sendFile(
             path.join(__dirname, "public", "index.html")
@@ -137,7 +123,7 @@ app.get("/*splat", (req, res) => {
 
 
 // ==============================
-// START SERVER
+// START
 // ==============================
 
 const PORT = process.env.PORT || 3000;
