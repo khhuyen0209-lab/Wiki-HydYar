@@ -76,15 +76,14 @@ export async function getCategories() {
 // LẤY CHI TIẾT WIKI
 // ===============================
 export async function getArticleBySlug(slug) {
-    const ref = doc(db, "wikiArticles", slug);
+    const ref = doc(db, "articles", slug);
     const snap = await getDoc(ref);
+
     if (!snap.exists()) return null;
-    const data = snap.data();
+
     return {
         id: snap.id,
-        // ✅ LUÔN ĐẢM BẢO CÓ GIÁ TRỊ, KHÔNG BAO GIỜ undefined
-        categoryId: data.categoryId || data.categorySlug || "khac",
-        ...data
+        ...snap.data()
     };
 }
 
