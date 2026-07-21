@@ -20,14 +20,14 @@ import {
 function icon(name) { return `<iconify-icon icon="${name}"></iconify-icon>`; }
 let previousPage = 'home';
 let originalCategoryHTML = '';
-let categories = []; // ✅ Yêu cầu 1: Thêm biến lưu danh mục
+let categories = [];
 
 // Khai báo biến toàn cục
 let currentBookPage = 1;
 let totalBookPages = 0;
 let isFullscreenMode = false;
 
-// ✅ Yêu cầu 3: Hàm lấy tên danh mục theo ID
+// ✅ ĐÃ SỬA: Tìm theo categoryId (space) và ánh xạ đúng tên
 function getCategoryName(categoryId) {
     const c = categories.find(x => x.id === categoryId);
     return c ? c.name : "Khác";
@@ -160,7 +160,7 @@ function initNavigation() {
 }
 
 // ==============================
-// DANH MỤC - ĐÃ SỬA THEO YÊU CẦU
+// DANH MỤC
 // ==============================
 function initCategoryClick() {
     document.addEventListener('click', (e) => {
@@ -169,7 +169,6 @@ function initCategoryClick() {
         const name = item.querySelector('.category-name')?.textContent.trim();
         if (!name) return;
 
-        // ✅ Yêu cầu 7: Tìm theo tên rồi lấy ID
         const category = categories.find(c => c.name === name);
         if (!category) return;
 
@@ -181,13 +180,11 @@ function initCategoryClick() {
     });
 }
 
-// ✅ Yêu cầu 8: Đổi tham số thành categoryId
 async function openCategoryDetail(categoryId) {
     const page = document.getElementById('page-categories');
     if (!page) return;
     if (!originalCategoryHTML) originalCategoryHTML = page.innerHTML;
 
-    // ✅ Lấy tên để hiển thị
     const category = categories.find(c => c.id === categoryId);
     const categoryName = category?.name || categoryId;
 
@@ -208,7 +205,7 @@ async function openCategoryDetail(categoryId) {
     try {
         let all = [];
         try { all = await getLatestArticles(); } catch { all = await getFeaturedArticles(); }
-        // ✅ Yêu cầu 6: Lọc theo categoryId thay vì tên
+        // ✅ Lọc đúng theo categoryId
         const filtered = all.filter(i => i.categoryId === categoryId);
         document.getElementById('cateContent').innerHTML = articleCard(filtered);
     } catch (e) {
@@ -217,7 +214,7 @@ async function openCategoryDetail(categoryId) {
 }
 
 // ==============================
-// BÀI VIẾT - ĐÃ SỬA THEO YÊU CẦU
+// BÀI VIẾT
 // ==============================
 function initArticleClick() {
     document.addEventListener("click", handleArticleClick);
@@ -281,7 +278,6 @@ function renderArticle(page, article, pagesContent) {
         <h1 class="wiki-title">${article.title}</h1>
         <hr class="divider-line">
         <div class="wiki-meta-row">
-            <!-- ✅ Yêu cầu 5: Hiển thị tên danh mục qua ID -->
             <span class="meta-item">${icon("solar:library-2-bold")} ${getCategoryName(article.categoryId)}</span>
             <span class="meta-item">${icon("solar:eye-bold")} ${article.views || 0} lượt xem</span>
             <span class="meta-item">${icon("solar:calendar-bold")}
@@ -316,9 +312,10 @@ function renderArticle(page, article, pagesContent) {
     </div>`;
 }
 
+// ✅ ĐÃ SỬA: Tạo link đúng dạng /space/big-bang
 function updateArticleSEO(article) {
-
-    const url = `/${article.categoryId || "khac"}/${article.id}`;
+    const categoryPath = article.categoryId || "khac";
+    const url = `/${categoryPath}/${article.id}`;
 
     history.pushState(
         { article: article.id },
@@ -429,7 +426,7 @@ window.addEventListener("popstate", () => {
 });
 
 // ==============================
-// RENDER DANH SÁCH - ĐÃ SỬA THEO YÊU CẦU
+// RENDER DANH SÁCH
 // ==============================
 function articleCard(list) {
     if(!list || list.length === 0) return `<p style="padding:16px;">Chưa có bài viết</p>`;
@@ -439,7 +436,6 @@ function articleCard(list) {
             <h3 class="card-title">${a.title || "Không có tiêu đề"}</h3>
             <p class="card-desc">${a.desc || "Chưa có mô tả"}</p>
             <div class="card-meta">
-                <!-- ✅ Yêu cầu 4: Hiển thị tên danh mục qua ID -->
                 <span>${icon("solar:library-bold")} ${getCategoryName(a.categoryId)}</span>
                 <span>${icon("solar:eye-bold")} ${a.views || 0}</span>
             </div>
@@ -473,7 +469,6 @@ async function renderWiki() {
     }
 }
 
-// ✅ Yêu cầu 2: Lưu danh mục vào biến toàn cục
 async function renderCategory() {
     const feat = document.getElementById("featuredCategories");
     const all = document.getElementById("allCategories");
@@ -495,14 +490,14 @@ function slugify(str) {
 }
 
 const categoryMap = {
-    "Vũ trụ": "vu-tru", "Khoa học": "khoa-hoc", "Lịch sử": "lich-su", "Địa lý": "dia-ly",
-    "Công nghệ": "cong-nghe", "Sinh học": "sinh-hoc", "Vật lý": "vat-ly", "Hóa học": "hoa-hoc",
-    "Toán học": "toan-hoc", "Y học": "y-hoc", "Máy tính": "may-tinh", "Lập trình": "lap-trinh",
-    "Trò chơi": "tro-choi", "Âm nhạc": "am-nhac", "Nghệ thuật": "nghe-thuat", "Văn hóa": "van-hoa",
-    "Động vật": "dong-vat", "Thực vật": "thuc-vat", "Con người": "con-nguoi", "Cổ vật": "co-vat",
-    "Địa điểm": "dia-diem", "Nhân vật": "nhan-vat", "Tổ chức": "to-chuc", "Sự kiện": "su-kien",
-    "Thiên văn": "thien-van", "Hành tinh": "hanh-tinh", "Ngôi sao": "ngoi-sao", "Thiên hà": "thien-ha",
-    "Hố đen": "ho-den"
+    "Vũ trụ": "space", "Khoa học": "science", "Lịch sử": "history", "Địa lý": "geography",
+    "Công nghệ": "tech", "Sinh học": "biology", "Vật lý": "physics", "Hóa học": "chemistry",
+    "Toán học": "math", "Y học": "medicine", "Máy tính": "computer", "Lập trình": "coding",
+    "Trò chơi": "game", "Âm nhạc": "music", "Nghệ thuật": "art", "Văn hóa": "culture",
+    "Động vật": "animal", "Thực vật": "plant", "Con người": "human", "Cổ vật": "ancient",
+    "Địa điểm": "place", "Nhân vật": "person", "Tổ chức": "org", "Sự kiện": "event",
+    "Thiên văn": "space", "Hành tinh": "planet", "Ngôi sao": "star", "Thiên hà": "galaxy",
+    "Hố đen": "black-hole"
 };
 
 // Chạy 1 lần để cập nhật ID cho danh mục
@@ -513,13 +508,11 @@ async function updateCategoryIds() {
         const name = data.name || "";
         const id = categoryMap[name] || slugify(name);
         
-        // ✅ Dùng doc.id gốc để cập nhật, KHÔNG bao giờ sai
         await updateDoc(doc(db, "categories", d.id), { id });
         console.log(`${name} → ${id}`);
     }
     console.log("✅ Hoàn thành cập nhật ID danh mục!");
 }
-
 
 // Khai báo hàm toàn cục
 window.changeBookPage = changeBookPage;
