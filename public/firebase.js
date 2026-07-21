@@ -134,9 +134,11 @@ export async function getLatestArticles(){
 // Trong firebase.js
 export async function getCategories() {
     const snap = await getDocs(collection(db, "categories"));
+
     return snap.docs.map(d => ({
-        docId: d.id, // ✅ Giữ nguyên ID gốc của Firestore, không bao giờ bị ghi đè
-        ...d.data()  // ✅ Chứa id (categoryId), name, icon, count...
+        id: d.data().id || d.id,
+        docId: d.id,
+        ...d.data()
     }));
 }
 

@@ -318,10 +318,12 @@ function renderArticle(page, article, pagesContent) {
 
 function updateArticleSEO(article) {
 
+    const url = `/${article.categoryId || "khac"}/${article.id}`;
+
     history.pushState(
         { article: article.id },
         "",
-        `/${article.categoryId || "khac"}/${article.id}`
+        url
     );
 
     if (typeof SEO !== "undefined" && SEO.updateMeta) {
@@ -432,7 +434,7 @@ window.addEventListener("popstate", () => {
 function articleCard(list) {
     if(!list || list.length === 0) return `<p style="padding:16px;">Chưa có bài viết</p>`;
     return list.map(a=>`
-    <div class="article-card" data-id="${a.slug || a.id}">
+    <div class="article-card" data-id="${a.id}">
         <div class="card-content">
             <h3 class="card-title">${a.title || "Không có tiêu đề"}</h3>
             <p class="card-desc">${a.desc || "Chưa có mô tả"}</p>
