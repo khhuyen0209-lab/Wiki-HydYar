@@ -317,7 +317,13 @@ function renderArticle(page, article, pagesContent) {
 }
 
 function updateArticleSEO(article) {
-    history.pushState({ article: article.slug }, "", `/${article.categorySlug || "khac"}/${article.slug}`);
+
+    history.pushState(
+        { article: article.id },
+        "",
+        `/${article.categoryId || "khac"}/${article.id}`
+    );
+
     if (typeof SEO !== "undefined" && SEO.updateMeta) {
         SEO.updateMeta({
             title: `${article.title} | Wiki HydYar`,

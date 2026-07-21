@@ -148,36 +148,27 @@ export async function getCategories() {
 // LẤY CHI TIẾT WIKI
 // ===============================
 
-export async function getArticleBySlug(slug){
+// ===============================
+// LẤY CHI TIẾT WIKI
+// ===============================
 
+export async function getArticleBySlug(slug) {
 
     const ref = doc(
-
         db,
-
         "wikiArticles",
-
         slug
-
     );
-
 
     const snap = await getDoc(ref);
 
-
-
-    if(!snap.exists())
-
+    if (!snap.exists()) {
         return null;
-
-
+    }
 
     return {
-
-        id:snap.id,
-
+        id: snap.id,   // id = Document ID (ví dụ: "big-bang")
         ...snap.data()
-
     };
 
 }
