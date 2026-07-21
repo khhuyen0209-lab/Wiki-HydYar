@@ -149,11 +149,31 @@ document.addEventListener("DOMContentLoaded", () => {
 // ĐIỀU HƯỚNG
 // ==============================
 function initNavigation() {
-    document.querySelectorAll('.nav-item').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.nav-item, .page').forEach(el => el.classList.remove('active'));
-            btn.classList.add('active');
-            document.getElementById(`page-${btn.dataset.page}`)?.classList.add('active');
+    document.querySelectorAll(".nav-item").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".nav-item, .page").forEach(el => el.classList.remove("active"));
+
+            btn.classList.add("active");
+            document.getElementById(`page-${btn.dataset.page}`)?.classList.add("active");
+
+            switch (btn.dataset.page) {
+                case "home":
+                    history.replaceState({}, "", "/");
+                    break;
+
+                case "categories":
+                    history.replaceState({}, "", "/categories");
+                    break;
+
+                case "community":
+                    history.replaceState({}, "", "/community");
+                    break;
+
+                case "profile":
+                    history.replaceState({}, "", "/profile");
+                    break;
+            }
+
             window.scrollTo(0, 0);
         });
     });
@@ -414,15 +434,43 @@ function closeFullscreen() {
 
 function backToHome() {
     closeFullscreen();
-    document.querySelectorAll('.nav-item, .page').forEach(el => el.classList.remove('active'));
-    document.querySelector('[data-page="home"]')?.classList.add('active');
-    document.getElementById('page-home')?.classList.add('active');
-    history.pushState({}, "", location.pathname);
+
+    document.querySelectorAll(".nav-item, .page").forEach(el => el.classList.remove("active"));
+
+    document.querySelector('[data-page="home"]')?.classList.add("active");
+    document.getElementById("page-home")?.classList.add("active");
+
+    history.replaceState({}, "", "/");
 }
 
 window.addEventListener("popstate", () => {
-    const path = location.pathname.split("/").filter(Boolean);
-    path.length >= 2 ? openArticleDetail(path[1]) : backToHome();
+    const path = location.pathname;
+
+    if (path === "/") {
+        backToHome();
+        return;
+    }
+
+    if (path === "/categories") {
+        document.querySelector('[data-page="categories"]')?.click();
+        return;
+    }
+
+    if (path === "/community") {
+        document.querySelector('[data-page="community"]')?.click();
+        return;
+    }
+
+    if (path === "/profile") {
+        document.querySelector('[data-page="profile"]')?.click();
+        return;
+    }
+
+    const parts = path.split("/").filter(Boolean);
+
+    if (parts.length === 2) {
+        openArticleDetail(parts[1]);
+    }
 });
 
 // ==============================
