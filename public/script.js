@@ -314,8 +314,9 @@ function renderArticle(page, article, pagesContent) {
 
 // ✅ ĐÃ SỬA: Tạo link đúng dạng /space/big-bang
 function updateArticleSEO(article) {
-    const categoryPath = article.categoryId || "khac";
-    const url = `/${categoryPath}/${article.id}`;
+    // ✅ KIỂM TRA KỸ TRƯỚC KHI TẠO LINK
+    const cat = article.categoryId || "khac";
+    const url = `/${cat}/${article.id}`;
 
     history.pushState(
         { article: article.id },
@@ -323,15 +324,18 @@ function updateArticleSEO(article) {
         url
     );
 
+    console.log("✅ Tạo link:", url, "| categoryId gốc:", article.categoryId);
+
     if (typeof SEO !== "undefined" && SEO.updateMeta) {
         SEO.updateMeta({
             title: `${article.title} | Wiki HydYar`,
             desc: article.desc || "",
             url: location.href,
-            keywords: getCategoryName(article.categoryId)
+            keywords: getCategoryName(cat)
         });
     }
 }
+
 
 function initArticleEvents() {
     document.getElementById("fullscreenBtn")?.addEventListener("click", toggleFullscreen);

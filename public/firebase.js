@@ -79,12 +79,15 @@ export async function getArticleBySlug(slug) {
     const ref = doc(db, "wikiArticles", slug);
     const snap = await getDoc(ref);
     if (!snap.exists()) return null;
+    const data = snap.data();
     return {
         id: snap.id,
-        categoryId: snap.data().categoryId || "khac",
-        ...snap.data()
+        // ✅ LUÔN ĐẢM BẢO CÓ GIÁ TRỊ, KHÔNG BAO GIỜ undefined
+        categoryId: data.categoryId || data.categorySlug || "khac",
+        ...data
     };
 }
+
 
 // ===============================
 // TÌM KIẾM
