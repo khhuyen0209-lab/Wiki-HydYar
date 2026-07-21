@@ -30,10 +30,7 @@ app.get("/:category/:slug", async (req, res) => {
     const { slug } = req.params;
 
     try {
-        const docSnap = await db
-            .collection("wikiArticles")
-            .doc(slug)
-            .get();
+        const docSnap = await db.collection("wikiArticles").doc(slug).get();
 
         let title = "Wiki HydYar - Tri thức mở rộng";
         let desc = "Kho tri thức mở rộng";
@@ -62,7 +59,7 @@ app.get("/:category/:slug", async (req, res) => {
             `<meta name="description" content="${desc}">`
         );
 
-        const ogMeta = `
+        const meta = `
 <meta property="og:type" content="article">
 <meta property="og:title" content="${title}">
 <meta property="og:description" content="${desc}">
@@ -74,35 +71,50 @@ ${ogImage ? `<meta property="og:image" content="${ogImage}">` : ""}
 ${ogImage ? `<meta name="twitter:image" content="${ogImage}">` : ""}
 </head>`;
 
-        html = html.replace("</head>", ogMeta);
+        html = html.replace("</head>", meta);
 
         res.send(html);
 
     } catch (err) {
-        console.error("SEO ERROR:", err);
+        console.error(err);
         res.sendFile(path.join(__dirname, "public", "index.html"));
     }
 });
 
 // ==============================
-// ROUTE DANH MỤC
+// ROUTE SPA
 // ==============================
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/categories", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/community", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/profile", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Route danh mục (vd: /space)
 app.get("/:category", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// ==============================
-// SPA FALLBACK (Express 5)
-// ==============================
+// Fallback Express 5
 app.use((req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // ==============================
-// START SERVER
+// START
 // ==============================
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`✅ Wiki HydYar chạy cổng ${PORT}`);
+    console.log(`✅ Wiki HydYar chạy tại cổng ${PORT}`);
 });
