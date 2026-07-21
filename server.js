@@ -11,24 +11,25 @@ const app = express();
 const serviceAccount = JSON.parse(
     process.env.FIREBASE_SERVICE_ACCOUNT
 );
+
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
+
 const db = admin.firestore();
 
 // ==============================
 // FILE TĨNH
 // ==============================
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 
 // ==============================
-// SEO ĐỘNG CHO BÀI VIẾT – ĐÃ SỬA
+// SEO ĐỘNG CHO BÀI VIẾT
 // ==============================
 app.get("/:category/:slug", async (req, res) => {
-    const { category, slug } = req.params; // ✅ LẤY LUÔN CẢ 2 GIÁ TRỊ
+    const { slug } = req.params;
 
     try {
-        // ✅ SỐA: DÙNG ĐÚNG BỘ SƯU TẬP `wikiArticles`
         const docSnap = await db
             .collection("wikiArticles")
             .doc(slug)
@@ -40,25 +41,27 @@ app.get("/:category/:slug", async (req, res) => {
 
         if (docSnap.exists) {
             const data = docSnap.data();
+
             title = `${data.title || title} | Wiki HydYar`;
             desc = data.desc || desc;
             ogImage = data.image || "";
         }
 
-        // Đọc file HTML
         let html = fs.readFileSync(
             path.join(__dirname, "public", "index.html"),
             "utf8"
         );
 
-        // Thay title & meta đúng chuẩn
-        html = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`);
+        html = html.replace(
+            /<title>.*?<\/title>/,
+            `<title>${title}</title>`
+        );
+
         html = html.replace(
             /<meta name="description"[^>]*>/,
             `<meta name="description" content="${desc}">`
         );
 
-        // Thêm OG đầy đủ
         const ogMeta = `
 <meta property="og:type" content="article">
 <meta property="og:title" content="${title}">
@@ -70,34 +73,36 @@ ${ogImage ? `<meta property="og:image" content="${ogImage}">` : ""}
 <meta name="twitter:description" content="${desc}">
 ${ogImage ? `<meta name="twitter:image" content="${ogImage}">` : ""}
 </head>`;
+
         html = html.replace("</head>", ogMeta);
 
         res.send(html);
 
     } catch (err) {
-        console.error("❌ SEO ERROR:", err);
+        console.error("SEO ERROR:", err);
         res.sendFile(path.join(__dirname, "public", "index.html"));
     }
 });
 
 // ==============================
-// DANH MỤC – THÊM ROUTE ĐỂ KHÔNG BỊ LỖI
+// ROUTE DANH MỤC
 // ==============================
-app.get("/:category", async (req, res) => {
+app.get("/:category", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // ==============================
-// SPA FALLBACK
+// SPA FALLBACK (Express 5)
 // ==============================
-app.get("*", (req, res) => {
+app.use((req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // ==============================
-// START
+// START SERVER
 // ==============================
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
-    console.log("✅ Wiki HydYar chạy cổng:", PORT);
+    console.log(`✅ Wiki HydYar chạy cổng ${PORT}`);
 });
