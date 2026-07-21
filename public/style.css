@@ -1528,4 +1528,13 @@ textarea::-webkit-scrollbar-corner{
     margin: 0 !important;
 }
 
+.logo-text{
+    font-size:30px;
+    font-weight:700;
+    margin:0;
 
+    background:var(--gradient);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+}

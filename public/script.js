@@ -221,124 +221,196 @@ async function openCategoryDetail(categoryName) {
 // MỞ BÀI VIẾT CHI TIẾT - SỬA LỖI GÁN HÀM TOÀN CỤC
 // ==============================
 function initArticleClick() {
-    document.addEventListener('click', (e) => {
-        const card = e.target.closest('.article-card');
-        if (!card) return;
-        const slug = card.dataset.id;
-        if (!slug) return;
-        document.querySelectorAll('.page').forEach(p => {
-            if (p.classList.contains('active')) previousPage = p.id.replace('page-', '');
-        });
-        openArticleDetail(slug);
+    document.addEventListener("click", handleArticleClick);
+}
+
+function handleArticleClick(e) {
+    const card = e.target.closest(".article-card");
+    if (!card) return;
+
+    const slug = card.dataset.id;
+    if (!slug) return;
+
+    savePreviousPage();
+    openArticleDetail(slug);
+}
+
+function savePreviousPage() {
+    document.querySelectorAll(".page").forEach(page => {
+        if (page.classList.contains("active")) {
+            previousPage = page.id.replace("page-", "");
+        }
     });
 }
-async function openArticleDetail(slug) {
-    const pageArticle = document.getElementById('page-article');
-    const navItems = document.querySelectorAll('.nav-item');
-    const allPages = document.querySelectorAll('.page');
 
-    navItems.forEach(n => n.classList.remove('active'));
-    allPages.forEach(p => p.classList.remove('active'));
-    pageArticle.classList.add('active');
-    window.scrollTo(0, 0);
-    pageArticle.innerHTML = `<div class="article-container"><p>${icon("solar:refresh-circle-line")} Đang tải...</p></div>`;
+async function openArticleDetail(slug) {
+    const pageArticle = document.getElementById("page-article");
+
+    prepareArticlePage(pageArticle);
+    renderArticleLoading(pageArticle);
 
     try {
         const article = await getArticleBySlug(slug);
+
         if (!article) {
-            pageArticle.innerHTML = `<div class="article-container"><p>${icon("solar:info-circle-line")} Không tìm thấy bài viết</p></div>`;
+            renderArticleNotFound(pageArticle);
             return;
         }
-console.log("PushState", article.category, article.id);
-        // === CẬP NHẬT URL ĐẸP /danh-muc/ten-bai ===
-        history.pushState(
-            { article: slug },
-            "",
-            `/${article.categorySlug || 'khac'}/${article.slug || slug}`
-        );
 
-        if (typeof SEO !== "undefined" && SEO.updateMeta) {
-            SEO.updateMeta({
-                title: `${article.title} | Wiki HydYar`,
-                desc: article.desc || "",
-                url: location.href,
-                keywords: article.category || ""
-            });
-        }
+        updateArticleSEO(article);
 
-        const noiDung = article.content || '';
-        const pagesContent = splitContentToPages(noiDung);
-        totalBookPages = pagesContent.length;
-        if (totalBookPages < 1) totalBookPages = 1;
-        currentBookPage = 1;
+        const pagesContent = splitContentToPages(article.content || "");
 
-        // === HTML KHÔNG CÒN !important CHẶN LẬT TRANG ===
-        pageArticle.innerHTML = `
-        <div class="article-container">
-            <h1 class="wiki-title">${article.title || 'Không có tiêu đề'}</h1>
-            <hr class="divider-line">
+        renderArticle(pageArticle, article, pagesContent);
 
-            <div class="wiki-meta-row">
-                <span class="meta-item">${icon("solar:library-2-bold")} ${article.category || 'Khác'}</span>
-                <span class="meta-item">${icon("solar:eye-bold")} ${article.views || 0} lượt xem</span>
-                <span class="meta-item">${icon("solar:calendar-bold")} ${article.updatedAt ? new Date(article.updatedAt).toLocaleDateString('vi-VN') : 'Chưa cập nhật'}</span>
-            </div>
-
-            <div class="wiki-reliability">
-                ${icon("solar:shield-check-bold")} Độ tin cậy: <strong>100%</strong>
-            </div>
-            <hr class="divider-line">
-
-            <div class="book-wrapper" id="bookWrapper">
-                <button class="fullscreen-btn" id="fullscreenBtn">${icon("solar:full-screen-square-bold")}</button>
-                <div class="book-pages" id="bookPages">
-                    ${pagesContent.map((item) => `<div class="book-page markdown-body">${parseMarkdown(item)}</div>`).join('')}
-                </div>
-            </div>
-
-            <div class="book-nav" id="normalBookNav">
-                <button class="book-nav-btn" id="prevMainBtn">Quay lại</button>
-                <span>Trang <span id="currentPageNum">1</span> / ${totalBookPages}</span>
-                <button class="book-nav-btn" id="nextMainBtn" ${totalBookPages <= 1 ? 'disabled' : ''}>Sau</button>
-            </div>
-
-            <hr class="divider-line">
-            <div class="wiki-footer">
-                <span class="footer-text">Wiki HydYar</span>
-                <span class="verified-badge">${icon("solar:check-circle-broken")}</span>
-            </div>
-        </div>
-
-        <div class="fs-controls" id="fsControls" style="display: none;">
-            <button class="fs-btn" id="fsLeftBtn">Thoát</button>
-            <div class="fs-page-nav">
-                <span>Trang <span id="fsCurrentPage">1</span>/${totalBookPages}</span>
-                <button class="fs-btn" id="fsNextBtn" ${totalBookPages <= 1 ? 'disabled' : ''}>Sau</button>
-            </div>
-        </div>
-        `;
-
-        // === DÙNG requestAnimationFrame + CHẶN NHẤN LIÊN TỤC ===
-        requestAnimationFrame(() => {
-            const prevMainBtn = document.getElementById('prevMainBtn');
-            const nextMainBtn = document.getElementById('nextMainBtn');
-            const fsLeftBtn = document.getElementById('fsLeftBtn');
-            const fsNextBtn = document.getElementById('fsNextBtn');
-            const fullscreenBtn = document.getElementById('fullscreenBtn');
-
-            fullscreenBtn?.addEventListener('click', toggleFullscreen);
-            nextMainBtn?.addEventListener('click', () => changeBookPage(1));
-            fsNextBtn?.addEventListener('click', () => changeBookPage(1));
-
-            prevMainBtn?.addEventListener('click', () => currentBookPage <= 1 ? backToHome() : changeBookPage(-1));
-            fsLeftBtn?.addEventListener('click', () => currentBookPage <= 1 ? closeFullscreen() : changeBookPage(-1));
-
-            updateBookPageView();
-        });
+        requestAnimationFrame(initArticleEvents);
 
     } catch (err) {
-        pageArticle.innerHTML = `<div class="article-container"><p>${icon("solar:danger-triangle-bold")} Lỗi tải nội dung: ${err.message}</p></div>`;
+        renderArticleError(pageArticle, err);
     }
+}
+
+function prepareArticlePage(pageArticle) {
+    document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+
+    pageArticle.classList.add("active");
+    window.scrollTo(0, 0);
+}
+
+function renderArticleLoading(page) {
+    page.innerHTML = `
+        <div class="article-container">
+            <p>${icon("solar:refresh-circle-line")} Đang tải...</p>
+        </div>
+    `;
+}
+
+function renderArticleNotFound(page) {
+    page.innerHTML = `
+        <div class="article-container">
+            <p>${icon("solar:info-circle-line")} Không tìm thấy bài viết</p>
+        </div>
+    `;
+}
+
+function renderArticleError(page, err) {
+    page.innerHTML = `
+        <div class="article-container">
+            <p>${icon("solar:danger-triangle-bold")} Lỗi tải nội dung: ${err.message}</p>
+        </div>
+    `;
+}
+
+function renderArticle(page, article, pagesContent) {
+    totalBookPages = Math.max(1, pagesContent.length);
+    currentBookPage = 1;
+
+    page.innerHTML = `
+    <div class="article-container">
+        <h1 class="wiki-title">${article.title}</h1>
+        <hr class="divider-line">
+
+        <div class="wiki-meta-row">
+            <span class="meta-item">${icon("solar:library-2-bold")} ${article.category || "Khác"}</span>
+            <span class="meta-item">${icon("solar:eye-bold")} ${article.views || 0} lượt xem</span>
+            <span class="meta-item">${icon("solar:calendar-bold")}
+                ${article.updatedAt
+                    ? new Date(article.updatedAt).toLocaleDateString("vi-VN")
+                    : "Chưa cập nhật"}
+            </span>
+        </div>
+
+        <div class="wiki-reliability">
+            ${icon("solar:shield-check-bold")}
+            Độ tin cậy: <strong>rất cao</strong>
+        </div>
+
+        <hr class="divider-line">
+
+        <div class="book-wrapper" id="bookWrapper">
+            <button class="fullscreen-btn" id="fullscreenBtn">
+                ${icon("solar:full-screen-square-bold")}
+            </button>
+
+            <div class="book-pages" id="bookPages">
+                ${pagesContent.map(item =>
+                    `<div class="book-page markdown-body">${parseMarkdown(item)}</div>`
+                ).join("")}
+            </div>
+        </div>
+
+        <div class="book-nav" id="normalBookNav">
+            <button class="book-nav-btn" id="prevMainBtn">Quay lại</button>
+            <span>Trang <span id="currentPageNum">1</span> / ${totalBookPages}</span>
+            <button class="book-nav-btn" id="nextMainBtn"
+                ${totalBookPages <= 1 ? "disabled" : ""}>
+                Sau
+            </button>
+        </div>
+
+        <hr class="divider-line">
+
+        <div class="wiki-footer">
+            <span class="footer-text">Wiki HydYar</span>
+            <span class="verified-badge">
+                ${icon("solar:check-circle-broken")}
+            </span>
+        </div>
+    </div>
+
+    <div class="fs-controls" id="fsControls" style="display:none;">
+        <button class="fs-btn" id="fsLeftBtn">Thoát</button>
+
+        <div class="fs-page-nav">
+            <span>Trang <span id="fsCurrentPage">1</span>/${totalBookPages}</span>
+            <button class="fs-btn" id="fsNextBtn"
+                ${totalBookPages <= 1 ? "disabled" : ""}>
+                Sau
+            </button>
+        </div>
+    </div>
+    `;
+}
+
+function updateArticleSEO(article) {
+    history.pushState(
+        { article: article.slug },
+        "",
+        `/${article.categorySlug || "khac"}/${article.slug}`
+    );
+
+    if (typeof SEO !== "undefined" && SEO.updateMeta) {
+        SEO.updateMeta({
+            title: `${article.title} | Wiki HydYar`,
+            desc: article.desc || "",
+            url: location.href,
+            keywords: article.category || ""
+        });
+    }
+}
+
+function initArticleEvents() {
+    document.getElementById("fullscreenBtn")
+        ?.addEventListener("click", toggleFullscreen);
+
+    document.getElementById("nextMainBtn")
+        ?.addEventListener("click", () => changeBookPage(1));
+
+    document.getElementById("fsNextBtn")
+        ?.addEventListener("click", () => changeBookPage(1));
+
+    document.getElementById("prevMainBtn")
+        ?.addEventListener("click", () =>
+            currentBookPage <= 1 ? backToHome() : changeBookPage(-1)
+        );
+
+    document.getElementById("fsLeftBtn")
+        ?.addEventListener("click", () =>
+            currentBookPage <= 1 ? closeFullscreen() : changeBookPage(-1)
+        );
+
+    updateBookPageView();
 }
 
 // LOGIC LẬT TRANG

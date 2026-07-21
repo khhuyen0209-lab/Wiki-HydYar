@@ -118,47 +118,140 @@ async function openArticleDetail(articleId) {
 
 
 // =============================
-// ✅ TẠO BÀI VIẾT - ĐÃ THÊM NỘI DUNG DÀI
+// TẠO SLUG TỰ ĐỘNG
+// =============================
+function createSlug(text) {
+    return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d")
+        .replace(/[^a-z0-9\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-");
+}
+
+
+// =============================
+// ✅ TẠO BÀI VIẾT
 // =============================
 function createArticle() {
     const btn = document.getElementById("createBtn");
     if (!btn) return;
 
     btn.onclick = async () => {
-        const id = document.getElementById("slug").value.trim().toLowerCase();
-        const title = document.getElementById("title").value.trim();
-        const desc = document.getElementById("desc").value.trim();
-        const fullContent = document.getElementById("fullContent").value.trim(); // ✅ Ô nhập nội dung dài
-        const category = document.getElementById("category").value.trim();
-        const views = Number(document.getElementById("views").value) || 0;
-        const featured = document.getElementById("featured").checked;
 
-        if (!id) return alert("Chưa nhập ID bài viết");
-        if (!title) return alert("Chưa nhập tiêu đề");
-        if (!desc) return alert("Chưa nhập mô tả ngắn");
-        if (!fullContent) return alert("Chưa nhập nội dung chi tiết");
-        if (!category) return alert("Chưa nhập danh mục");
+        const id = document
+            .getElementById("slug")
+            .value
+            .trim()
+            .toLowerCase();
+
+        const title = document
+            .getElementById("title")
+            .value
+            .trim();
+
+        const desc = document
+            .getElementById("desc")
+            .value
+            .trim();
+
+        const fullContent = document
+            .getElementById("fullContent")
+            .value
+            .trim();
+
+        const category = document
+            .getElementById("category")
+            .value
+            .trim();
+
+
+        // ⭐ TỰ TẠO CATEGORY SLUG
+        const categorySlug = createSlug(category);
+
+
+        const views = Number(
+            document.getElementById("views").value
+        ) || 0;
+
+
+        const featured =
+            document.getElementById("featured").checked;
+
+
+
+        if (!id)
+            return alert("Chưa nhập ID bài viết");
+
+        if (!title)
+            return alert("Chưa nhập tiêu đề");
+
+        if (!desc)
+            return alert("Chưa nhập mô tả");
+
+        if (!fullContent)
+            return alert("Chưa nhập nội dung");
+
+        if (!category)
+            return alert("Chưa nhập danh mục");
+
+
 
         try {
-            await setDoc(doc(db, "wikiArticles", id), {
-                title,
-                desc,
-                fullContent, // ✅ Lưu nội dung dài vào Firestore
-                category,
-                views,
-                featured,
-                updatedAt: new Date().toISOString(),
-                createdAt: serverTimestamp()
-            });
 
-            alert("✅ Đã tạo bài viết thành công!");
+            await setDoc(
+                doc(db, "wikiArticles", id),
+                {
+
+                    // Nội dung chính
+                    title,
+                    desc,
+                    fullContent,
+
+
+                    // Danh mục
+                    category,
+                    categorySlug,
+
+
+                    // Thống kê
+                    views,
+                    featured,
+
+
+                    // Thời gian
+                    updatedAt:
+                        new Date().toISOString(),
+
+                    createdAt:
+                        serverTimestamp()
+                }
+            );
+
+
+            alert(
+                "✅ Tạo bài viết thành công!\n\nCategory slug: "
+                + categorySlug
+            );
+
+
             loadFeatured();
             loadLatest();
 
+
         } catch (e) {
+
             console.error(e);
-            alert("Lỗi: " + e.message);
+
+            alert(
+                "Lỗi: " + e.message
+            );
+
         }
+
     };
 }
 
