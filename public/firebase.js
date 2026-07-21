@@ -14,8 +14,13 @@ import {
     orderBy,
     limit,
     doc,
-    getDoc
-} 
+    getDoc,
+
+    // Thêm 2 dòng này
+    updateDoc,
+    writeBatch
+
+}
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 
@@ -126,29 +131,15 @@ export async function getLatestArticles(){
 // DANH MỤC
 // ===============================
 
-export async function getCategories(){
-
-
-    const snap = await getDocs(
-
-        collection(
-            db,
-            "categories"
-        )
-
-    );
-
-
-
-    return snap.docs.map(d=>({
-
-        id:d.id,
-
-        ...d.data()
-
+// Trong firebase.js
+export async function getCategories() {
+    const snap = await getDocs(collection(db, "categories"));
+    return snap.docs.map(d => ({
+        docId: d.id, // ✅ Giữ nguyên ID gốc của Firestore, không bao giờ bị ghi đè
+        ...d.data()  // ✅ Chứa id (categoryId), name, icon, count...
     }));
-
 }
+
 
 
 

@@ -3,8 +3,16 @@ import {
     getFeaturedArticles,
     getLatestArticles,
     getCategories,
-    getArticleBySlug
+    getArticleBySlug,
+    db
 } from "./firebase.js";
+
+import {
+    collection,
+    getDocs,
+    doc,
+    updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ==============================
 // HÀM DÙNG CHUNG
@@ -12,92 +20,74 @@ import {
 function icon(name) { return `<iconify-icon icon="${name}"></iconify-icon>`; }
 let previousPage = 'home';
 let originalCategoryHTML = '';
+let categories = []; // ✅ Yêu cầu 1: Thêm biến lưu danh mục
 
 // Khai báo biến toàn cục
 let currentBookPage = 1;
 let totalBookPages = 0;
 let isFullscreenMode = false;
 
-// Chuyển định dạng Markdown - ĐÃ SỬA LỖI DANH SÁCH
+// ✅ Yêu cầu 3: Hàm lấy tên danh mục theo ID
+function getCategoryName(categoryId) {
+    const c = categories.find(x => x.id === categoryId);
+    return c ? c.name : "Khác";
+}
+
+// Chuyển định dạng Markdown
 function parseMarkdown(text) {
     if (!text) return "";
-
     let html = text;
 
-    // ===== ẢNH =====
     html = html.replace(
         /!\[([^\]]*)\]\(\s*([^)]+?)\s*(?:\"([^\"]+)\")?\)/g,
         (match, alt, src, caption) => `
 <div class="img-wrapper">
-    <img src="${src}"
-         alt="${alt}"
-         loading="lazy"
+    <img src="${src}" alt="${alt}" loading="lazy"
          onerror="this.parentElement.innerHTML='<p class=&quot;img-error&quot;>Không tải được ảnh</p>'">
     ${caption ? `<div class="img-caption">${caption}</div>` : ""}
 </div>`
     );
 
-    // ===== TÊN WEBSITE + LINK =====
     html = html.replace(
         /^-?\s*([^:\n]+?)\s*:\s*(https?:\/\/[^\s<]+)/gm,
         '<a href="$2" target="_blank" rel="noopener noreferrer" class="md-link">$1</a>'
     );
 
-    // ===== LINK MARKDOWN TỰ ĐỘNG BẮT TÊN =====
     html = html.replace(
         /(^|[\s>])(https?:\/\/[^\s<"]+)/gm,
         (match, space, url) => {
             try {
                 const host = new URL(url).hostname.replace(/^www\./, "");
                 let name = host;
-
                 if (host.includes("wikipedia.org")) name = "Wikipedia";
                 else if (host.includes("wikimedia.org")) name = "Wikimedia Commons";
                 else if (host.includes("nasa.gov")) name = "NASA";
                 else if (host.includes("esa.int")) name = "ESA";
                 else if (host.includes("youtube.com")) name = "YouTube";
                 else if (host.includes("github.com")) name = "GitHub";
-                else if (host.includes("firebase.google.com")) name = "Firebase";
-                else if (host.includes("google.com")) name = "Google";
-
                 return `${space}<a href="${url}" target="_blank" rel="noopener noreferrer" class="md-link">${name}</a>`;
-            } catch {
-                return match;
-            }
+            } catch { return match; }
         }
     );
 
-    // ===== TIÊU ĐỀ =====
     html = html.replace(/^### (.*)$/gm, "<h3>$1</h3>");
     html = html.replace(/^## (.*)$/gm, "<h2>$1</h2>");
     html = html.replace(/^# (.*)$/gm, "<h1>$1</h1>");
-
-    // ===== TRÍCH DẪN =====
     html = html.replace(/^> (.*)$/gm, "<blockquote>$1</blockquote>");
-
-    // ===== DANH SÁCH - SỬA LỖI BỌC NHIỀU <ul> =====
     html = html.replace(/(?:^- .*(?:\r?\n|$))+/gm, match => {
         const items = match.trim().split('\n').map(item => `<li>${item.replace(/^- /, '')}</li>`).join('');
         return `<ul>${items}</ul>`;
     });
-
-    // ===== ĐẬM / NGHIÊNG =====
     html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
     html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
-
-    // ===== XUỐNG DÒNG PARAGRAPH =====
-    html = html
-        .split(/\n{2,}/)
-        .map(part => {
-            if (/^\s*</.test(part)) return part;
-            return `<p>${part.replace(/\n/g, "<br>")}</p>`;
-        })
-        .join("");
+    html = html.split(/\n{2,}/).map(part => {
+        if (/^\s*</.test(part)) return part;
+        return `<p>${part.replace(/\n/g, "<br>")}</p>`;
+    }).join("");
 
     return html;
 }
 
-// Chia nội dung thành trang - SỬA LỖI RỖNG & TÍNH SAI TRANG
 function splitContentToPages(html) {
     if (!html) return [''];
     const parts = html.split(/---trang\d+---/g).map(p => p.trim()).filter(Boolean);
@@ -115,10 +105,9 @@ function initDarkMode() {
     if(savedTheme === 'dark') toggle.querySelector('.toggle-switch')?.classList.add('active');
     toggle.addEventListener('click', () => {
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        const newTheme = isDark ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('wiki-theme', newTheme);
-        toggle.querySelector('.toggle-switch')?.classList.toggle('active', !isDark);
+        document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        localStorage.setItem('wiki-theme', document.documentElement.getAttribute('data-theme'));
+        toggle.querySelector('.toggle-switch')?.classList.toggle('active', isDark);
     });
 }
 
@@ -149,15 +138,11 @@ document.addEventListener("DOMContentLoaded", () => {
     initNavigation();
     initCategoryClick();
     initArticleClick();
-
     renderWiki();
     renderCategory();
 
     const path = location.pathname.split("/").filter(Boolean);
-
-    if (path.length >= 2) {
-        openArticleDetail(path[1]); // big-bang
-    }
+    if (path.length >= 2) openArticleDetail(path[1]);
 });
 
 // ==============================
@@ -175,7 +160,7 @@ function initNavigation() {
 }
 
 // ==============================
-// DANH MỤC
+// DANH MỤC - ĐÃ SỬA THEO YÊU CẦU
 // ==============================
 function initCategoryClick() {
     document.addEventListener('click', (e) => {
@@ -183,18 +168,29 @@ function initCategoryClick() {
         if (!item) return;
         const name = item.querySelector('.category-name')?.textContent.trim();
         if (!name) return;
+
+        // ✅ Yêu cầu 7: Tìm theo tên rồi lấy ID
+        const category = categories.find(c => c.name === name);
+        if (!category) return;
+
         document.querySelectorAll('.nav-item, .page').forEach(el => el.classList.remove('active'));
         document.querySelector('[data-page="categories"]')?.classList.add('active');
         document.getElementById('page-categories')?.classList.add('active');
         window.scrollTo(0, 0);
-        setTimeout(() => openCategoryDetail(name), 50);
+        setTimeout(() => openCategoryDetail(category.id), 50);
     });
 }
 
-async function openCategoryDetail(categoryName) {
+// ✅ Yêu cầu 8: Đổi tham số thành categoryId
+async function openCategoryDetail(categoryId) {
     const page = document.getElementById('page-categories');
     if (!page) return;
     if (!originalCategoryHTML) originalCategoryHTML = page.innerHTML;
+
+    // ✅ Lấy tên để hiển thị
+    const category = categories.find(c => c.id === categoryId);
+    const categoryName = category?.name || categoryId;
+
     page.innerHTML = `
     <div class="page-header">
         <button class="back-btn" id="backCate">
@@ -204,13 +200,16 @@ async function openCategoryDetail(categoryName) {
         <h1>${categoryName}</h1>
     </div>
     <div class="category-detail-content" id="cateContent"><p>Đang tải...</p></div>`;
+
     document.getElementById('backCate').onclick = () => {
         if (originalCategoryHTML) page.innerHTML = originalCategoryHTML;
     };
+
     try {
         let all = [];
         try { all = await getLatestArticles(); } catch { all = await getFeaturedArticles(); }
-        const filtered = all.filter(i => (i.category || 'Khác').trim() === categoryName);
+        // ✅ Yêu cầu 6: Lọc theo categoryId thay vì tên
+        const filtered = all.filter(i => i.categoryId === categoryId);
         document.getElementById('cateContent').innerHTML = articleCard(filtered);
     } catch (e) {
         document.getElementById('cateContent').innerHTML = `<p>Lỗi: ${e.message}</p>`;
@@ -218,7 +217,7 @@ async function openCategoryDetail(categoryName) {
 }
 
 // ==============================
-// MỞ BÀI VIẾT CHI TIẾT - SỬA LỖI GÁN HÀM TOÀN CỤC
+// BÀI VIẾT - ĐÃ SỬA THEO YÊU CẦU
 // ==============================
 function initArticleClick() {
     document.addEventListener("click", handleArticleClick);
@@ -227,79 +226,50 @@ function initArticleClick() {
 function handleArticleClick(e) {
     const card = e.target.closest(".article-card");
     if (!card) return;
-
     const slug = card.dataset.id;
     if (!slug) return;
-
     savePreviousPage();
     openArticleDetail(slug);
 }
 
 function savePreviousPage() {
     document.querySelectorAll(".page").forEach(page => {
-        if (page.classList.contains("active")) {
-            previousPage = page.id.replace("page-", "");
-        }
+        if (page.classList.contains("active")) previousPage = page.id.replace("page-", "");
     });
 }
 
 async function openArticleDetail(slug) {
     const pageArticle = document.getElementById("page-article");
-
     prepareArticlePage(pageArticle);
     renderArticleLoading(pageArticle);
 
     try {
         const article = await getArticleBySlug(slug);
-
-        if (!article) {
-            renderArticleNotFound(pageArticle);
-            return;
-        }
+        if (!article) { renderArticleNotFound(pageArticle); return; }
 
         updateArticleSEO(article);
-
         const pagesContent = splitContentToPages(article.content || "");
-
         renderArticle(pageArticle, article, pagesContent);
-
         requestAnimationFrame(initArticleEvents);
 
-    } catch (err) {
-        renderArticleError(pageArticle, err);
-    }
+    } catch (err) { renderArticleError(pageArticle, err); }
 }
 
 function prepareArticlePage(pageArticle) {
     document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-
     pageArticle.classList.add("active");
     window.scrollTo(0, 0);
 }
 
 function renderArticleLoading(page) {
-    page.innerHTML = `
-        <div class="article-container">
-            <p>${icon("solar:refresh-circle-line")} Đang tải...</p>
-        </div>
-    `;
+    page.innerHTML = `<div class="article-container"><p>${icon("solar:refresh-circle-line")} Đang tải...</p></div>`;
 }
-
 function renderArticleNotFound(page) {
-    page.innerHTML = `
-        <div class="article-container">
-            <p>${icon("solar:info-circle-line")} Không tìm thấy bài viết</p>
-        </div>
-    `;
+    page.innerHTML = `<div class="article-container"><p>${icon("solar:info-circle-line")} Không tìm thấy bài viết</p></div>`;
 }
-
 function renderArticleError(page, err) {
-    page.innerHTML = `
-        <div class="article-container">
-            <p>${icon("solar:danger-triangle-bold")} Lỗi tải nội dung: ${err.message}</p>
-        </div>
-    `;
+    page.innerHTML = `<div class="article-container"><p>${icon("solar:danger-triangle-bold")} Lỗi tải nội dung: ${err.message}</p></div>`;
 }
 
 function renderArticle(page, article, pagesContent) {
@@ -310,110 +280,63 @@ function renderArticle(page, article, pagesContent) {
     <div class="article-container">
         <h1 class="wiki-title">${article.title}</h1>
         <hr class="divider-line">
-
         <div class="wiki-meta-row">
-            <span class="meta-item">${icon("solar:library-2-bold")} ${article.category || "Khác"}</span>
+            <!-- ✅ Yêu cầu 5: Hiển thị tên danh mục qua ID -->
+            <span class="meta-item">${icon("solar:library-2-bold")} ${getCategoryName(article.categoryId)}</span>
             <span class="meta-item">${icon("solar:eye-bold")} ${article.views || 0} lượt xem</span>
             <span class="meta-item">${icon("solar:calendar-bold")}
-                ${article.updatedAt
-                    ? new Date(article.updatedAt).toLocaleDateString("vi-VN")
-                    : "Chưa cập nhật"}
+                ${article.updatedAt ? new Date(article.updatedAt).toLocaleDateString("vi-VN") : "Chưa cập nhật"}
             </span>
         </div>
-
-        <div class="wiki-reliability">
-            ${icon("solar:shield-check-bold")}
-            Độ tin cậy: <strong>rất cao</strong>
-        </div>
-
+        <div class="wiki-reliability">${icon("solar:shield-check-bold")} Độ tin cậy: <strong>rất cao</strong></div>
         <hr class="divider-line">
-
         <div class="book-wrapper" id="bookWrapper">
-            <button class="fullscreen-btn" id="fullscreenBtn">
-                ${icon("solar:full-screen-square-bold")}
-            </button>
-
+            <button class="fullscreen-btn" id="fullscreenBtn">${icon("solar:full-screen-square-bold")}</button>
             <div class="book-pages" id="bookPages">
-                ${pagesContent.map(item =>
-                    `<div class="book-page markdown-body">${parseMarkdown(item)}</div>`
-                ).join("")}
+                ${pagesContent.map(item => `<div class="book-page markdown-body">${parseMarkdown(item)}</div>`).join("")}
             </div>
         </div>
-
         <div class="book-nav" id="normalBookNav">
             <button class="book-nav-btn" id="prevMainBtn">Quay lại</button>
             <span>Trang <span id="currentPageNum">1</span> / ${totalBookPages}</span>
-            <button class="book-nav-btn" id="nextMainBtn"
-                ${totalBookPages <= 1 ? "disabled" : ""}>
-                Sau
-            </button>
+            <button class="book-nav-btn" id="nextMainBtn" ${totalBookPages <= 1 ? "disabled" : ""}>Sau</button>
         </div>
-
         <hr class="divider-line">
-
         <div class="wiki-footer">
             <span class="footer-text">Wiki HydYar</span>
-            <span class="verified-badge">
-                ${icon("solar:check-circle-broken")}
-            </span>
+            <span class="verified-badge">${icon("solar:check-circle-broken")}</span>
         </div>
     </div>
-
     <div class="fs-controls" id="fsControls" style="display:none;">
         <button class="fs-btn" id="fsLeftBtn">Thoát</button>
-
         <div class="fs-page-nav">
             <span>Trang <span id="fsCurrentPage">1</span>/${totalBookPages}</span>
-            <button class="fs-btn" id="fsNextBtn"
-                ${totalBookPages <= 1 ? "disabled" : ""}>
-                Sau
-            </button>
+            <button class="fs-btn" id="fsNextBtn" ${totalBookPages <= 1 ? "disabled" : ""}>Sau</button>
         </div>
-    </div>
-    `;
+    </div>`;
 }
 
 function updateArticleSEO(article) {
-    history.pushState(
-        { article: article.slug },
-        "",
-        `/${article.categorySlug || "khac"}/${article.slug}`
-    );
-
+    history.pushState({ article: article.slug }, "", `/${article.categorySlug || "khac"}/${article.slug}`);
     if (typeof SEO !== "undefined" && SEO.updateMeta) {
         SEO.updateMeta({
             title: `${article.title} | Wiki HydYar`,
             desc: article.desc || "",
             url: location.href,
-            keywords: article.category || ""
+            keywords: getCategoryName(article.categoryId)
         });
     }
 }
 
 function initArticleEvents() {
-    document.getElementById("fullscreenBtn")
-        ?.addEventListener("click", toggleFullscreen);
-
-    document.getElementById("nextMainBtn")
-        ?.addEventListener("click", () => changeBookPage(1));
-
-    document.getElementById("fsNextBtn")
-        ?.addEventListener("click", () => changeBookPage(1));
-
-    document.getElementById("prevMainBtn")
-        ?.addEventListener("click", () =>
-            currentBookPage <= 1 ? backToHome() : changeBookPage(-1)
-        );
-
-    document.getElementById("fsLeftBtn")
-        ?.addEventListener("click", () =>
-            currentBookPage <= 1 ? closeFullscreen() : changeBookPage(-1)
-        );
-
+    document.getElementById("fullscreenBtn")?.addEventListener("click", toggleFullscreen);
+    document.getElementById("nextMainBtn")?.addEventListener("click", () => changeBookPage(1));
+    document.getElementById("fsNextBtn")?.addEventListener("click", () => changeBookPage(1));
+    document.getElementById("prevMainBtn")?.addEventListener("click", () => currentBookPage <= 1 ? backToHome() : changeBookPage(-1));
+    document.getElementById("fsLeftBtn")?.addEventListener("click", () => currentBookPage <= 1 ? closeFullscreen() : changeBookPage(-1));
     updateBookPageView();
 }
 
-// LOGIC LẬT TRANG
 function changeBookPage(step) {
     const newPage = currentBookPage + step;
     if (newPage < 1 || newPage > totalBookPages) return;
@@ -432,19 +355,16 @@ function updateBookPageView() {
 
     if (!bookPages) return;
     bookPages.style.transform = `translateX(-${(currentBookPage - 1) * 100}%)`;
-
     if(currentPageNum) currentPageNum.textContent = currentBookPage;
     if(fsCurrentPage) fsCurrentPage.textContent = currentBookPage;
 
     const isLast = currentBookPage >= totalBookPages;
     if(nextMainBtn) nextMainBtn.disabled = isLast;
     if(fsNextBtn) fsNextBtn.disabled = isLast;
-
     if (prevMainBtn) prevMainBtn.textContent = currentBookPage <= 1 ? 'Quay lại' : 'Trước';
     if (fsLeftBtn) fsLeftBtn.textContent = currentBookPage <= 1 ? 'Thoát' : 'Trước';
 }
 
-// LOGIC TOÀN MÀN HÌNH
 function toggleFullscreen() {
     const bookWrap = document.getElementById('bookWrapper');
     const fsControls = document.getElementById('fsControls');
@@ -464,9 +384,7 @@ function toggleFullscreen() {
         if(wikiFooter) wikiFooter.style.display = 'none';
         fsControls.style.display = 'flex';
         if(bottomNav) bottomNav.classList.add('bottom-nav-hidden');
-    } else {
-        closeFullscreen();
-    }
+    } else { closeFullscreen(); }
 }
 
 function closeFullscreen() {
@@ -498,22 +416,23 @@ function backToHome() {
 }
 
 window.addEventListener("popstate", () => {
-    const slug = new URLSearchParams(location.search).get("article");
-    slug ? openArticleDetail(slug) : backToHome();
+    const path = location.pathname.split("/").filter(Boolean);
+    path.length >= 2 ? openArticleDetail(path[1]) : backToHome();
 });
 
 // ==============================
-// RENDER DANH SÁCH
+// RENDER DANH SÁCH - ĐÃ SỬA THEO YÊU CẦU
 // ==============================
 function articleCard(list) {
     if(!list || list.length === 0) return `<p style="padding:16px;">Chưa có bài viết</p>`;
     return list.map(a=>`
-    <div class="article-card" data-id="${a.id}">
+    <div class="article-card" data-id="${a.slug || a.id}">
         <div class="card-content">
             <h3 class="card-title">${a.title || "Không có tiêu đề"}</h3>
             <p class="card-desc">${a.desc || "Chưa có mô tả"}</p>
             <div class="card-meta">
-                <span>${icon("solar:library-bold")} ${a.category || "Khác"}</span>
+                <!-- ✅ Yêu cầu 4: Hiển thị tên danh mục qua ID -->
+                <span>${icon("solar:library-bold")} ${getCategoryName(a.categoryId)}</span>
                 <span>${icon("solar:eye-bold")} ${a.views || 0}</span>
             </div>
         </div>
@@ -546,19 +465,55 @@ async function renderWiki() {
     }
 }
 
+// ✅ Yêu cầu 2: Lưu danh mục vào biến toàn cục
 async function renderCategory() {
     const feat = document.getElementById("featuredCategories");
     const all = document.getElementById("allCategories");
     if(!feat || !all) return;
     try {
-        const data = await getCategories();
-        const html = categoryCard(data);
+        categories = await getCategories();
+        const html = categoryCard(categories);
         feat.innerHTML = html;
         all.innerHTML = html;
     } catch(err) {}
 }
 
-// Khai báo hàm toàn cục cần thiết - KHÔNG GHI ĐÈ LẠI NHIỀU LẦN
+// ==============================
+// TIỆN ÍCH CHUYỂN ĐỔI DỮ LIỆU
+// ==============================
+function slugify(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D")
+        .toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+const categoryMap = {
+    "Vũ trụ": "vu-tru", "Khoa học": "khoa-hoc", "Lịch sử": "lich-su", "Địa lý": "dia-ly",
+    "Công nghệ": "cong-nghe", "Sinh học": "sinh-hoc", "Vật lý": "vat-ly", "Hóa học": "hoa-hoc",
+    "Toán học": "toan-hoc", "Y học": "y-hoc", "Máy tính": "may-tinh", "Lập trình": "lap-trinh",
+    "Trò chơi": "tro-choi", "Âm nhạc": "am-nhac", "Nghệ thuật": "nghe-thuat", "Văn hóa": "van-hoa",
+    "Động vật": "dong-vat", "Thực vật": "thuc-vat", "Con người": "con-nguoi", "Cổ vật": "co-vat",
+    "Địa điểm": "dia-diem", "Nhân vật": "nhan-vat", "Tổ chức": "to-chuc", "Sự kiện": "su-kien",
+    "Thiên văn": "thien-van", "Hành tinh": "hanh-tinh", "Ngôi sao": "ngoi-sao", "Thiên hà": "thien-ha",
+    "Hố đen": "ho-den"
+};
+
+// Chạy 1 lần để cập nhật ID cho danh mục
+async function updateCategoryIds() {
+    const snap = await getDocs(collection(db, "categories"));
+    for (const d of snap.docs) {
+        const data = d.data();
+        const name = data.name || "";
+        const id = categoryMap[name] || slugify(name);
+        
+        // ✅ Dùng doc.id gốc để cập nhật, KHÔNG bao giờ sai
+        await updateDoc(doc(db, "categories", d.id), { id });
+        console.log(`${name} → ${id}`);
+    }
+    console.log("✅ Hoàn thành cập nhật ID danh mục!");
+}
+
+
+// Khai báo hàm toàn cục
 window.changeBookPage = changeBookPage;
 window.toggleFullscreen = toggleFullscreen;
 window.closeFullscreen = closeFullscreen;
