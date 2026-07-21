@@ -76,7 +76,7 @@ export async function getCategories() {
 // LẤY CHI TIẾT WIKI
 // ===============================
 export async function getArticleBySlug(slug) {
-    const ref = doc(db, "articles", slug);
+    const ref = doc(db, "wikiArticles", slug);
     const snap = await getDoc(ref);
 
     if (!snap.exists()) return null;
