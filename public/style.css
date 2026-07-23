@@ -1538,3 +1538,645 @@ textarea::-webkit-scrollbar-corner{
     -webkit-text-fill-color:transparent;
     background-clip:text;
 }
+
+.menu-title{
+    padding:18px 20px 8px;
+    font-size:.82rem;
+    font-weight:700;
+    color:var(--text-secondary);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+}
+
+/* =====================================================
+   POLICY PAGE
+===================================================== */
+
+.policy-page{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+
+.policy-card{
+    background:var(--card);
+    border:var(--border-light);
+    border-radius:22px;
+    backdrop-filter:blur(14px);
+    overflow:hidden;
+    box-shadow:var(--shadow);
+}
+
+.policy-item{
+    display:flex;
+    align-items:center;
+    gap:16px;
+
+    padding:18px;
+
+    cursor:pointer;
+    transition:.25s;
+
+    border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.policy-item:last-child{
+    border-bottom:none;
+}
+
+.policy-item:active{
+    transform:scale(.985);
+    background:rgba(111,168,255,.08);
+}
+
+.policy-icon{
+    width:46px;
+    height:46px;
+
+    border-radius:14px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:linear-gradient(
+        135deg,
+        rgba(111,168,255,.18),
+        rgba(143,124,255,.18)
+    );
+
+    color:#8fc4ff;
+    font-size:24px;
+
+    flex-shrink:0;
+}
+
+.policy-content{
+    flex:1;
+}
+
+.policy-title{
+    font-size:16px;
+    font-weight:600;
+    color:var(--text);
+    margin-bottom:4px;
+}
+
+.policy-desc{
+    font-size:13px;
+    color:var(--text-secondary);
+}
+
+.policy-arrow{
+    font-size:20px;
+    color:var(--text-secondary);
+}
+
+/* =====================================================
+   POLICY DETAIL
+===================================================== */
+
+.policy-detail{
+
+    background:var(--card);
+
+    border:var(--border-light);
+
+    border-radius:22px;
+
+    backdrop-filter:blur(14px);
+
+    box-shadow:var(--shadow);
+
+    padding:22px;
+}
+
+.policy-detail h1{
+
+    font-size:26px;
+
+    margin-bottom:10px;
+
+    background:var(--gradient);
+
+    -webkit-background-clip:text;
+
+    -webkit-text-fill-color:transparent;
+}
+
+.policy-detail hr{
+
+    border:none;
+
+    height:1px;
+
+    background:rgba(255,255,255,.08);
+
+    margin:18px 0;
+}
+
+.policy-detail h2{
+
+    margin-top:24px;
+
+    margin-bottom:10px;
+
+    font-size:20px;
+
+    color:var(--text);
+}
+
+.policy-detail p{
+
+    line-height:1.9;
+
+    color:var(--text-secondary);
+
+    margin-bottom:12px;
+}
+
+.policy-detail ul{
+
+    padding-left:22px;
+
+    color:var(--text-secondary);
+
+    line-height:1.9;
+
+    margin-bottom:16px;
+}
+
+.policy-detail li{
+
+    margin:6px 0;
+}
+
+.policy-version{
+
+    margin-top:18px;
+
+    padding:14px;
+
+    border-radius:16px;
+
+    background:rgba(111,168,255,.08);
+
+    color:#8fc4ff;
+
+    text-align:center;
+
+    font-weight:600;
+}
+
+/* =====================================================
+   POLICY BACK BUTTON
+===================================================== */
+
+.policy-back{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    margin-bottom:16px;
+
+    padding:12px 18px;
+
+    border:none;
+
+    border-radius:18px;
+
+    background:var(--gradient);
+
+    color:#fff;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.25s;
+}
+
+.policy-back:active{
+
+    transform:scale(.95);
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media(max-width:480px){
+
+.policy-item{
+
+padding:16px;
+
+}
+
+.policy-icon{
+
+width:42px;
+height:42px;
+font-size:22px;
+
+}
+
+.policy-title{
+
+font-size:15px;
+
+}
+
+.policy-desc{
+
+font-size:12px;
+
+}
+
+.policy-detail{
+
+padding:18px;
+
+}
+
+.policy-detail h1{
+
+font-size:22px;
+
+}
+
+}
+
+/* =====================================================
+   POLICY ANIMATIONS
+===================================================== */
+
+/* Mở trang */
+@keyframes policyFade{
+    from{
+        opacity:0;
+        transform:translateY(18px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.policy-page,
+.policy-detail{
+    animation:policyFade .35s cubic-bezier(.22,1,.36,1);
+}
+
+/* Item xuất hiện lần lượt */
+@keyframes policyItem{
+    from{
+        opacity:0;
+        transform:translateX(24px);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
+}
+
+.policy-item{
+    opacity:0;
+    animation:policyItem .45s forwards;
+}
+
+.policy-item:nth-child(1){animation-delay:.02s;}
+.policy-item:nth-child(2){animation-delay:.05s;}
+.policy-item:nth-child(3){animation-delay:.08s;}
+.policy-item:nth-child(4){animation-delay:.11s;}
+.policy-item:nth-child(5){animation-delay:.14s;}
+.policy-item:nth-child(6){animation-delay:.17s;}
+.policy-item:nth-child(7){animation-delay:.20s;}
+.policy-item:nth-child(8){animation-delay:.23s;}
+.policy-item:nth-child(9){animation-delay:.26s;}
+
+/* Hover / Active */
+.policy-item{
+    position:relative;
+    overflow:hidden;
+}
+
+.policy-item::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(
+        120deg,
+        transparent,
+        rgba(255,255,255,.08),
+        transparent
+    );
+    transform:translateX(-120%);
+    transition:.6s;
+}
+
+.policy-item:hover::before{
+    transform:translateX(120%);
+}
+
+.policy-item:hover{
+    background:rgba(111,168,255,.08);
+    transform:translateX(6px);
+    box-shadow:0 8px 24px rgba(111,168,255,.12);
+}
+
+.policy-item:active{
+    transform:scale(.97);
+}
+
+/* Icon */
+.policy-icon{
+    transition:.3s;
+}
+
+.policy-item:hover .policy-icon{
+    transform:rotate(-8deg) scale(1.08);
+    box-shadow:0 0 20px rgba(111,168,255,.28);
+}
+
+/* Mũi tên */
+.policy-arrow{
+    transition:.3s;
+}
+
+.policy-item:hover .policy-arrow{
+    transform:translateX(6px);
+    color:#8fc4ff;
+}
+
+/* Nút Back */
+.policy-back{
+    position:relative;
+    overflow:hidden;
+}
+
+.policy-back::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(
+        120deg,
+        transparent,
+        rgba(255,255,255,.25),
+        transparent
+    );
+    transform:translateX(-120%);
+    transition:.6s;
+}
+
+.policy-back:hover::before{
+    transform:translateX(120%);
+}
+
+.policy-back:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 30px rgba(111,168,255,.25);
+}
+
+.policy-back:active{
+    transform:scale(.95);
+}
+
+/* Trang chi tiết */
+.policy-detail>*{
+    opacity:0;
+    transform:translateY(10px);
+    animation:detailShow .45s forwards;
+}
+
+.policy-detail>*:nth-child(1){animation-delay:.05s;}
+.policy-detail>*:nth-child(2){animation-delay:.10s;}
+.policy-detail>*:nth-child(3){animation-delay:.15s;}
+.policy-detail>*:nth-child(4){animation-delay:.20s;}
+.policy-detail>*:nth-child(5){animation-delay:.25s;}
+
+@keyframes detailShow{
+    to{
+        opacity:1;
+        transform:none;
+    }
+}
+
+/* ==============================
+   ✅ SKELETON LOADING - ĐỒNG BỘ CHỦ ĐỀ VŨ TRỤ
+============================== */
+.skeleton {
+    /* Màu nền chạy hiệu ứng phù hợp nền đậm */
+    background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0.04) 0%,
+        rgba(111,168,255,0.12) 50%,
+        rgba(255,255,255,0.04) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.4s infinite ease-in-out;
+    border-radius: var(--radius);
+}
+
+/* Chế độ tối – tăng độ tương phản nhẹ */
+[data-theme="dark"] .skeleton {
+    background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0.05) 0%,
+        rgba(143,124,255,0.15) 50%,
+        rgba(255,255,255,0.05) 100%
+    );
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ------------------------------
+   SKELETON CHO THẺ BÀI VIẾT
+------------------------------ */
+.skeleton-card {
+    padding: 16px;
+    border-radius: var(--radius);
+    background: var(--card);
+    margin-bottom: 12px;
+    border: var(--border-light);
+}
+.skeleton-title {
+    height: 20px;
+    width: 70%;
+    margin-bottom: 12px;
+}
+.skeleton-desc {
+    height: 14px;
+    width: 100%;
+    margin-bottom: 8px;
+}
+.skeleton-desc:last-child {
+    width: 85%;
+}
+.skeleton-meta {
+    height: 12px;
+    width: 50%;
+    margin-top: 12px;
+}
+
+/* ------------------------------
+   SKELETON CHO BÀI VIẾT CHI TIẾT
+------------------------------ */
+.skeleton-article {
+    padding: 16px;
+}
+.skeleton-article-title {
+    height: 28px;
+    width: 80%;
+    margin-bottom: 20px;
+}
+.skeleton-article-meta {
+    height: 14px;
+    width: 60%;
+    margin-bottom: 24px;
+}
+.skeleton-article-line {
+    height: 16px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+.skeleton-article-line:nth-child(4n) { width: 90%; }
+.skeleton-article-line:nth-child(5n) { width: 75%; }
+.skeleton-article-line:last-child { width: 60%; }
+
+/* ------------------------------
+   SKELETON CHO DANH MỤC
+------------------------------ */
+.skeleton-cate {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    background: var(--card);
+    border: var(--border-light);
+}
+.skeleton-cate-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+}
+.skeleton-cate-text { flex: 1; }
+.skeleton-cate-name {
+    height: 16px;
+    width: 50%;
+    margin-bottom: 6px;
+}
+.skeleton-cate-count {
+    height: 12px;
+    width: 30%;
+}
+
+/* ------------------------------
+   TỐI ƯU CHO MÁY CẤU HÌNH YẾU
+------------------------------ */
+.low-end .skeleton {
+    animation-duration: 0.01ms !important;
+    background: rgba(255,255,255,0.06);
+}
+
+/* ===============================
+   MARKDOWN TABLE - COSMIC STYLE
+=============================== */
+
+.md-table{
+    width:100%;
+    margin:18px 0;
+    border-collapse:collapse;
+    overflow:hidden;
+
+    background:var(--card);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:16px;
+
+    color:var(--text);
+}
+
+.md-table th,
+.md-table td{
+    padding:12px 14px;
+    border:1px solid rgba(255,255,255,.06);
+    text-align:left;
+    vertical-align:top;
+}
+
+/* Tiêu đề bảng */
+.md-table th{
+    background:linear-gradient(
+        135deg,
+        rgba(111,168,255,.18),
+        rgba(143,124,255,.16)
+    );
+    color:#dcecff;
+    font-weight:600;
+}
+
+/* Dòng dữ liệu */
+.md-table td{
+    background:rgba(255,255,255,.025);
+    color:var(--text-secondary);
+}
+
+/* Xen kẽ màu */
+.md-table tbody tr:nth-child(even) td{
+    background:rgba(255,255,255,.04);
+}
+
+/* Hover */
+.md-table tbody tr:hover td{
+    background:rgba(111,168,255,.08);
+    transition:.2s;
+}
+
+/* Dark mode */
+[data-theme="dark"] .md-table{
+    border-color:rgba(255,255,255,.08);
+}
+
+[data-theme="dark"] .md-table th{
+    background:linear-gradient(
+        135deg,
+        rgba(111,168,255,.22),
+        rgba(143,124,255,.18)
+    );
+}
+
+[data-theme="dark"] .md-table td{
+    background:rgba(255,255,255,.03);
+}
+
+/* Tiêu đề phụ 5.1, 5.2... */
+/* Tiêu đề phụ 5.1, 5.2, 5.3... */
+.md-sub-heading {
+  margin-top: 1.4rem;   /* Khoảng cách trên */
+  margin-bottom: 0.5rem; /* Khoảng cách dưới */
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text-main);
+}
+
+/* Khoảng cách chung cho các cấp tiêu đề */
+.policy-content-render h1,
+.policy-content-render h2,
+.policy-content-render h3,
+.policy-content-render h4,
+.policy-content-render h5,
+.policy-content-render h6 {
+  margin-top: 1.8rem;
+  margin-bottom: 0.7rem;
+  line-height: 1.4;
+}
+

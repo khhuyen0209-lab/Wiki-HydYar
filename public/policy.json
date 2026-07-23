@@ -1,0 +1,46 @@
+{
+  "privacy": {
+    "title": "Chính sách bảo mật",
+    "file": "policies/privacy.md"
+  },
+
+  "copyright": {
+    "title": "Chính sách bản quyền",
+    "file": "policies/copyright.md"
+  },
+
+  "terms": {
+    "title": "Điều khoản sử dụng",
+    "file": "policies/terms.md"
+  },
+
+  "standards": {
+    "title": "Tiêu chuẩn nội dung",
+    "file": "policies/standards.md"
+  },
+
+  "report": {
+    "title": "Báo cáo vi phạm",
+    "file": "policies/report.md"
+  },
+
+  "contact": {
+    "title": "Liên hệ & Hỗ trợ",
+    "file": "policies/contact.md"
+  },
+
+  "about": {
+    "title": "Giới thiệu HydYar Wiki",
+    "file": "policies/about.md"
+  },
+
+  "license": {
+    "title": "Giấy phép & Mã nguồn mở",
+    "file": "policies/license.md"
+  },
+
+  "version": {
+    "title": "Phiên bản ứng dụng",
+    "file": "policies/version.md"
+  }
+}
