@@ -62,9 +62,27 @@ community: {
 profile: {
     path: "/tai-khoan",
     async handler() {
-        document.querySelectorAll(".nav-item,.page").forEach(el => el.classList.remove("active"));
-        document.querySelector('[data-page="profile"]')?.classList.add("active");
-        document.getElementById("page-profile")?.classList.add("active");
+        document.querySelectorAll(".nav-item,.page")
+            .forEach(el => el.classList.remove("active"));
+
+        document.querySelector('[data-page="profile"]')
+            ?.classList.add("active");
+
+        const page = document.getElementById("page-profile");
+
+        if (page && appStatus.state.profileOriginalHTML) {
+            page.innerHTML = appStatus.state.profileOriginalHTML;
+        }
+
+        page?.classList.add("active");
+
+        // Gắn lại sự kiện sau khi thay innerHTML
+        document.getElementById("wikiPolicy")
+            ?.addEventListener("click", () => HydYarWiki.navigate("policy"));
+
+        appStatus.ui.initDarkMode();
+        appStatus.ui.initPerformance();
+
         window.scrollTo(0, 0);
     }
 },
@@ -264,7 +282,48 @@ profile: {
     policy:{
       async loadPolicyData(){if(Object.keys(appStatus.state.policyData).length)return appStatus.state.policyData;try{const r=await fetch("./policy.json",{cache:"no-cache"});if(!r.ok)throw new Error("Không đọc được file");appStatus.state.policyData=await r.json();return appStatus.state.policyData;}catch(e){console.error("Lỗi policy.json:",e);return appStatus.state.policyData={"chinh-sach-bao-mat":{title:"Chính sách bảo mật"},"chinh-sach-ban-quyen":{title:"Chính sách bản quyền"},"dieu-khoan-su-dung":{title:"Điều khoản sử dụng"},"tieu-chuan-noi-dung":{title:"Tiêu chuẩn nội dung"},"bao-cao-vi-pham":{title:"Báo cáo vi phạm"},"lien-he-ho-tro":{title:"Liên hệ & Hỗ trợ"},"gioi-thieu-hydyar-wiki":{title:"Giới thiệu HydYar Wiki"},"giay-phep-ma-nguon-mo":{title:"Giấy phép & Mã nguồn mở"},"phien-ban-ung-dung":{title:"Phiên bản ứng dụng"}};}},
       async loadPolicyContent(id){if(appStatus.state.policyContentCache[id])return appStatus.state.policyContentCache[id];try{const s=await getDoc(doc(db,"policies",id));if(!s.exists())return"";const c=s.data().content||"";appStatus.state.policyContentCache[id]=c;return c;}catch(e){console.warn(`Không tải được: ${id}`,e);return"";}},
-      async openPolicyPage(){await this.loadPolicyData();const p=document.getElementById("page-profile");if(!appStatus.state.profileOriginalHTML)appStatus.state.profileOriginalHTML=p.innerHTML;p.innerHTML=`<button class="policy-back" onclick="HydYarWiki.navigate('policy')">${appStatus.ui.icon("solar:arrow-left-bold")} Chính sách của HydYar Wiki</button><div class="policy-page"><div class="policy-card">${Object.entries(appStatus.state.policyData).map(([k,i])=>`<div class="policy-item" data-id="${appStatus.markdown.escapeHTML(k)}"><div class="policy-icon"><iconify-icon icon="solar:document-text-bold"></iconify-icon></div><div class="policy-content"><div class="policy-title">${appStatus.markdown.escapeHTML(i.title||k)}</div></div><div class="policy-arrow">${appStatus.ui.icon("solar:arrow-right-bold")}</div></div>`).join("")}</div></div>`;p.querySelectorAll(".policy-item").forEach(i=>i.onclick=()=>HydYarWiki.navigate("policy-detail",{id:i.dataset.id}));appStatus.seo.updatePolicy({title:"Chính sách HydYar Wiki"});scrollTo(0,0);},
+      async openPolicyPage() {
+    await this.loadPolicyData();
+    const p = document.getElementById("page-profile");
+
+    if (!appStatus.state.profileOriginalHTML)
+        appStatus.state.profileOriginalHTML = p.innerHTML;
+
+    p.innerHTML = `
+        <button class="policy-back"
+                onclick="HydYarWiki.navigate('profile')">
+            ${appStatus.ui.icon("solar:arrow-left-bold")}
+            Chính sách của HydYar Wiki
+        </button>
+
+        <div class="policy-page">
+            <div class="policy-card">
+                ${Object.entries(appStatus.state.policyData).map(([k,i])=>`
+                    <div class="policy-item" data-id="${appStatus.markdown.escapeHTML(k)}">
+                        <div class="policy-icon">
+                            <iconify-icon icon="solar:document-text-bold"></iconify-icon>
+                        </div>
+                        <div class="policy-content">
+                            <div class="policy-title">
+                                ${appStatus.markdown.escapeHTML(i.title||k)}
+                            </div>
+                        </div>
+                        <div class="policy-arrow">
+                            ${appStatus.ui.icon("solar:arrow-right-bold")}
+                        </div>
+                    </div>
+                `).join("")}
+            </div>
+        </div>
+    `;
+
+    p.querySelectorAll(".policy-item")
+        .forEach(i => i.onclick = () =>
+            HydYarWiki.navigate("policy-detail", { id: i.dataset.id }));
+
+    appStatus.seo.updatePolicy({ title: "Chính sách HydYar Wiki" });
+    scrollTo(0,0);
+},
       async openPolicyDetail(id) {
     const p = appStatus.state.policyData[id];
     if (!p) return;
