@@ -22,9 +22,14 @@
                 <span class="logo-text">Wiki</span>
             </div>
             <div class="header-search">
-                <iconify-icon icon="solar:magnifer-bold"></iconify-icon>
-                <input type="text" placeholder="Tìm kiếm...">
-            </div>
+    <iconify-icon icon="solar:magnifer-bold"></iconify-icon>
+
+    <input id="searchInput" type="text" placeholder="Tìm kiếm...">
+
+    <button class="search-close" id="searchClose">
+        <iconify-icon icon="solar:close-circle-bold"></iconify-icon>
+    </button>
+</div>
             <div class="header-actions">
                 <button class="icon-btn">
                     <iconify-icon icon="solar:bell-bold"></iconify-icon>
@@ -81,21 +86,21 @@
 
         <!-- Tìm kiếm -->
         <section class="page" id="page-search">
-            <div class="page-header">
-                <div class="large-search">
-                    <iconify-icon icon="solar:magnifer-bold"></iconify-icon>
-                    <input type="text" id="searchInput" placeholder="Nhập từ khóa cần tìm...">
-                </div>
-                <div class="search-filters">
-                    <button class="filter-btn active">Tất cả</button>
-                    <button class="filter-btn">Mới nhất</button>
-                    <button class="filter-btn">Xem nhiều</button>
-                    <button class="filter-btn">Độ tin cậy cao</button>
-                </div>
-                <div class="search-history" id="searchHistory"></div>
-                <div class="search-results" id="searchResults"></div>
-            </div>
-        </section>
+    <div class="page-header">
+
+        <div class="search-filters">
+            <button class="filter-btn active">Tất cả</button>
+            <button class="filter-btn">Mới nhất</button>
+            <button class="filter-btn">Xem nhiều</button>
+            <button class="filter-btn">Độ tin cậy cao</button>
+        </div>
+
+        <div class="search-history" id="searchHistory"></div>
+
+        <div class="search-results" id="searchResults"></div>
+
+    </div>
+</section>
 
         <!-- Cộng đồng -->
         <section class="page" id="page-community">

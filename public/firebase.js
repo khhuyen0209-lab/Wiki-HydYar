@@ -125,9 +125,34 @@ export async function getArticleBySlug(slug) {
 // TÌM KIẾM / BÀI CỘNG ĐỒNG / USER
 // ===============================
 export async function searchArticles(keyword){
-    const snap = await getDocs(collection(db,"wikiArticles"));
-    return snap.docs.map(d=>({id:d.id,...d.data()}))
-        .filter(article=> article.title?.toLowerCase().includes(keyword.toLowerCase()));
+
+    keyword=keyword.toLowerCase();
+
+    const snap=await getDocs(collection(db,"wikiArticles"));
+
+    return snap.docs
+        .map(d=>({
+            id:d.id,
+            ...d.data()
+        }))
+        .filter(article=>{
+
+            return (
+
+                article.title?.toLowerCase().includes(keyword)
+
+                ||
+
+                article.desc?.toLowerCase().includes(keyword)
+
+                ||
+
+                article.keywords?.toLowerCase().includes(keyword)
+
+            );
+
+        });
+
 }
 export async function getCommunityPosts(){
     const q=query(collection(db,"communityPosts"), orderBy("createdAt","desc"), limit(20));

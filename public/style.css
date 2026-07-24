@@ -130,12 +130,12 @@ select,
     border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
-.header-inner {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
+.header-inner{
+    height:100%;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:0 16px;
 }
 
 .logo-text {
@@ -144,17 +144,48 @@ select,
     color: white;
 }
 
-.header-search {
-    display: flex;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 20px;
-    padding: 8px 12px;
-    gap: 6px;
-    flex: 1;
-    margin: 0 12px;
-    backdrop-filter: blur(12px);
+.header-search{
+    flex:1;
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    min-width:0;
+
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:18px;
+    padding:0 14px;
+    height:46px;
+
+    transition:
+        flex .35s cubic-bezier(.22,1,.36,1),
+        margin .35s cubic-bezier(.22,1,.36,1),
+        transform .35s cubic-bezier(.22,1,.36,1);
+}
+
+.header-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    overflow:hidden;
+    transition:
+        width .35s cubic-bezier(.22,1,.36,1),
+        opacity .25s ease,
+        transform .35s cubic-bezier(.22,1,.36,1);
+}
+
+/* Khi tìm kiếm */
+.header.searching .header-search{
+    flex:999;
+    margin-right:0;
+}
+
+.header.searching .header-actions{
+    width:0;
+    opacity:0;
+    transform:translateX(20px);
+    pointer-events:none;
 }
 
 .header-search iconify-icon {
@@ -178,6 +209,22 @@ select,
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+.search-close{
+    width:0;
+    opacity:0;
+    overflow:hidden;
+    border:none;
+    background:none;
+    color:#fff;
+    transition:.25s;
+    transform: translateY(2px);
+}   
+
+.header.searching .search-close{
+    width:32px;
+    opacity:1;
 }
 
 .icon-btn {
@@ -206,6 +253,30 @@ select,
     object-fit: cover;
     border: 2px solid rgba(255, 255, 255, 0.25);
     box-shadow: 0 8px 18px rgba(111,168,255,0.25);
+}
+
+.logo{
+    transition:.35s cubic-bezier(.22,1,.36,1);
+}
+
+.header.searching .logo{
+    width:0;
+    opacity:0;
+    transform:translateX(-20px);
+    overflow:hidden;
+    pointer-events:none;
+}
+
+.header.searching .header-search{
+    flex:999;
+}
+
+.header.searching .header-actions{
+    width:0;
+    opacity:0;
+    transform:translateX(20px);
+    overflow:hidden;
+    pointer-events:none;
 }
 
 /* =============================================
@@ -725,19 +796,77 @@ select,
     font-size: 22px;
 }
 
-/* =============================================
-   SKELETON LOADING
-============================================= */
-.skeleton {
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,.07), rgba(255,255,255,.12), rgba(255,255,255,.07), transparent);
-    background-size: 200% 100%;
-    animation: skeleton-loading 1.4s infinite;
-    border-radius: var(--radius);
+/* ===============================
+   SKELETON HIỆU ỨNG CAO CẤP
+=============================== */
+
+.skeleton{
+    position:relative;
+    overflow:hidden;
+
+    background:rgba(255,255,255,.05);
+
+    border-radius:var(--radius);
 }
 
-@keyframes skeleton-loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+/* Sóng sáng chạy */
+.skeleton::before{
+    content:"";
+    position:absolute;
+    inset:0;
+
+    background:linear-gradient(
+        110deg,
+        transparent 15%,
+        rgba(255,255,255,.04) 30%,
+        rgba(111,168,255,.35) 45%,
+        rgba(143,124,255,.28) 55%,
+        rgba(255,255,255,.04) 70%,
+        transparent 85%
+    );
+
+    transform:translateX(-150%);
+    animation:skeletonWave 3s linear infinite;
+}
+
+/* Glow nhẹ */
+.skeleton::after{
+    content:"";
+    position:absolute;
+    inset:0;
+
+    background:radial-gradient(
+        circle,
+        rgba(111,168,255,.10),
+        transparent 70%
+    );
+
+    animation:skeletonPulse 2s ease-in-out infinite;
+}
+
+@keyframes skeletonWave{
+    from{
+        transform:translateX(-150%);
+    }
+    to{
+        transform:translateX(150%);
+    }
+}
+
+@keyframes skeletonPulse{
+    0%,100%{
+        opacity:.4;
+        transform:scale(1);
+    }
+    50%{
+        opacity:.9;
+        transform:scale(1.08);
+    }
+}
+
+.low-end .skeleton::before,
+.low-end .skeleton::after{
+    animation:none;
 }
 
 /* ===== TỐI ƯU CHO TẤT CẢ MÁY & TRÌNH DUYỆT ===== */
@@ -2180,3 +2309,94 @@ font-size:22px;
   line-height: 1.4;
 }
 
+/* ===============================
+   SEARCH HISTORY
+=============================== */
+
+.search-results{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+
+.search-history{
+    margin-top:20px;
+    animation:fadeIn .25s ease;
+}
+
+.search-divider{
+    width:100%;
+    height:1px;
+    margin:18px 0;
+    border-radius:999px;
+    background:linear-gradient(
+        90deg,
+        transparent,
+        rgba(111,168,255,.35),
+        transparent
+    );
+}
+
+.search-history-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    margin-bottom:14px;
+
+    color:var(--text-secondary);
+    font-size:14px;
+    font-weight:600;
+}
+
+.search-history-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+.history-item{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:10px 16px;
+
+    border:none;
+    border-radius:999px;
+
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.08);
+
+    color:var(--primary-blue);
+    font-size:14px;
+    font-weight:500;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+}
+
+.history-item:hover{
+    background:rgba(111,168,255,.18);
+    border-color:rgba(111,168,255,.35);
+
+    color:#b9d9ff;
+
+    transform:translateY(-2px);
+
+    box-shadow:
+        0 8px 22px rgba(111,168,255,.18);
+}
+
+.history-item:active{
+    transform:scale(.95);
+}
+
+.low-end .history-item{
+    backdrop-filter:none;
+    -webkit-backdrop-filter:none;
+}
