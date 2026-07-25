@@ -2,10 +2,20 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const admin = require("firebase-admin");
+const cors = require("cors");
 
 const app = express();
 
+
+// ==============================
+// CORS + JSON
+// ==============================
+app.use(cors({
+    origin: "*"
+}));
+
 app.use(express.json());
+
 
 // ==============================
 // FIREBASE ADMIN
@@ -19,6 +29,7 @@ admin.initializeApp({
 });
 
 const db = admin.firestore();
+
 
 // ==============================
 // FILE TĨNH
@@ -61,6 +72,7 @@ app.get("/api/featured", async (req, res) => {
     }
 });
 
+
 // ---------- Tăng view ----------
 app.post("/api/article/:id/view", async (req, res) => {
 
@@ -94,6 +106,7 @@ app.post("/api/article/:id/view", async (req, res) => {
 // =====================================================
 // SEO BÀI VIẾT
 // =====================================================
+
 app.get("/:category/:slug", async (req, res) => {
 
     const { slug } = req.params;
@@ -124,15 +137,18 @@ app.get("/:category/:slug", async (req, res) => {
             "utf8"
         );
 
+
         html = html.replace(
             /<title>.*?<\/title>/,
             `<title>${title}</title>`
         );
 
+
         html = html.replace(
             /<meta name="description"[^>]*>/,
             `<meta name="description" content="${desc}">`
         );
+
 
         const meta = `
 <meta property="og:type" content="article">

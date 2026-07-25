@@ -46,6 +46,15 @@ function setCachedData(key, data, persist = false) {
 // ===============================
 // WIKI NỔI BẬT
 // ===============================
+// ===============================
+// API CONFIG
+// ===============================
+const API_URL = "https://wiki-hydyar.up.railway.app";
+
+
+// ===============================
+// WIKI NỔI BẬT
+// ===============================
 export async function getFeaturedArticles() {
 
     const cacheKey = "featuredArticles";
@@ -53,15 +62,47 @@ export async function getFeaturedArticles() {
     const cached = getCachedData(cacheKey);
     if (cached) return cached;
 
-    const res = await fetch("/api/featured");
-    const json = await res.json();
+    try {
 
-    if (!json.success)
-        throw new Error("Không tải được bài viết");
+        const res = await fetch(
+            `${API_URL}/api/featured`,
+            {
+                method: "GET",
+                headers: {
+                    "Accept": "application/json"
+                }
+            }
+        );
 
-    setCachedData(cacheKey, json.data, true);
+        const text = await res.text();
 
-    return json.data;
+        console.log("API RESPONSE:", text);
+
+        const json = JSON.parse(text);
+
+        if (!json.success) {
+            throw new Error("API trả về lỗi");
+        }
+
+        setCachedData(
+            cacheKey,
+            json.data,
+            true
+        );
+
+        return json.data;
+
+
+    } catch(err) {
+
+        console.error(
+            "Lỗi tải wiki nổi bật:",
+            err
+        );
+
+        return [];
+
+    }
 }
 
 // ===============================
