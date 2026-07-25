@@ -523,13 +523,29 @@ if (header && searchInput) {
     async fetchLatest() { return getLatestArticles(); },
     async fetchBySlug(id) { return getArticleBySlug(id); },
     async incrementViews(id) {
-      const key = `viewed_${id}`;
-      if (localStorage.getItem(key)) return;
-      localStorage.setItem(key, "1");
-      setTimeout(() => localStorage.removeItem(key), 86400000);
-      try { await updateDoc(doc(db, "wikiArticles", id), { views: increment(1) }); }
-      catch (_) {}
+
+    const key = `viewed_${id}`;
+
+    if(localStorage.getItem(key))
+        return;
+
+    localStorage.setItem(key,"1");
+
+    setTimeout(()=>{
+        localStorage.removeItem(key);
+    },86400000);
+
+    try{
+
+        await fetch(`/api/article/${id}/view`,{
+            method:"POST"
+        });
+
+    }catch(e){
+        console.error(e);
     }
+
+}
   },
 
   // ==========================================

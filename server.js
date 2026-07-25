@@ -23,6 +23,35 @@ const db = admin.firestore();
 // ==============================
 app.use(express.static(path.join(__dirname, "public")));
 
+
+// ==============================
+// API: Tăng lượt xem
+// ==============================
+app.post("/api/article/:id/view", async (req, res) => {
+    try {
+        const id = req.params.id;
+
+        const ref = db.collection("wikiArticles").doc(id);
+
+        await ref.update({
+            views: admin.firestore.FieldValue.increment(1)
+        });
+
+        res.json({
+            success: true
+        });
+
+    } catch (e) {
+
+        console.error(e);
+
+        res.status(500).json({
+            success: false
+        });
+
+    }
+});
+
 // ==============================
 // SEO ĐỘNG CHO BÀI VIẾT
 // ==============================
@@ -78,6 +107,39 @@ ${ogImage ? `<meta name="twitter:image" content="${ogImage}">` : ""}
     } catch (err) {
         console.error(err);
         res.sendFile(path.join(__dirname, "public", "index.html"));
+    }
+});
+
+// ==============================
+// API - BÀI VIẾT NỔI BẬT
+// ==============================
+app.get("/api/featured", async (req, res) => {
+    try {
+
+        const snap = await db.collection("wikiArticles")
+            .where("featured", "==", true)
+            .limit(6)
+            .get();
+
+        const data = snap.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        res.json({
+            success: true,
+            data
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false,
+            message: "Lỗi server"
+        });
+
     }
 });
 

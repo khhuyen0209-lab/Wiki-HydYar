@@ -6,7 +6,7 @@ from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
 import {
     getFirestore, collection, getDocs, query, where,
-    orderBy, limit, doc, getDoc, updateDoc
+    orderBy, limit, doc, getDoc,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -47,15 +47,24 @@ function setCachedData(key, data, persist = false) {
 // WIKI NỔI BẬT
 // ===============================
 export async function getFeaturedArticles(){
-    const cacheKey = "featuredArticles";
-    const cached = getCachedData(cacheKey);
-    if (cached) return cached;
 
-    const q = query(collection(db,"wikiArticles"), where("featured","==",true), limit(6));
-    const snap = await getDocs(q);
-    const result = snap.docs.map(d=>({id:d.id,...d.data()}));
-    setCachedData(cacheKey, result, true);
-    return result;
+    const cacheKey = "featuredArticles";
+
+    const cached = getCachedData(cacheKey);
+
+    if(cached) return cached;
+
+    const res = await fetch("/api/featured");
+
+    const json = await res.json();
+
+    if(!json.success)
+        throw new Error("Không tải được bài viết");
+
+    setCachedData(cacheKey, json.data, true);
+
+    return json.data;
+
 }
 
 // ===============================
