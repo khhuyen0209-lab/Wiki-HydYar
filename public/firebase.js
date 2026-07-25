@@ -46,25 +46,22 @@ function setCachedData(key, data, persist = false) {
 // ===============================
 // WIKI NỔI BẬT
 // ===============================
-export async function getFeaturedArticles(){
+export async function getFeaturedArticles() {
 
     const cacheKey = "featuredArticles";
 
     const cached = getCachedData(cacheKey);
-
-    if(cached) return cached;
+    if (cached) return cached;
 
     const res = await fetch("/api/featured");
-
     const json = await res.json();
 
-    if(!json.success)
+    if (!json.success)
         throw new Error("Không tải được bài viết");
 
     setCachedData(cacheKey, json.data, true);
 
     return json.data;
-
 }
 
 // ===============================
