@@ -5,6 +5,8 @@ const admin = require("firebase-admin");
 
 const app = express();
 
+app.use(express.json());
+
 // ==============================
 // FIREBASE ADMIN
 // ==============================
@@ -24,14 +26,49 @@ const db = admin.firestore();
 app.use(express.static(path.join(__dirname, "public")));
 
 
-// ==============================
-// API: Tăng lượt xem
-// ==============================
-app.post("/api/article/:id/view", async (req, res) => {
-    try {
-        const id = req.params.id;
+// =====================================================
+// API
+// =====================================================
 
-        const ref = db.collection("wikiArticles").doc(id);
+// ---------- Bài nổi bật ----------
+app.get("/api/featured", async (req, res) => {
+    try {
+
+        const snap = await db.collection("wikiArticles")
+            .where("featured", "==", true)
+            .limit(6)
+            .get();
+
+        const data = snap.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        res.json({
+            success: true,
+            data
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false,
+            message: "Lỗi server"
+        });
+
+    }
+});
+
+// ---------- Tăng view ----------
+app.post("/api/article/:id/view", async (req, res) => {
+
+    try {
+
+        const ref = db
+            .collection("wikiArticles")
+            .doc(req.params.id);
 
         await ref.update({
             views: admin.firestore.FieldValue.increment(1)
@@ -41,36 +78,45 @@ app.post("/api/article/:id/view", async (req, res) => {
             success: true
         });
 
-    } catch (e) {
+    } catch (err) {
 
-        console.error(e);
+        console.error(err);
 
         res.status(500).json({
             success: false
         });
 
     }
+
 });
 
-// ==============================
-// SEO ĐỘNG CHO BÀI VIẾT
-// ==============================
+
+// =====================================================
+// SEO BÀI VIẾT
+// =====================================================
 app.get("/:category/:slug", async (req, res) => {
+
     const { slug } = req.params;
 
     try {
-        const docSnap = await db.collection("wikiArticles").doc(slug).get();
+
+        const docSnap = await db
+            .collection("wikiArticles")
+            .doc(slug)
+            .get();
 
         let title = "Wiki HydYar - Tri thức mở rộng";
         let desc = "Kho tri thức mở rộng";
         let ogImage = "";
 
         if (docSnap.exists) {
+
             const data = docSnap.data();
 
             title = `${data.title || title} | Wiki HydYar`;
             desc = data.desc || desc;
             ogImage = data.image || "";
+
         }
 
         let html = fs.readFileSync(
@@ -105,47 +151,22 @@ ${ogImage ? `<meta name="twitter:image" content="${ogImage}">` : ""}
         res.send(html);
 
     } catch (err) {
-        console.error(err);
-        res.sendFile(path.join(__dirname, "public", "index.html"));
-    }
-});
-
-// ==============================
-// API - BÀI VIẾT NỔI BẬT
-// ==============================
-app.get("/api/featured", async (req, res) => {
-    try {
-
-        const snap = await db.collection("wikiArticles")
-            .where("featured", "==", true)
-            .limit(6)
-            .get();
-
-        const data = snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-
-        res.json({
-            success: true,
-            data
-        });
-
-    } catch (err) {
 
         console.error(err);
 
-        res.status(500).json({
-            success: false,
-            message: "Lỗi server"
-        });
+        res.sendFile(
+            path.join(__dirname, "public", "index.html")
+        );
 
     }
+
 });
 
-// ==============================
-// ROUTE SPA
-// ==============================
+
+// =====================================================
+// SPA
+// =====================================================
+
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
@@ -162,19 +183,19 @@ app.get("/profile", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Route danh mục (vd: /space)
 app.get("/:category", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Fallback Express 5
 app.use((req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// ==============================
+
+// =====================================================
 // START
-// ==============================
+// =====================================================
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
