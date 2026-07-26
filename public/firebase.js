@@ -12,7 +12,7 @@ import {
 import {
   getAuth,
   GoogleAuthProvider,
-  signInWithRedirect,
+  signInWithPopup,
   getRedirectResult,
   onAuthStateChanged,
   signOut
@@ -27,13 +27,15 @@ const firebaseConfig = {
     appId: "1:592832721653:web:13c99da7d18f4853f04bbc"
 };
 
-
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
-
+// ===============================
+// ✅ API CONFIG - ĐÃ EXPORT
+// ===============================
+export const API_URL = "https://wiki-hydyar.up.railway.app";
 
 // ===============================
 // ✅ KHÔI PHỤC CACHE HOÀN CHỈNH
@@ -42,14 +44,14 @@ const CACHE_TIME = 5 * 60 * 1000; // 5 phút
 const dataCache = new Map();
 const wikiMetaCache = JSON.parse(sessionStorage.getItem("wikiMetaCache") || "{}");
 
-function getCachedData(key) {
+export function getCachedData(key) {
     const cached = dataCache.get(key);
     if (cached && Date.now() - cached.time < CACHE_TIME) return cached.data;
     if (wikiMetaCache[key] && Date.now() - wikiMetaCache[key].time < CACHE_TIME) return wikiMetaCache[key].data;
     return null;
 }
 
-function setCachedData(key, data, persist = false) {
+export function setCachedData(key, data, persist = false) {
     dataCache.set(key, { data, time: Date.now() });
     if (persist) {
         wikiMetaCache[key] = { data, time: Date.now() };
@@ -58,64 +60,50 @@ function setCachedData(key, data, persist = false) {
 }
 
 // ===============================
-// WIKI NỔI BẬT
+// ✅ ĐỒNG BỘ TOKEN VỀ SERVER - ĐÃ EXPORT
 // ===============================
-// ===============================
-// API CONFIG
-// ===============================
-const API_URL = "https://wiki-hydyar.up.railway.app";
-
+export async function sendTokenToServer(user) {
+  if (!user) return null;
+  try {
+    const token = await user.getIdToken(true);
+    const res = await fetch(`${API_URL}/api/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token })
+    });
+    return await res.json();
+  } catch (err) {
+    console.warn("Đồng bộ server thất bại:", err);
+    return null;
+  }
+}
 
 // ===============================
 // WIKI NỔI BẬT
 // ===============================
 export async function getFeaturedArticles() {
-
     const cacheKey = "featuredArticles";
-
     const cached = getCachedData(cacheKey);
     if (cached) return cached;
 
     try {
-
         const res = await fetch(
             `${API_URL}/api/featured`,
-            {
-                method: "GET",
-                headers: {
-                    "Accept": "application/json"
-                }
-            }
+            { method: "GET", headers: { "Accept": "application/json" } }
         );
 
         const text = await res.text();
-
         console.log("API RESPONSE:", text);
-
         const json = JSON.parse(text);
 
-        if (!json.success) {
-            throw new Error("API trả về lỗi");
-        }
+        if (!json.success) throw new Error("API trả về lỗi");
 
-        setCachedData(
-            cacheKey,
-            json.data,
-            true
-        );
-
+        setCachedData(cacheKey, json.data, true);
         return json.data;
 
-
     } catch(err) {
-
-        console.error(
-            "Lỗi tải wiki nổi bật:",
-            err
-        );
-
+        console.error("Lỗi tải wiki nổi bật:", err);
         return [];
-
     }
 }
 
@@ -186,38 +174,23 @@ export async function getArticleBySlug(slug) {
 // TÌM KIẾM / BÀI CỘNG ĐỒNG / USER
 // ===============================
 export async function searchArticles(keyword){
-
     keyword=keyword.toLowerCase();
-
     const snap=await getDocs(collection(db,"wikiArticles"));
-
     return snap.docs
-        .map(d=>({
-            id:d.id,
-            ...d.data()
-        }))
+        .map(d=>({id:d.id,...d.data()}))
         .filter(article=>{
-
             return (
-
                 article.title?.toLowerCase().includes(keyword)
-
-                ||
-
-                article.desc?.toLowerCase().includes(keyword)
-
-                ||
-
-                article.keywords?.toLowerCase().includes(keyword)
-
+                || article.desc?.toLowerCase().includes(keyword)
+                || article.keywords?.toLowerCase().includes(keyword)
             );
-
         });
-
 }
+
 export async function getCommunityPosts(){
     const q=query(collection(db,"communityPosts"), orderBy("createdAt","desc"), limit(20));
     const snap = await getDocs(q);
     return snap.docs.map(d=>({id:d.id,...d.data()}));
 }
+
 export async function getCurrentUserData(){ return null; }

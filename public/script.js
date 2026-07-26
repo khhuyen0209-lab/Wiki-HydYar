@@ -6,14 +6,22 @@ import {
     searchArticles,
     db,
     auth,
-    googleProvider
+    googleProvider,
+    API_URL,
+    sendTokenToServer
 } from "./firebase.js";
-  import {
+
+import {
     getDoc, doc, updateDoc, increment, query, where, getDocs, collection
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
 import {
-    onAuthStateChanged, signInWithPopup, getRedirectResult, signOut
+    onAuthStateChanged,
+    signInWithPopup,
+    getRedirectResult,
+    signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
 
 (function () {
 "use strict";
@@ -286,57 +294,36 @@ profile: {
     },
 
     auth: {
-    user: null,
-
-    async check() {
-        try {
-            // Chỉ giữ lại xử lý kết quả chuyển hướng nếu có, không ép buộc
-            await getRedirectResult(auth);
-        } catch (err) {
-            console.warn("Bỏ qua lỗi redirect:", err.code);
-        }
-
-        return new Promise((resolve) => {
-            onAuthStateChanged(auth, (user) => {
-                this.user = user || null;
-                this.updateUI();
-                resolve(user);
-            });
-        });
-    },
-
-    async login() {
-        try {
-            // Ưu tiên dùng POPUP – hoạt động trên mọi trình duyệt, không bị chặn cookie
-            await signInWithPopup(auth, googleProvider);
-        } catch (err) {
-            console.error("Đăng nhập thất bại:", err.code, err.message);
-
-            // Thông báo rõ ràng cho người dùng
-            let msg = "Đăng nhập thất bại, vui lòng thử lại sau.";
-            if (err.code === "auth/popup-blocked") {
-                msg = "⚠️ Trình duyệt chặn cửa sổ bật lên!\nVui lòng cho phép bật cửa sổ cho trang này rồi thử lại.";
-            } else if (err.code === "auth/cancelled-popup-request") {
-                msg = "Đã hủy đăng nhập.";
-            } else if (err.code === "auth/network-request-failed") {
-                msg = "Lỗi mạng, kiểm tra kết nối internet nhé.";
-            }
-
-            alert(msg);
-        }
-    },
-
-    async logout() {
-        try {
-            await signOut(auth);
-            this.user = null;
-            this.updateUI();
-        } catch (err) {
-            console.error("Đăng xuất thất bại:", err);
-        }
-    },
-
-    updateUI() {
+  user: null,
+  async check() {
+    try { await getRedirectResult(auth); } catch {}
+    return new Promise((resolve) => {
+      onAuthStateChanged(auth, async (user) => {
+        this.user = user || null;
+        if (user) await sendTokenToServer(user);
+        this.updateUI();
+        resolve(user);
+      });
+    });
+  },
+  async login() {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (err) {
+      let msg = "Đăng nhập thất bại";
+      if (err.code === "auth/popup-blocked") msg = "⚠️ Cho phép bật cửa sổ rồi thử lại";
+      alert(msg);
+    }
+  },
+  async logout() {
+    try {
+      await signOut(auth);
+      await fetch(`${API_URL}/api/logout`, { method: "POST" });
+      this.user = null;
+      this.updateUI();
+    } catch (err) { console.error(err); }
+  },
+  updateUI() {
         const userAvatar = document.getElementById("userAvatar");
         const profileAvatar = document.getElementById("profileAvatar");
         const profileName = document.getElementById("profileName");
@@ -407,6 +394,7 @@ profile: {
         menuList.append(loginBtn);
     }
 },
+
 
 
     search:{
