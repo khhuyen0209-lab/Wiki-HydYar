@@ -49,14 +49,14 @@ const requireAdmin = (req, res, next) => {
 app.use(express.static(path.join(__dirname, "public")));
 
 // ==============================================
-// ✅ QUAN TRỌNG: XỬ LÝ ĐƯỜNG DẪN FIREBASE AUTH
+// ✅ XỬ LÝ ĐƯỜNG DẪN FIREBASE AUTH – ĐÚNG VỊ TRÍ
 // ==============================================
 app.get("/__/auth/handler", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // ==============================
-// API XÁC THỰC HOÀN CHỈNH
+// API XÁC THỰC
 // ==============================
 app.post("/api/login", async (req, res) => {
   try {
@@ -103,7 +103,7 @@ app.get("/api/me", requireAuth, (req, res) => {
 });
 
 // ==============================
-// API NỘI DUNG GIỮ NGUYÊN 100%
+// API NỘI DUNG
 // ==============================
 app.get("/api/featured", async (req, res) => {
   try {

@@ -294,111 +294,78 @@ profile: {
       splitContentToPages(h){return h?h.split(/---trang\d+---/g).map(x=>x.trim()).filter(Boolean):[""];}
     },
 
-    auth: {
-  user: null,
-  async check() {
-    try { await getRedirectResult(auth); } catch {}
-    return new Promise((resolve) => {
+  auth: {
+    user: null,
+
+    async check() {
+      try {
+        // ✅ Đọc kết quả ngay sau khi quay về từ Google
+        const result = await getRedirectResult(auth);
+        if (result?.user) {
+          console.log("✅ Đăng nhập thành công:", result.user.email);
+          // ✅ Tự động chuyển về trang tài khoản
+          window.location.href = "/tai-khoan";
+          return;
+        }
+      } catch (err) {
+        console.warn("ℹ️ Không có phiên chuyển hướng:", err.message);
+      }
+
+      // ✅ Theo dõi trạng thái đăng nhập liên tục
       onAuthStateChanged(auth, async (user) => {
         this.user = user || null;
         if (user) await sendTokenToServer(user);
         this.updateUI();
-        resolve(user);
       });
-    });
-  },
-  async login() {
-  try {
-    // Ưu tiên Redirect – hoạt động trên mọi nơi
-    await signInWithRedirect(auth, googleProvider);
-  } catch (err) {
-    console.warn("Thử popup thay thế:", err);
-    try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (err2) {
-      alert("Không thể đăng nhập, vui lòng kiểm tra kết nối hoặc cho phép cửa sổ bật lên.");
+    },
+
+    async login() {
+      try {
+        // ✅ Luôn hiện trang chọn tài khoản Google
+        await signInWithRedirect(auth, googleProvider);
+      } catch (err) {
+        console.error("❌ Lỗi đăng nhập:", err);
+        alert("Không thể đăng nhập: " + err.message);
+      }
+    },
+
+    async logout() {
+      try {
+        await signOut(auth);
+        await fetch(`${window.location.origin}/api/logout`, { method: "POST" });
+        this.user = null;
+        this.updateUI();
+        window.location.href = "/";
+      } catch (err) {
+        console.error("❌ Lỗi đăng xuất:", err);
+      }
+    },
+
+    updateUI() {
+      const loginBtn = document.getElementById("loginLogoutBtn");
+      const userAvatar = document.getElementById("userAvatar");
+      const profileName = document.getElementById("profileName");
+
+      if (!loginBtn) return;
+
+      if (!this.user) {
+        loginBtn.innerHTML = `<iconify-icon icon="solar:login-3-bold"></iconify-icon><span>Đăng nhập</span>`;
+        loginBtn.onclick = () => this.login();
+        if (profileName) profileName.textContent = "Chưa đăng nhập";
+        if (userAvatar) userAvatar.textContent = "👤";
+        return;
+      }
+
+      loginBtn.innerHTML = `<iconify-icon icon="solar:logout-2-bold"></iconify-icon><span>Đăng xuất</span>`;
+      loginBtn.classList.add("text-danger");
+      loginBtn.onclick = () => this.logout();
+      if (profileName) profileName.textContent = this.user.displayName || "Người dùng";
+      if (userAvatar && this.user.photoURL) {
+        userAvatar.textContent = "";
+        userAvatar.style.backgroundImage = `url(${this.user.photoURL})`;
+      }
     }
-  }
-},
-  async logout() {
-    try {
-      await signOut(auth);
-      await fetch(`${API_URL}/api/logout`, { method: "POST" });
-      this.user = null;
-      this.updateUI();
-    } catch (err) { console.error(err); }
   },
-  updateUI() {
-        const userAvatar = document.getElementById("userAvatar");
-        const profileAvatar = document.getElementById("profileAvatar");
-        const profileName = document.getElementById("profileName");
-        const profileUID = document.getElementById("profileUID");
-        const menuList = document.querySelector(".menu-list");
-        const loginBtn = document.getElementById("loginLogoutBtn");
-
-        if (!loginBtn || !menuList) return;
-
-        // --- CHƯA ĐĂNG NHẬP ---
-        if (!this.user) {
-            if (profileName) profileName.textContent = "Chưa đăng nhập";
-            if (profileUID) profileUID.textContent = "Nhấn để đăng nhập";
-
-            if (userAvatar) {
-                userAvatar.textContent = "👤";
-                userAvatar.style.backgroundImage = "";
-                userAvatar.onclick = () => this.login();
-            }
-
-            if (profileAvatar) {
-                profileAvatar.textContent = "👤";
-                profileAvatar.style.backgroundImage = "";
-                profileAvatar.onclick = () => this.login();
-            }
-
-            loginBtn.innerHTML = `
-                <iconify-icon icon="solar:login-3-bold"></iconify-icon>
-                <span>Đăng nhập</span>
-            `;
-            loginBtn.classList.remove("text-danger");
-            loginBtn.onclick = () => this.login();
-
-            // Đặt lại vị trí nút
-            if (loginBtn.parentElement) loginBtn.remove();
-            menuList.prepend(loginBtn);
-            return;
-        }
-
-        // --- ĐÃ ĐĂNG NHẬP ---
-        if (profileName) profileName.textContent = this.user.displayName || "Người dùng";
-        if (profileUID) profileUID.textContent = "@" + this.user.uid.substring(0, 8);
-
-        if (this.user.photoURL) {
-            if (userAvatar) {
-                userAvatar.textContent = "";
-                userAvatar.style.backgroundImage = `url("${this.user.photoURL}")`;
-                userAvatar.style.backgroundSize = "cover";
-                userAvatar.style.backgroundPosition = "center";
-            }
-            if (profileAvatar) {
-                profileAvatar.textContent = "";
-                profileAvatar.style.backgroundImage = `url("${this.user.photoURL}")`;
-                profileAvatar.style.backgroundSize = "cover";
-                profileAvatar.style.backgroundPosition = "center";
-            }
-        }
-
-        loginBtn.innerHTML = `
-            <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
-            <span>Đăng xuất</span>
-        `;
-        loginBtn.classList.add("text-danger");
-        loginBtn.onclick = () => this.logout();
-
-        // Đặt lại vị trí nút
-        if (loginBtn.parentElement) loginBtn.remove();
-        menuList.append(loginBtn);
-    }
-},
 
 
 
@@ -1090,7 +1057,7 @@ searchClose: document.getElementById("searchClose"),
 
     async init(){
       this.ui.initDomCache();
-      await this.auth.check();
+      this.auth.check();
       this.ui.initDarkMode();
       this.ui.initPerformance();
       this.ui.initNavigation();
