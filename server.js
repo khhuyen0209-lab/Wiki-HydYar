@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const admin = require("firebase-admin");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 const app = express();
 
@@ -11,11 +12,24 @@ const app = express();
 // CORS + JSON
 // ==============================
 app.use(cors({
-    origin: "*"
+    origin(origin, callback) {
+        if (
+            !origin ||
+            origin.startsWith("http://localhost:") ||
+            origin === "https://wiki-hydyar.web.app" ||
+            origin === "https://wiki-hydyar.firebaseapp.com"
+        ) {
+            return callback(null, true);
+        }
+
+        callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true
 }));
 
 app.use(express.json());
 
+app.use(cookieParser());
 
 // ==============================
 // FIREBASE ADMIN
@@ -40,6 +54,113 @@ app.use(express.static(path.join(__dirname, "public")));
 // =====================================================
 // API
 // =====================================================
+
+app.post("/api/auth/google", async (req, res) => {
+
+    try {
+
+        const { idToken } = req.body;
+
+        if (!idToken) {
+            return res.status(400).json({
+                success: false,
+                message: "Thiếu idToken"
+            });
+        }
+
+        const decoded = await admin.auth().verifyIdToken(idToken);
+
+        const expiresIn = 1000 * 60 * 60 * 24 * 7;
+
+        const sessionCookie =
+            await admin.auth().createSessionCookie(
+                idToken,
+                { expiresIn }
+            );
+
+        res.cookie("session", sessionCookie, {
+            maxAge: expiresIn,
+            httpOnly: true,
+            secure: true,
+            sameSite: "none"
+        });
+
+        await db.collection("users")
+            .doc(decoded.uid)
+            .set({
+                uid: decoded.uid,
+                displayName: decoded.name || "",
+                email: decoded.email || "",
+                photoURL: decoded.picture || "",
+                lastLogin: admin.firestore.FieldValue.serverTimestamp()
+            }, {
+                merge: true
+            });
+
+        res.json({
+            success: true
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(401).json({
+            success: false
+        });
+
+    }
+
+});
+
+app.get("/api/me", async (req, res) => {
+
+    try {
+
+        const session = req.cookies.session;
+
+        if (!session) {
+            return res.json({
+                loggedIn: false
+            });
+        }
+
+        const decoded = await admin.auth()
+            .verifySessionCookie(session, true);
+
+        const user = await db
+            .collection("users")
+            .doc(decoded.uid)
+            .get();
+
+        res.json({
+            loggedIn: true,
+            user: user.data()
+        });
+
+    } catch (err) {
+
+        res.json({
+            loggedIn: false
+        });
+
+    }
+
+});
+
+app.post("/api/logout", (req, res) => {
+
+    res.clearCookie("session", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none"
+    });
+
+    res.json({
+        success: true
+    });
+
+});
 
 // ---------- Bài nổi bật ----------
 app.get("/api/featured", async (req, res) => {
