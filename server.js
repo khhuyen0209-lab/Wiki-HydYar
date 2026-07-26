@@ -41,7 +41,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // API
 // =====================================================
 // ==============================
-// ĐĂNG NHẬP + TẠO USER
+// ĐĂNG NHẬP
 // ==============================
 app.post("/api/login", async (req, res) => {
 
@@ -49,131 +49,94 @@ app.post("/api/login", async (req, res) => {
 
         const { token } = req.body;
 
-
         if (!token) {
 
             return res.status(400).json({
-                success:false,
-                message:"Thiếu Firebase token"
+                success: false,
+                message: "Thiếu token"
             });
 
         }
 
-
-        // Verify Firebase Auth token
-        const decoded =
-            await admin.auth().verifyIdToken(token);
-
-
+        // Xác thực token Firebase
+        const decoded = await admin.auth().verifyIdToken(token);
 
         const uid = decoded.uid;
 
+        const userRef = db
+            .collection("users")
+            .doc(uid);
 
-        const userRef =
-            db.collection("users").doc(uid);
+        const snap = await userRef.get();
 
-
-
-        const userSnap =
-            await userRef.get();
-
-
-
-        const userData = {
-
-            uid,
-
-            email: decoded.email || "",
-
-            name:
-                decoded.name ||
-                decoded.email?.split("@")[0] ||
-                "User",
-
-            avatar:
-                decoded.picture ||
-                "",
-
-            lastLogin:
-                admin.firestore.FieldValue.serverTimestamp()
-
-        };
-
-
-
-        // Chưa có user -> tạo mới
-        if(!userSnap.exists){
-
+        // Tạo user nếu chưa tồn tại
+        if (!snap.exists) {
 
             await userRef.set({
 
-                ...userData,
+                uid,
 
-                createdAt:
-                admin.firestore.FieldValue.serverTimestamp(),
+                email: decoded.email || "",
 
-                role:"user",
+                name: decoded.name || "",
 
-                status:"active"
+                avatar: decoded.picture || "",
+
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+
+                lastLogin: admin.firestore.FieldValue.serverTimestamp(),
+
+                role: "user"
 
             });
 
+        } else {
 
+            await userRef.update({
 
-            console.log(
-                "New user:",
-                uid
-            );
+                lastLogin: admin.firestore.FieldValue.serverTimestamp(),
 
+                email: decoded.email || "",
 
-        }
+                name: decoded.name || "",
 
-        // Có rồi -> cập nhật
-        else {
+                avatar: decoded.picture || ""
 
-
-            await userRef.update(
-                userData
-            );
-
-
-            console.log(
-                "User login:",
-                uid
-            );
-
+            });
 
         }
-
-
 
         res.json({
 
-            success:true,
+            success: true,
 
-            user:userData
+            uid,
+
+            user: {
+
+                uid,
+
+                email: decoded.email,
+
+                name: decoded.name,
+
+                avatar: decoded.picture
+
+            }
 
         });
 
+    } catch (err) {
 
-
-    }catch(err){
-
-
-        console.error(
-            "LOGIN ERROR:",
-            err
-        );
-
+        console.error(err);
 
         res.status(401).json({
 
-            success:false,
+            success: false,
 
-            message:"Token không hợp lệ"
+            message: "Token không hợp lệ"
 
         });
-
 
     }
 

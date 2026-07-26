@@ -288,413 +288,169 @@ profile: {
     },
 
     auth: {
-
     user: null,
-
 
     async check() {
 
-        console.log("[AUTH] Init");
-
-
-        // Xử lý redirect Google
         try {
-
-            const result = await getRedirectResult(auth);
-
-            if(result?.user){
-
-                console.log(
-                    "[AUTH] Redirect user:",
-                    result.user
-                );
-
-            }
-
-
-        } catch(err){
-
-            console.error(
-                "[AUTH] Redirect error:",
-                err
-            );
-
+            await getRedirectResult(auth);
+        } catch (err) {
+            console.error("Lỗi Redirect:", err);
         }
 
+        return new Promise((resolve) => {
 
+            onAuthStateChanged(auth, async (user) => {
 
-        return new Promise(resolve => {
+                this.user = user || null;
 
+                if (user) {
 
-            onAuthStateChanged(
-                auth,
-                async (user)=>{
+                    try {
 
+                        const token = await user.getIdToken();
 
-                    console.log(
-                        "[AUTH] State:",
-                        user
-                    );
+                        await fetch("https://wiki-hydyar.up.railway.app/api/login", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                token
+                            })
+                        });
 
+                    } catch (e) {
 
-
-                    this.user =
-                        user || null;
-
-
-
-                    if(user){
-
-                        await this.sendToken(
-                            user
-                        );
+                        console.error("Gửi token thất bại:", e);
 
                     }
 
-
-
-                    this.updateUI();
-
-
-                    resolve(user);
-
-
                 }
-            );
 
+                this.updateUI();
+
+                resolve(user);
+
+            });
 
         });
 
-
     },
 
+    async login() {
 
-
-    async sendToken(user){
-
-
-        try{
-
-
-            const token =
-                await user.getIdToken();
-
-
-
-            const res =
-                await fetch(
-                    "https://wiki-hydyar.up.railway.app/api/login",
-                    {
-
-                        method:"POST",
-
-                        headers:{
-
-                            "Content-Type":
-                            "application/json"
-
-                        },
-
-
-                        credentials:"include",
-
-
-                        body:JSON.stringify({
-
-                            token
-
-                        })
-
-                    }
-                );
-
-
-
-            const data =
-                await res.json();
-
-
-
-            console.log(
-                "[AUTH] Server:",
-                data
-            );
-
-
-
-        }catch(err){
-
-
-            console.error(
-                "[AUTH] Server sync error:",
-                err
-            );
-
-
-        }
-
-
-    },
-
-
-
-    async login(){
-
-
-        try{
-
-
-            console.log(
-                "[AUTH] Login start"
-            );
-
-
+        try {
 
             await signInWithRedirect(
                 auth,
                 googleProvider
             );
 
+        } catch (err) {
 
-
-        }catch(err){
-
-
-            console.error(
-                "[AUTH] Login error:",
-                err
-            );
-
+            console.error("Đăng nhập thất bại:", err);
 
         }
 
-
     },
 
+    async logout() {
 
-
-    async logout(){
-
-
-        try{
-
+        try {
 
             await signOut(auth);
 
-
-
             this.user = null;
-
-
-
-            await fetch(
-                "https://wiki-hydyar.up.railway.app/api/logout",
-                {
-                    method:"POST",
-                    credentials:"include"
-                }
-            );
-
-
 
             this.updateUI();
 
+        } catch (err) {
 
-
-        }catch(err){
-
-
-            console.error(
-                "[AUTH] Logout error:",
-                err
-            );
-
+            console.error(err);
 
         }
-
 
     },
 
+    updateUI() {
 
+        const userAvatar = document.getElementById("userAvatar");
+        const profileAvatar = document.getElementById("profileAvatar");
+        const profileName = document.getElementById("profileName");
+        const profileUID = document.getElementById("profileUID");
 
-    updateUI(){
+        const menuList = document.querySelector(".menu-list");
+        const loginBtn = document.getElementById("loginLogoutBtn");
 
+        if (!loginBtn || !menuList) return;
 
-        const userAvatar =
-            document.getElementById(
-                "userAvatar"
-            );
+        if (!this.user) {
 
+            if (profileName)
+                profileName.textContent = "Chưa đăng nhập";
 
-        const profileAvatar =
-            document.getElementById(
-                "profileAvatar"
-            );
+            if (profileUID)
+                profileUID.textContent = "Nhấn để đăng nhập";
 
-
-        const profileName =
-            document.getElementById(
-                "profileName"
-            );
-
-
-        const profileUID =
-            document.getElementById(
-                "profileUID"
-            );
-
-
-        const loginBtn =
-            document.getElementById(
-                "loginLogoutBtn"
-            );
-
-
-
-        if(!this.user){
-
-
-            if(profileName)
-                profileName.textContent =
-                "Chưa đăng nhập";
-
-
-            if(profileUID)
-                profileUID.textContent =
-                "Nhấn để đăng nhập";
-
-
-
-            if(userAvatar){
-
-                userAvatar.textContent="👤";
-
-                userAvatar.style.backgroundImage="";
-
-                userAvatar.onclick =
-                ()=>this.login();
-
+            if (userAvatar) {
+                userAvatar.textContent = "👤";
+                userAvatar.style.backgroundImage = "";
+                userAvatar.onclick = () => this.login();
             }
 
-
-
-            if(profileAvatar){
-
-                profileAvatar.textContent="👤";
-
-                profileAvatar.style.backgroundImage="";
-
-                profileAvatar.onclick =
-                ()=>this.login();
-
+            if (profileAvatar) {
+                profileAvatar.textContent = "👤";
+                profileAvatar.style.backgroundImage = "";
+                profileAvatar.onclick = () => this.login();
             }
 
-
-
-            if(loginBtn){
-
-                loginBtn.innerHTML=`
-
+            loginBtn.innerHTML = `
                 <iconify-icon icon="solar:login-3-bold"></iconify-icon>
                 <span>Đăng nhập</span>
-
-                `;
-
-
-                loginBtn.classList.remove(
-                    "text-danger"
-                );
-
-
-                loginBtn.onclick =
-                ()=>this.login();
-
-            }
-
-
-            return;
-
-        }
-
-
-
-
-
-        if(profileName)
-
-            profileName.textContent =
-            this.user.displayName ||
-            "Người dùng";
-
-
-
-        if(profileUID)
-
-            profileUID.textContent =
-            this.user.email ||
-            this.user.uid;
-
-
-
-        if(this.user.photoURL){
-
-
-            [
-                userAvatar,
-                profileAvatar
-
-            ].forEach(el=>{
-
-
-                if(!el) return;
-
-
-                el.textContent="";
-
-
-                el.style.backgroundImage =
-                `url("${this.user.photoURL}")`;
-
-
-                el.style.backgroundSize =
-                "cover";
-
-
-                el.style.backgroundPosition =
-                "center";
-
-
-            });
-
-
-        }
-
-
-
-
-        if(loginBtn){
-
-
-            loginBtn.innerHTML=`
-
-            <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
-            <span>Đăng xuất</span>
-
             `;
 
+            loginBtn.classList.remove("text-danger");
+            loginBtn.onclick = () => this.login();
 
-            loginBtn.classList.add(
-                "text-danger"
-            );
+            menuList.prepend(loginBtn);
 
+            return;
+        }
 
-            loginBtn.onclick =
-            ()=>this.logout();
+        if (profileName)
+            profileName.textContent = this.user.displayName || "Người dùng";
 
+        if (profileUID)
+            profileUID.textContent = this.user.email || this.user.uid;
+
+        if (this.user.photoURL) {
+
+            if (userAvatar) {
+                userAvatar.textContent = "";
+                userAvatar.style.backgroundImage = `url("${this.user.photoURL}")`;
+                userAvatar.style.backgroundSize = "cover";
+                userAvatar.style.backgroundPosition = "center";
+            }
+
+            if (profileAvatar) {
+                profileAvatar.textContent = "";
+                profileAvatar.style.backgroundImage = `url("${this.user.photoURL}")`;
+                profileAvatar.style.backgroundSize = "cover";
+                profileAvatar.style.backgroundPosition = "center";
+            }
 
         }
 
+        loginBtn.innerHTML = `
+            <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
+            <span>Đăng xuất</span>
+        `;
 
+        loginBtn.classList.add("text-danger");
+        loginBtn.onclick = () => this.logout();
+
+        menuList.prepend(loginBtn);
 
     }
 
