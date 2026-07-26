@@ -48,6 +48,13 @@ const requireAdmin = (req, res, next) => {
 // ==============================
 app.use(express.static(path.join(__dirname, "public")));
 
+// ==============================================
+// ✅ QUAN TRỌNG: XỬ LÝ ĐƯỜNG DẪN FIREBASE AUTH
+// ==============================================
+app.get("/__/auth/handler", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 // ==============================
 // API XÁC THỰC HOÀN CHỈNH
 // ==============================
@@ -77,7 +84,6 @@ app.post("/api/login", async (req, res) => {
       console.log("🔄 Đăng nhập:", uid);
     }
 
-    // Tạo phiên làm việc trên server
     req.session.user = { uid, email: userData.email, name: userData.name, role: userSnap.exists ? userSnap.data().role : "user" };
     res.json({ success: true, user: req.session.user });
   } catch (err) {
@@ -120,7 +126,7 @@ app.post("/api/article/:id/view", async (req, res) => {
 // ==============================
 // SEO + ROUTER SPA
 // ==============================
-const renderWithSEO = async (slug, res) => {
+const renderWithSEO = async (slug, req, res) => {
   try {
     let title = "Wiki HydYar - Tri thức mở rộng", desc = "Kho tri thức mở rộng", ogImage = "";
     if (slug) {
@@ -142,7 +148,7 @@ const renderWithSEO = async (slug, res) => {
   }
 };
 
-app.get("/:category/:slug", (req, res) => renderWithSEO(req.params.slug, res));
+app.get("/:category/:slug", (req, res) => renderWithSEO(req.params.slug, req, res));
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
 // ==============================
