@@ -307,14 +307,28 @@ profile: {
     });
   },
   async login() {
-    try {
-      await signInWithPopup(auth, googleProvider);
-    } catch (err) {
-      let msg = "Đăng nhập thất bại";
-      if (err.code === "auth/popup-blocked") msg = "⚠️ Cho phép bật cửa sổ rồi thử lại";
-      alert(msg);
+  try {
+    // Ưu tiên Popup cho trình duyệt thường
+    await signInWithPopup(auth, googleProvider);
+  } catch (err) {
+    console.warn("Popup thất bại, thử phương án khác:", err.code);
+    
+    // Nếu bị chặn / không hỗ trợ (như Acode) → dùng Redirect
+    if (err.code === "auth/popup-blocked" || err.code === "auth/cancelled-popup-request" || err.message.includes("popup")) {
+      try {
+        await signInWithRedirect(auth, googleProvider);
+      } catch (redirectErr) {
+        alert("Không thể đăng nhập. Vui lòng cập nhật Acode hoặc dùng trình duyệt khác.");
+      }
+      return;
     }
-  },
+
+    // Thông báo lỗi khác
+    let msg = "Đăng nhập thất bại";
+    if (err.code === "auth/network-request-failed") msg = "Lỗi mạng";
+    alert(msg);
+  }
+},
   async logout() {
     try {
       await signOut(auth);
