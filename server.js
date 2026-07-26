@@ -13,17 +13,21 @@ const app = express();
 // ==============================
 app.use(cors({
     origin(origin, callback) {
-        if (
-            !origin ||
-            origin.startsWith("http://localhost:") ||
-            origin === "https://wiki-hydyar.web.app" ||
-            origin === "https://wiki-hydyar.firebaseapp.com"
-        ) {
-            return callback(null, true);
-        }
 
-        callback(new Error("Not allowed by CORS"));
-    },
+    if (!origin) return callback(null, true);
+
+    if (
+        /^http:\/\/localhost:\d+$/.test(origin) ||
+        /^http:\/\/127\.0\.0\.1:\d+$/.test(origin) ||
+        /^http:\/\/192\.168\.\d+\.\d+:\d+$/.test(origin) ||
+        origin === "https://wiki-hydyar.web.app" ||
+        origin === "https://wiki-hydyar.firebaseapp.com"
+    ) {
+        return callback(null, true);
+    }
+
+    callback(new Error("Not allowed by CORS"));
+}
     credentials: true
 }));
 
@@ -78,12 +82,14 @@ app.post("/api/auth/google", async (req, res) => {
                 { expiresIn }
             );
 
-        res.cookie("session", sessionCookie, {
-            maxAge: expiresIn,
-            httpOnly: true,
-            secure: true,
-            sameSite: "none"
-        });
+        const isDev = process.env.NODE_ENV !== "production";
+
+res.cookie("session", sessionCookie, {
+    maxAge: expiresIn,
+    httpOnly: true,
+    secure: !isDev,
+    sameSite: isDev ? "lax" : "none"
+});
 
         await db.collection("users")
             .doc(decoded.uid)
@@ -150,11 +156,13 @@ app.get("/api/me", async (req, res) => {
 
 app.post("/api/logout", (req, res) => {
 
-    res.clearCookie("session", {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none"
-    });
+    const isDev = process.env.NODE_ENV !== "production";
+
+res.clearCookie("session", {
+    httpOnly: true,
+    secure: !isDev,
+    sameSite: isDev ? "lax" : "none"
+});
 
     res.json({
         success: true
