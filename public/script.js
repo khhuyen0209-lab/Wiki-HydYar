@@ -4,11 +4,19 @@ import {
     getCategories,
     getArticleBySlug,
     searchArticles,
-    db
+    db,
+    auth,
+    googleProvider
 } from "./firebase.js";
   import {
     getDoc, doc, updateDoc, increment, query, where, getDocs, collection
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+    onAuthStateChanged,
+    signInWithRedirect,
+    getRedirectResult,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 (function () {
 "use strict";
 
@@ -278,6 +286,154 @@ profile: {
       parse(t){if(!t)return"";let h=this.escapeHTML(t);h=this.parseCode(h);h=this.parseTable(h);h=this.parseImage(h);h=this.parseLink(h);h=this.parseHeading(h);h=h.replace(/^\s*&gt;\s?(.*)$/gm,"<blockquote>$1</blockquote>").replace(/^(---|\*\*\*|___)$/gm,"<hr>");h=this.parseList(h);h=this.parseInline(h);h=this.parseParagraph(h);return h;},
       splitContentToPages(h){return h?h.split(/---trang\d+---/g).map(x=>x.trim()).filter(Boolean):[""];}
     },
+
+    auth: {
+    user: null,
+
+    async check() {
+
+        try {
+            await getRedirectResult(auth);
+        } catch (err) {
+            console.error("Lỗi Redirect:", err);
+        }
+
+        return new Promise((resolve) => {
+
+            onAuthStateChanged(auth, (user) => {
+
+                this.user = user || null;
+
+                this.updateUI();
+
+                resolve(user);
+
+            });
+
+        });
+
+    },
+
+    async login() {
+
+        try {
+
+            await signInWithRedirect(
+                auth,
+                googleProvider
+            );
+
+        } catch (err) {
+
+            console.error(
+                "Đăng nhập thất bại:",
+                err
+            );
+
+        }
+
+    },
+
+    async logout() {
+
+    try {
+
+        await signOut(auth);
+
+        this.user = null;
+
+        this.updateUI();
+
+    } catch (err) {
+
+        console.error(err);
+
+    }
+
+},
+
+    updateUI() {
+
+    const userAvatar = document.getElementById("userAvatar");
+    const profileAvatar = document.getElementById("profileAvatar");
+    const profileName = document.getElementById("profileName");
+    const profileUID = document.getElementById("profileUID");
+
+    const menuList = document.querySelector(".menu-list");
+    const loginBtn = document.getElementById("loginLogoutBtn");
+
+    if (!loginBtn || !menuList) return;
+
+    if (!this.user) {
+
+        if (profileName)
+            profileName.textContent = "Chưa đăng nhập";
+
+        if (profileUID)
+            profileUID.textContent = "Nhấn để đăng nhập";
+
+        if (userAvatar) {
+            userAvatar.textContent = "👤";
+            userAvatar.style.backgroundImage = "";
+            userAvatar.onclick = () => this.login();
+        }
+
+        if (profileAvatar) {
+            profileAvatar.textContent = "👤";
+            profileAvatar.style.backgroundImage = "";
+            profileAvatar.onclick = () => this.login();
+        }
+
+        loginBtn.innerHTML = `
+            <iconify-icon icon="solar:login-3-bold"></iconify-icon>
+            <span>Đăng nhập</span>
+        `;
+
+        loginBtn.classList.remove("text-danger");
+        loginBtn.onclick = () => this.login();
+
+        menuList.prepend(loginBtn);
+
+        return;
+    }
+
+    if (profileName)
+        profileName.textContent = this.user.displayName || "Người dùng";
+
+    if (profileUID)
+        profileUID.textContent = "@" + this.user.uid.substring(0, 8);
+
+    if (this.user.photoURL) {
+
+        if (userAvatar) {
+            userAvatar.textContent = "";
+            userAvatar.style.backgroundImage = `url("${this.user.photoURL}")`;
+            userAvatar.style.backgroundSize = "cover";
+            userAvatar.style.backgroundPosition = "center";
+        }
+
+        if (profileAvatar) {
+            profileAvatar.textContent = "";
+            profileAvatar.style.backgroundImage = `url("${this.user.photoURL}")`;
+            profileAvatar.style.backgroundSize = "cover";
+            profileAvatar.style.backgroundPosition = "center";
+        }
+
+    }
+
+    loginBtn.innerHTML = `
+        <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
+        <span>Đăng xuất</span>
+    `;
+
+    loginBtn.classList.add("text-danger");
+    loginBtn.onclick = () => this.logout();
+
+    menuList.append(loginBtn);
+
+}
+
+},
 
     search:{
     historyKey:"wiki_search_history",
@@ -967,6 +1123,7 @@ searchClose: document.getElementById("searchClose"),
 
     async init(){
       this.ui.initDomCache();
+      await this.auth.check();
       this.ui.initDarkMode();
       this.ui.initPerformance();
       this.ui.initNavigation();

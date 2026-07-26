@@ -9,6 +9,15 @@ import {
     orderBy, limit, doc, getDoc,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
 const firebaseConfig = {
     apiKey: "AIzaSyBdEzvwzf-O-fTFbZyThoFcc45RSIHhiXA",
     authDomain: "wiki-hydyar.firebaseapp.com",
@@ -20,6 +29,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
+
+
 
 // ===============================
 // ✅ KHÔI PHỤC CACHE HOÀN CHỈNH
