@@ -454,7 +454,7 @@ profile: {
 
     }
 
-}
+},
 
     search:{
     historyKey:"wiki_search_history",
