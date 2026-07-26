@@ -81,17 +81,12 @@ profile: {
 
         page?.classList.add("active");
 
-// Gắn lại sự kiện
-document.getElementById("wikiPolicy")
-    ?.addEventListener("click", () => HydYarWiki.navigate("policy"));
+        // Gắn lại sự kiện sau khi thay innerHTML
+        document.getElementById("wikiPolicy")
+            ?.addEventListener("click", () => HydYarWiki.navigate("policy"));
 
-document.getElementById("logoutBtn")
-    ?.addEventListener("click", () => appStatus.auth.logout());
-
-appStatus.auth.updateProfileUI();
-
-appStatus.ui.initDarkMode();
-appStatus.ui.initPerformance();
+        appStatus.ui.initDarkMode();
+        appStatus.ui.initPerformance();
 
         window.scrollTo(0, 0);
     }
@@ -283,78 +278,6 @@ appStatus.ui.initPerformance();
       parse(t){if(!t)return"";let h=this.escapeHTML(t);h=this.parseCode(h);h=this.parseTable(h);h=this.parseImage(h);h=this.parseLink(h);h=this.parseHeading(h);h=h.replace(/^\s*&gt;\s?(.*)$/gm,"<blockquote>$1</blockquote>").replace(/^(---|\*\*\*|___)$/gm,"<hr>");h=this.parseList(h);h=this.parseInline(h);h=this.parseParagraph(h);return h;},
       splitContentToPages(h){return h?h.split(/---trang\d+---/g).map(x=>x.trim()).filter(Boolean):[""];}
     },
-
-    auth: {
-    user: null,
-
-    async check() {
-        try {
-            const res = await fetch("/api/me", {
-                credentials: "include"
-            });
-
-            if (!res.ok) throw 0;
-
-            this.user = await res.json();
-        } catch {
-            this.user = null;
-        }
-
-        this.updateProfileUI();
-    },
-
-    updateProfileUI() {
-    const profile = document.getElementById("page-profile");
-    if (!profile) return;
-
-    const menu = profile.querySelector(".menu-list");
-    if (!menu) return;
-
-    const loginBtn = menu.querySelector("#loginBtn");
-    const logoutBtn = menu.querySelector("#logoutBtn");
-
-    if (this.user) {
-
-        // Đã đăng nhập
-        loginBtn?.remove();
-
-        if (logoutBtn) {
-            logoutBtn.style.display = "";
-        }
-
-    } else {
-
-        // Chưa đăng nhập
-        if (logoutBtn) {
-            logoutBtn.style.display = "none";
-        }
-
-        if (!loginBtn) {
-
-            const btn = document.createElement("div");
-
-            btn.id = "loginBtn";
-            btn.className = "menu-item";
-
-            btn.innerHTML = `
-                <iconify-icon icon="solar:login-3-bold"></iconify-icon>
-                <span>Đăng nhập</span>
-                <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
-            `;
-
-            btn.onclick = () => {
-                location.href = "/api/login";
-            };
-
-            menu.prepend(btn);
-        }
-    }
-},
-
-    logout() {
-        location.href = "/api/logout";
-    }
-},
 
     search:{
     historyKey:"wiki_search_history",
@@ -1044,7 +967,6 @@ searchClose: document.getElementById("searchClose"),
 
     async init(){
       this.ui.initDomCache();
-      await this.auth.check();
       this.ui.initDarkMode();
       this.ui.initPerformance();
       this.ui.initNavigation();
