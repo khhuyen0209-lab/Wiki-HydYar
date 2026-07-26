@@ -301,39 +301,20 @@ profile: {
         return new Promise((resolve) => {
 
             onAuthStateChanged(auth, async (user) => {
+    if (!user) return;
 
-                this.user = user || null;
+    const token = await user.getIdToken();
 
-                if (user) {
-
-                    try {
-
-                        const token = await user.getIdToken();
-
-                        await fetch("https://wiki-hydyar.up.railway.app/api/login", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify({
-                                token
-                            })
-                        });
-
-                    } catch (e) {
-
-                        console.error("Gửi token thất bại:", e);
-
-                    }
-
-                }
-
-                this.updateUI();
-
-                resolve(user);
-
-            });
-
+    await fetch("https://wiki-hydyar.up.railway.app/api/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            token
+        })
+    });
+});
         });
 
     },
@@ -349,7 +330,10 @@ profile: {
 
         } catch (err) {
 
-            console.error("Đăng nhập thất bại:", err);
+            console.error(
+                "Đăng nhập thất bại:",
+                err
+            );
 
         }
 
@@ -357,102 +341,102 @@ profile: {
 
     async logout() {
 
-        try {
+    try {
 
-            await signOut(auth);
+        await signOut(auth);
 
-            this.user = null;
+        this.user = null;
 
-            this.updateUI();
+        this.updateUI();
 
-        } catch (err) {
+    } catch (err) {
 
-            console.error(err);
+        console.error(err);
 
-        }
+    }
 
-    },
+},
 
     updateUI() {
 
-        const userAvatar = document.getElementById("userAvatar");
-        const profileAvatar = document.getElementById("profileAvatar");
-        const profileName = document.getElementById("profileName");
-        const profileUID = document.getElementById("profileUID");
+    const userAvatar = document.getElementById("userAvatar");
+    const profileAvatar = document.getElementById("profileAvatar");
+    const profileName = document.getElementById("profileName");
+    const profileUID = document.getElementById("profileUID");
 
-        const menuList = document.querySelector(".menu-list");
-        const loginBtn = document.getElementById("loginLogoutBtn");
+    const menuList = document.querySelector(".menu-list");
+    const loginBtn = document.getElementById("loginLogoutBtn");
 
-        if (!loginBtn || !menuList) return;
+    if (!loginBtn || !menuList) return;
 
-        if (!this.user) {
-
-            if (profileName)
-                profileName.textContent = "Chưa đăng nhập";
-
-            if (profileUID)
-                profileUID.textContent = "Nhấn để đăng nhập";
-
-            if (userAvatar) {
-                userAvatar.textContent = "👤";
-                userAvatar.style.backgroundImage = "";
-                userAvatar.onclick = () => this.login();
-            }
-
-            if (profileAvatar) {
-                profileAvatar.textContent = "👤";
-                profileAvatar.style.backgroundImage = "";
-                profileAvatar.onclick = () => this.login();
-            }
-
-            loginBtn.innerHTML = `
-                <iconify-icon icon="solar:login-3-bold"></iconify-icon>
-                <span>Đăng nhập</span>
-            `;
-
-            loginBtn.classList.remove("text-danger");
-            loginBtn.onclick = () => this.login();
-
-            menuList.prepend(loginBtn);
-
-            return;
-        }
+    if (!this.user) {
 
         if (profileName)
-            profileName.textContent = this.user.displayName || "Người dùng";
+            profileName.textContent = "Chưa đăng nhập";
 
         if (profileUID)
-            profileUID.textContent = this.user.email || this.user.uid;
+            profileUID.textContent = "Nhấn để đăng nhập";
 
-        if (this.user.photoURL) {
+        if (userAvatar) {
+            userAvatar.textContent = "👤";
+            userAvatar.style.backgroundImage = "";
+            userAvatar.onclick = () => this.login();
+        }
 
-            if (userAvatar) {
-                userAvatar.textContent = "";
-                userAvatar.style.backgroundImage = `url("${this.user.photoURL}")`;
-                userAvatar.style.backgroundSize = "cover";
-                userAvatar.style.backgroundPosition = "center";
-            }
-
-            if (profileAvatar) {
-                profileAvatar.textContent = "";
-                profileAvatar.style.backgroundImage = `url("${this.user.photoURL}")`;
-                profileAvatar.style.backgroundSize = "cover";
-                profileAvatar.style.backgroundPosition = "center";
-            }
-
+        if (profileAvatar) {
+            profileAvatar.textContent = "👤";
+            profileAvatar.style.backgroundImage = "";
+            profileAvatar.onclick = () => this.login();
         }
 
         loginBtn.innerHTML = `
-            <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
-            <span>Đăng xuất</span>
+            <iconify-icon icon="solar:login-3-bold"></iconify-icon>
+            <span>Đăng nhập</span>
         `;
 
-        loginBtn.classList.add("text-danger");
-        loginBtn.onclick = () => this.logout();
+        loginBtn.classList.remove("text-danger");
+        loginBtn.onclick = () => this.login();
 
         menuList.prepend(loginBtn);
 
+        return;
     }
+
+    if (profileName)
+        profileName.textContent = this.user.displayName || "Người dùng";
+
+    if (profileUID)
+        profileUID.textContent = "@" + this.user.uid.substring(0, 8);
+
+    if (this.user.photoURL) {
+
+        if (userAvatar) {
+            userAvatar.textContent = "";
+            userAvatar.style.backgroundImage = `url("${this.user.photoURL}")`;
+            userAvatar.style.backgroundSize = "cover";
+            userAvatar.style.backgroundPosition = "center";
+        }
+
+        if (profileAvatar) {
+            profileAvatar.textContent = "";
+            profileAvatar.style.backgroundImage = `url("${this.user.photoURL}")`;
+            profileAvatar.style.backgroundSize = "cover";
+            profileAvatar.style.backgroundPosition = "center";
+        }
+
+    }
+
+    loginBtn.innerHTML = `
+        <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
+        <span>Đăng xuất</span>
+    `;
+
+    loginBtn.classList.add("text-danger");
+    loginBtn.onclick = () => this.logout();
+
+    menuList.append(loginBtn);
+
+}
 
 },
 
