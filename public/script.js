@@ -309,15 +309,17 @@ profile: {
   },
   async login() {
   try {
-    // ✅ CHỈ DÙNG REDIRECT – LUÔN LUÔN HIỆN TRANG ĐĂNG NHẬP GOOGLE
-    // KHÔNG CÒN POPUP BỊ CHẶN NỮA
+    // Ưu tiên Redirect – hoạt động trên mọi nơi
     await signInWithRedirect(auth, googleProvider);
   } catch (err) {
-    console.error("Lỗi đăng nhập:", err.code, err.message);
-    alert("Không thể mở trang đăng nhập, vui lòng thử lại.");
+    console.warn("Thử popup thay thế:", err);
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (err2) {
+      alert("Không thể đăng nhập, vui lòng kiểm tra kết nối hoặc cho phép cửa sổ bật lên.");
+    }
   }
 },
-
   async logout() {
     try {
       await signOut(auth);
