@@ -292,51 +292,34 @@ profile: {
 
     async check() {
 
-        try {
-            await getRedirectResult(auth);
-        } catch (err) {
-            console.error("Lỗi Redirect:", err);
+    try {
+
+        const result = await getRedirectResult(auth);
+
+        if(result?.user){
+            this.user = result.user;
         }
 
-        return new Promise((resolve) => {
+    } catch(err){
+        console.error("Lỗi Redirect:", err);
+    }
 
-            onAuthStateChanged(auth, async (user) => {
 
-                this.user = user || null;
+    return new Promise(resolve=>{
 
-                if (user) {
+        onAuthStateChanged(auth,user=>{
 
-                    try {
+            this.user = user || null;
 
-                        const token = await user.getIdToken();
+            this.updateUI();
 
-                        await fetch("https://wiki-hydyar.up.railway.app/api/login", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify({
-                                token
-                            })
-                        });
-
-                    } catch (e) {
-
-                        console.error("Gửi token thất bại:", e);
-
-                    }
-
-                }
-
-                this.updateUI();
-
-                resolve(user);
-
-            });
+            resolve(user);
 
         });
 
-    },
+    });
+
+},
 
     async login() {
 
