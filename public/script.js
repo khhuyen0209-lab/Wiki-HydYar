@@ -6,23 +6,14 @@ import {
     searchArticles,
     db,
     auth,
-    googleProvider,
-    API_URL,
-    sendTokenToServer
+    googleProvider
 } from "./firebase.js";
-
-import {
+  import {
     getDoc, doc, updateDoc, increment, query, where, getDocs, collection
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
 import {
-    onAuthStateChanged,
-    signInWithPopup,
-    signInWithRedirect, // ✅ THÊM DÒNG NÀY
-    getRedirectResult,
-    signOut
+    onAuthStateChanged, signInWithPopup, getRedirectResult, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
 
 (function () {
 "use strict";
@@ -294,79 +285,128 @@ profile: {
       splitContentToPages(h){return h?h.split(/---trang\d+---/g).map(x=>x.trim()).filter(Boolean):[""];}
     },
 
-  auth: {
+    auth: {
     user: null,
 
     async check() {
-      try {
-        // ✅ Đọc kết quả ngay sau khi quay về từ Google
-        const result = await getRedirectResult(auth);
-        if (result?.user) {
-          console.log("✅ Đăng nhập thành công:", result.user.email);
-          // ✅ Tự động chuyển về trang tài khoản
-          window.location.href = "/tai-khoan";
-          return;
+        try {
+            // Chỉ giữ lại xử lý kết quả chuyển hướng nếu có, không ép buộc
+            await getRedirectResult(auth);
+        } catch (err) {
+            console.warn("Bỏ qua lỗi redirect:", err.code);
         }
-      } catch (err) {
-        console.warn("ℹ️ Không có phiên chuyển hướng:", err.message);
-      }
 
-      // ✅ Theo dõi trạng thái đăng nhập liên tục
-      onAuthStateChanged(auth, async (user) => {
-        this.user = user || null;
-        if (user) await sendTokenToServer(user);
-        this.updateUI();
-      });
+        return new Promise((resolve) => {
+            onAuthStateChanged(auth, (user) => {
+                this.user = user || null;
+                this.updateUI();
+                resolve(user);
+            });
+        });
     },
 
     async login() {
-      try {
-        // ✅ Luôn hiện trang chọn tài khoản Google
-        await signInWithRedirect(auth, googleProvider);
-      } catch (err) {
-        console.error("❌ Lỗi đăng nhập:", err);
-        alert("Không thể đăng nhập: " + err.message);
-      }
+        try {
+            // Ưu tiên dùng POPUP – hoạt động trên mọi trình duyệt, không bị chặn cookie
+            await signInWithPopup(auth, googleProvider);
+        } catch (err) {
+            console.error("Đăng nhập thất bại:", err.code, err.message);
+
+            // Thông báo rõ ràng cho người dùng
+            let msg = "Đăng nhập thất bại, vui lòng thử lại sau.";
+            if (err.code === "auth/popup-blocked") {
+                msg = "⚠️ Trình duyệt chặn cửa sổ bật lên!\nVui lòng cho phép bật cửa sổ cho trang này rồi thử lại.";
+            } else if (err.code === "auth/cancelled-popup-request") {
+                msg = "Đã hủy đăng nhập.";
+            } else if (err.code === "auth/network-request-failed") {
+                msg = "Lỗi mạng, kiểm tra kết nối internet nhé.";
+            }
+
+            alert(msg);
+        }
     },
 
     async logout() {
-      try {
-        await signOut(auth);
-        await fetch(`${window.location.origin}/api/logout`, { method: "POST" });
-        this.user = null;
-        this.updateUI();
-        window.location.href = "/";
-      } catch (err) {
-        console.error("❌ Lỗi đăng xuất:", err);
-      }
+        try {
+            await signOut(auth);
+            this.user = null;
+            this.updateUI();
+        } catch (err) {
+            console.error("Đăng xuất thất bại:", err);
+        }
     },
 
     updateUI() {
-      const loginBtn = document.getElementById("loginLogoutBtn");
-      const userAvatar = document.getElementById("userAvatar");
-      const profileName = document.getElementById("profileName");
+        const userAvatar = document.getElementById("userAvatar");
+        const profileAvatar = document.getElementById("profileAvatar");
+        const profileName = document.getElementById("profileName");
+        const profileUID = document.getElementById("profileUID");
+        const menuList = document.querySelector(".menu-list");
+        const loginBtn = document.getElementById("loginLogoutBtn");
 
-      if (!loginBtn) return;
+        if (!loginBtn || !menuList) return;
 
-      if (!this.user) {
-        loginBtn.innerHTML = `<iconify-icon icon="solar:login-3-bold"></iconify-icon><span>Đăng nhập</span>`;
-        loginBtn.onclick = () => this.login();
-        if (profileName) profileName.textContent = "Chưa đăng nhập";
-        if (userAvatar) userAvatar.textContent = "👤";
-        return;
-      }
+        // --- CHƯA ĐĂNG NHẬP ---
+        if (!this.user) {
+            if (profileName) profileName.textContent = "Chưa đăng nhập";
+            if (profileUID) profileUID.textContent = "Nhấn để đăng nhập";
 
-      loginBtn.innerHTML = `<iconify-icon icon="solar:logout-2-bold"></iconify-icon><span>Đăng xuất</span>`;
-      loginBtn.classList.add("text-danger");
-      loginBtn.onclick = () => this.logout();
-      if (profileName) profileName.textContent = this.user.displayName || "Người dùng";
-      if (userAvatar && this.user.photoURL) {
-        userAvatar.textContent = "";
-        userAvatar.style.backgroundImage = `url(${this.user.photoURL})`;
-      }
+            if (userAvatar) {
+                userAvatar.textContent = "👤";
+                userAvatar.style.backgroundImage = "";
+                userAvatar.onclick = () => this.login();
+            }
+
+            if (profileAvatar) {
+                profileAvatar.textContent = "👤";
+                profileAvatar.style.backgroundImage = "";
+                profileAvatar.onclick = () => this.login();
+            }
+
+            loginBtn.innerHTML = `
+                <iconify-icon icon="solar:login-3-bold"></iconify-icon>
+                <span>Đăng nhập</span>
+            `;
+            loginBtn.classList.remove("text-danger");
+            loginBtn.onclick = () => this.login();
+
+            // Đặt lại vị trí nút
+            if (loginBtn.parentElement) loginBtn.remove();
+            menuList.prepend(loginBtn);
+            return;
+        }
+
+        // --- ĐÃ ĐĂNG NHẬP ---
+        if (profileName) profileName.textContent = this.user.displayName || "Người dùng";
+        if (profileUID) profileUID.textContent = "@" + this.user.uid.substring(0, 8);
+
+        if (this.user.photoURL) {
+            if (userAvatar) {
+                userAvatar.textContent = "";
+                userAvatar.style.backgroundImage = `url("${this.user.photoURL}")`;
+                userAvatar.style.backgroundSize = "cover";
+                userAvatar.style.backgroundPosition = "center";
+            }
+            if (profileAvatar) {
+                profileAvatar.textContent = "";
+                profileAvatar.style.backgroundImage = `url("${this.user.photoURL}")`;
+                profileAvatar.style.backgroundSize = "cover";
+                profileAvatar.style.backgroundPosition = "center";
+            }
+        }
+
+        loginBtn.innerHTML = `
+            <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
+            <span>Đăng xuất</span>
+        `;
+        loginBtn.classList.add("text-danger");
+        loginBtn.onclick = () => this.logout();
+
+        // Đặt lại vị trí nút
+        if (loginBtn.parentElement) loginBtn.remove();
+        menuList.append(loginBtn);
     }
-  },
-
+},
 
 
     search:{
@@ -1057,7 +1097,7 @@ searchClose: document.getElementById("searchClose"),
 
     async init(){
       this.ui.initDomCache();
-      this.auth.check();
+      await this.auth.check();
       this.ui.initDarkMode();
       this.ui.initPerformance();
       this.ui.initNavigation();
