@@ -308,27 +308,15 @@ profile: {
   },
   async login() {
   try {
-    // Ưu tiên Popup cho trình duyệt thường
-    await signInWithPopup(auth, googleProvider);
+    // ✅ CHỈ DÙNG REDIRECT – LUÔN LUÔN HIỆN TRANG ĐĂNG NHẬP GOOGLE
+    // KHÔNG CÒN POPUP BỊ CHẶN NỮA
+    await signInWithRedirect(auth, googleProvider);
   } catch (err) {
-    console.warn("Popup thất bại, thử phương án khác:", err.code);
-    
-    // Nếu bị chặn / không hỗ trợ (như Acode) → dùng Redirect
-    if (err.code === "auth/popup-blocked" || err.code === "auth/cancelled-popup-request" || err.message.includes("popup")) {
-      try {
-        await signInWithRedirect(auth, googleProvider);
-      } catch (redirectErr) {
-        alert("Không thể đăng nhập. Vui lòng cập nhật Acode hoặc dùng trình duyệt khác.");
-      }
-      return;
-    }
-
-    // Thông báo lỗi khác
-    let msg = "Đăng nhập thất bại";
-    if (err.code === "auth/network-request-failed") msg = "Lỗi mạng";
-    alert(msg);
+    console.error("Lỗi đăng nhập:", err.code, err.message);
+    alert("Không thể mở trang đăng nhập, vui lòng thử lại.");
   }
 },
+
   async logout() {
     try {
       await signOut(auth);
