@@ -40,6 +40,118 @@ app.use(express.static(path.join(__dirname, "public")));
 // =====================================================
 // API
 // =====================================================
+// ==============================
+// ĐĂNG NHẬP
+// ==============================
+app.post("/api/login", async (req, res) => {
+
+    try {
+
+        const { token } = req.body;
+
+        if (!token) {
+
+            return res.status(400).json({
+                success: false,
+                message: "Thiếu token"
+            });
+
+        }
+
+        // Xác thực token Firebase
+        const decoded = await admin.auth().verifyIdToken(token);
+
+        const uid = decoded.uid;
+
+        const userRef = db
+            .collection("users")
+            .doc(uid);
+
+        const snap = await userRef.get();
+
+        // Tạo user nếu chưa tồn tại
+        if (!snap.exists) {
+
+            await userRef.set({
+
+                uid,
+
+                email: decoded.email || "",
+
+                name: decoded.name || "",
+
+                avatar: decoded.picture || "",
+
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+
+                lastLogin: admin.firestore.FieldValue.serverTimestamp(),
+
+                role: "user"
+
+            });
+
+        } else {
+
+            await userRef.update({
+
+                lastLogin: admin.firestore.FieldValue.serverTimestamp(),
+
+                email: decoded.email || "",
+
+                name: decoded.name || "",
+
+                avatar: decoded.picture || ""
+
+            });
+
+        }
+
+        res.json({
+
+            success: true,
+
+            uid,
+
+            user: {
+
+                uid,
+
+                email: decoded.email,
+
+                name: decoded.name,
+
+                avatar: decoded.picture
+
+            }
+
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(401).json({
+
+            success: false,
+
+            message: "Token không hợp lệ"
+
+        });
+
+    }
+
+});
+
+// ==============================
+// ĐĂNG XUẤT
+// ==============================
+app.post("/api/logout", (req, res) => {
+
+    res.json({
+        success: true
+    });
+
+});
 
 // ---------- Bài nổi bật ----------
 app.get("/api/featured", async (req, res) => {
