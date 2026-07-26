@@ -20,7 +20,7 @@ import {
 
 const firebaseConfig = {
     apiKey: "AIzaSyBdEzvwzf-O-fTFbZyThoFcc45RSIHhiXA",
-    authDomain: "wiki-hydyar.firebaseapp.com",
+    authDomain: "wiki-hydyar.up.railway.app",
     projectId: "wiki-hydyar",
     storageBucket: "wiki-hydyar.firebasestorage.app",
     messagingSenderId: "592832721653",
