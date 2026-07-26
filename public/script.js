@@ -300,21 +300,16 @@ profile: {
 
         return new Promise((resolve) => {
 
-            onAuthStateChanged(auth, async (user) => {
-    if (!user) return;
+            onAuthStateChanged(auth, (user) => {
 
-    const token = await user.getIdToken();
+                this.user = user || null;
 
-    await fetch("https://wiki-hydyar.up.railway.app/api/login", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            token
-        })
-    });
-});
+                this.updateUI();
+
+                resolve(user);
+
+            });
+
         });
 
     },
