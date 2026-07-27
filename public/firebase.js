@@ -12,6 +12,7 @@ import {
 import {
   getAuth,
   GoogleAuthProvider,
+  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
   onAuthStateChanged,
@@ -32,7 +33,69 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
+// ===============================
+// 🔐 KHỞI TẠO VÀ XỬ LÝ AUTHENTICATION
+// ===============================
 
+// Check xem có đang chạy trong WebView (như Acode Preview) không
+function isWebView() {
+    const ua = navigator.userAgent || navigator.vendor || window.opera;
+    return (ua.indexOf('wv') !== -1 || /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test(ua));
+}
+
+// 1. Hàm gọi Đăng nhập (Dùng gán vào sự kiện Click của nút Đăng nhập)
+export async function loginWithGoogle() {
+    try {
+        if (isWebView()) {
+            console.log("Đang chạy trong WebView/Acode -> Dùng Redirect");
+            await signInWithRedirect(auth, googleProvider);
+        } else {
+            console.log("Đang chạy trên trình duyệt chuẩn -> Dùng Popup");
+            await signInWithPopup(auth, googleProvider);
+        }
+    } catch (error) {
+        console.error("Lỗi đăng nhập:", error);
+        // Fallback: Nếu popup bị trình duyệt chặn thì ép dùng Redirect
+        if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+            await signInWithRedirect(auth, googleProvider);
+        }
+    }
+}
+
+// 2. Hàm Đăng xuất
+export async function logoutUser() {
+    try {
+        await signOut(auth);
+        console.log("Đã đăng xuất");
+    } catch (error) {
+        console.error("Lỗi đăng xuất:", error);
+    }
+}
+
+// 3. Hàm Khởi tạo Auth (BẮT BUỘC KHỞI CHẠY LÚC APP LOAD)
+export function initAuth(onUserChanged) {
+    // A. Bắt kết quả trả về từ Redirect (Nếu trước đó dùng signInWithRedirect)
+    getRedirectResult(auth)
+        .then((result) => {
+            if (result) {
+                console.log("Đăng nhập thành công từ Redirect:", result.user);
+            }
+        })
+        .catch((error) => {
+            console.error("Lỗi xử lý Redirect:", error);
+        });
+
+    // B. Lắng nghe trạng thái User (Login / Logout)
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            console.log("User hiện tại:", user.displayName, user.email);
+            if (onUserChanged) onUserChanged(user);
+        } else {
+            console.log("Chưa đăng nhập");
+            if (onUserChanged) onUserChanged(null);
+        }
+    });
+}
 
 // ===============================
 // ✅ KHÔI PHỤC CACHE HOÀN CHỈNH
@@ -57,64 +120,34 @@ function setCachedData(key, data, persist = false) {
 }
 
 // ===============================
-// WIKI NỔI BẬT
-// ===============================
-// ===============================
 // API CONFIG
 // ===============================
 const API_URL = "https://wiki-hydyar.up.railway.app";
-
 
 // ===============================
 // WIKI NỔI BẬT
 // ===============================
 export async function getFeaturedArticles() {
-
     const cacheKey = "featuredArticles";
-
     const cached = getCachedData(cacheKey);
     if (cached) return cached;
 
     try {
-
-        const res = await fetch(
-            `${API_URL}/api/featured`,
-            {
-                method: "GET",
-                headers: {
-                    "Accept": "application/json"
-                }
-            }
-        );
-
+        const res = await fetch(`${API_URL}/api/featured`, {
+            method: "GET",
+            headers: { "Accept": "application/json" }
+        });
         const text = await res.text();
-
         console.log("API RESPONSE:", text);
 
         const json = JSON.parse(text);
+        if (!json.success) throw new Error("API trả về lỗi");
 
-        if (!json.success) {
-            throw new Error("API trả về lỗi");
-        }
-
-        setCachedData(
-            cacheKey,
-            json.data,
-            true
-        );
-
+        setCachedData(cacheKey, json.data, true);
         return json.data;
-
-
     } catch(err) {
-
-        console.error(
-            "Lỗi tải wiki nổi bật:",
-            err
-        );
-
+        console.error("Lỗi tải wiki nổi bật:", err);
         return [];
-
     }
 }
 
@@ -126,9 +159,9 @@ export async function getLatestArticles(){
     const cached = getCachedData(cacheKey);
     if (cached) return cached;
 
-    const q=query(collection(db,"wikiArticles"), orderBy("updatedAt","desc"), limit(10));
+    const q = query(collection(db, "wikiArticles"), orderBy("updatedAt", "desc"), limit(10));
     const snap = await getDocs(q);
-    const result = snap.docs.map(d=>({id:d.id,...d.data()}));
+    const result = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     setCachedData(cacheKey, result, true);
     return result;
 }
@@ -185,38 +218,23 @@ export async function getArticleBySlug(slug) {
 // TÌM KIẾM / BÀI CỘNG ĐỒNG / USER
 // ===============================
 export async function searchArticles(keyword){
-
-    keyword=keyword.toLowerCase();
-
-    const snap=await getDocs(collection(db,"wikiArticles"));
-
+    keyword = keyword.toLowerCase();
+    const snap = await getDocs(collection(db, "wikiArticles"));
     return snap.docs
-        .map(d=>({
-            id:d.id,
-            ...d.data()
-        }))
-        .filter(article=>{
-
-            return (
-
-                article.title?.toLowerCase().includes(keyword)
-
-                ||
-
-                article.desc?.toLowerCase().includes(keyword)
-
-                ||
-
-                article.keywords?.toLowerCase().includes(keyword)
-
-            );
-
-        });
-
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(article => (
+            article.title?.toLowerCase().includes(keyword) ||
+            article.desc?.toLowerCase().includes(keyword) ||
+            article.keywords?.toLowerCase().includes(keyword)
+        ));
 }
+
 export async function getCommunityPosts(){
-    const q=query(collection(db,"communityPosts"), orderBy("createdAt","desc"), limit(20));
+    const q = query(collection(db, "communityPosts"), orderBy("createdAt", "desc"), limit(20));
     const snap = await getDocs(q);
-    return snap.docs.map(d=>({id:d.id,...d.data()}));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
-export async function getCurrentUserData(){ return null; }
+
+export async function getCurrentUserData(){ 
+    return auth.currentUser; 
+}

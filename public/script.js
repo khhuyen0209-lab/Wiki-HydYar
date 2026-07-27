@@ -12,7 +12,11 @@ import {
     getDoc, doc, updateDoc, increment, query, where, getDocs, collection
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
-    onAuthStateChanged, signInWithPopup, getRedirectResult, signOut
+    onAuthStateChanged, 
+    signInWithPopup, 
+    signInWithRedirect, 
+    getRedirectResult, 
+    signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 (function () {
@@ -285,13 +289,22 @@ profile: {
       splitContentToPages(h){return h?h.split(/---trang\d+---/g).map(x=>x.trim()).filter(Boolean):[""];}
     },
 
-    auth: {
+        auth: {
     user: null,
 
+    // Hàm phụ trợ check WebView (Acode Preview)
+    isWebView() {
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        return (ua.indexOf('wv') !== -1 || /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test(ua));
+    },
+
     async check() {
+        // Bắt kết quả Redirect nếu trước đó dùng Redirect Login
         try {
-            // Chỉ giữ lại xử lý kết quả chuyển hướng nếu có, không ép buộc
-            await getRedirectResult(auth);
+            const redirectRes = await getRedirectResult(auth);
+            if (redirectRes) {
+                console.log("Đăng nhập thành công từ Redirect:", redirectRes.user);
+            }
         } catch (err) {
             console.warn("Bỏ qua lỗi redirect:", err.code);
         }
@@ -307,16 +320,26 @@ profile: {
 
     async login() {
         try {
-            // Ưu tiên dùng POPUP – hoạt động trên mọi trình duyệt, không bị chặn cookie
-            await signInWithPopup(auth, googleProvider);
+            // Linh hoạt: Nếu là WebView/Acode -> Redirect. Nếu là Chrome chuẩn -> Popup
+            if (this.isWebView()) {
+                console.log("Môi trường WebView/Acode: Chuyển sang signInWithRedirect");
+                await signInWithRedirect(auth, googleProvider);
+            } else {
+                console.log("Môi trường Trình duyệt chuẩn: Chạy signInWithPopup");
+                await signInWithPopup(auth, googleProvider);
+            }
         } catch (err) {
             console.error("Đăng nhập thất bại:", err.code, err.message);
 
-            // Thông báo rõ ràng cho người dùng
-            let msg = "Đăng nhập thất bại, vui lòng thử lại sau.";
+            // Fallback: Nếu trình duyệt thường nhưng chặn Popup thì dùng Redirect
             if (err.code === "auth/popup-blocked") {
-                msg = "⚠️ Trình duyệt chặn cửa sổ bật lên!\nVui lòng cho phép bật cửa sổ cho trang này rồi thử lại.";
-            } else if (err.code === "auth/cancelled-popup-request") {
+                console.warn("Popup bị chặn, chuyển sang Redirect...");
+                await signInWithRedirect(auth, googleProvider);
+                return;
+            }
+
+            let msg = "Đăng nhập thất bại, vui lòng thử lại sau.";
+            if (err.code === "auth/cancelled-popup-request") {
                 msg = "Đã hủy đăng nhập.";
             } else if (err.code === "auth/network-request-failed") {
                 msg = "Lỗi mạng, kiểm tra kết nối internet nhé.";
@@ -407,8 +430,6 @@ profile: {
         menuList.append(loginBtn);
     }
 },
-
-
     search:{
     historyKey:"wiki_search_history",
 
