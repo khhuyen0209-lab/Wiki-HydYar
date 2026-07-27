@@ -122,7 +122,7 @@ function setCachedData(key, data, persist = false) {
 // ===============================
 // API CONFIG
 // ===============================
-const API_URL = "https://wiki-hydyar.up.railway.app";
+const API_URL = "https://wiki-hydyar.onrender.com";
 
 // ===============================
 // WIKI NỔI BẬT
