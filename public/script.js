@@ -6,7 +6,8 @@ import {
     searchArticles,
     db,
     auth,
-    googleProvider
+    googleProvider,
+    syncLoginToServer
 } from "./firebase.js";
   import {
     getDoc, doc, updateDoc, increment, query, where, getDocs, collection
@@ -310,11 +311,19 @@ profile: {
         }
 
         return new Promise((resolve) => {
-            onAuthStateChanged(auth, (user) => {
-                this.user = user || null;
-                this.updateUI();
-                resolve(user);
-            });
+            onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        console.log("✅ Firebase Auto Login", user.uid);
+    } else {
+        console.log("❌ Chưa đăng nhập");
+    }
+
+    await syncLoginToServer(user);
+
+    this.user = user || null;
+    this.updateUI();
+    resolve(user);
+});
         });
     },
 

@@ -42,6 +42,272 @@ admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
 
 // ==============================
+// HYDYAR RAM CACHE SYSTEM
+// ==============================
+
+const HydYarCache = {
+
+    wikiArticles: new Map(),
+    featuredArticles: new Map(),
+    latestArticles: new Map(),
+    categories: new Map(),
+    users: new Map(),
+    seo: new Map()
+
+};
+
+// ==============================
+// CACHE TTL
+// ==============================
+
+const CACHE_TIME = {
+
+    ARTICLE: 2 * 60 * 60 * 1000,
+    FEATURED: 30 * 60 * 1000,
+    LATEST: 10 * 60 * 1000,
+    CATEGORY: 24 * 60 * 60 * 1000,
+    USER: 30 * 60 * 1000,
+    SEO: 12 * 60 * 60 * 1000
+
+};
+
+// ==============================
+// CACHE LIMIT
+// ==============================
+
+const CACHE_LIMIT = {
+
+    ARTICLE: 1000,
+    FEATURED: 20,
+    LATEST: 20,
+    CATEGORY: 100,
+    USER: 1000,
+    SEO: 500
+
+};
+
+// ==============================
+// CACHE GET
+// ==============================
+
+function cacheGet(map, key) {
+
+    const item = map.get(key);
+
+    if (!item) return null;
+
+    if (item.expire <= Date.now()) {
+
+        map.delete(key);
+
+        return null;
+
+    }
+
+    item.lastAccess = Date.now();
+
+    return item.data;
+
+}
+
+// ==============================
+// CACHE SET
+// ==============================
+
+function cacheSet(map, key, data, ttl, limit = Infinity) {
+
+    if (map.has(key)) {
+
+        map.delete(key);
+
+    }
+
+    if (map.size >= limit) {
+
+        let oldestKey = null;
+        let oldestTime = Infinity;
+
+        for (const [k, v] of map) {
+
+            if (v.lastAccess < oldestTime) {
+
+                oldestTime = v.lastAccess;
+                oldestKey = k;
+
+            }
+
+        }
+
+        if (oldestKey !== null) {
+
+            map.delete(oldestKey);
+
+        }
+
+    }
+
+    map.set(key, {
+
+        data,
+        expire: Date.now() + ttl,
+        lastAccess: Date.now()
+
+    });
+
+}
+
+// ==============================
+// CACHE DELETE
+// ==============================
+
+function cacheDelete(map, key) {
+
+    map.delete(key);
+
+}
+
+// ==============================
+// CACHE CLEAR
+// ==============================
+
+function cacheClear(map) {
+
+    map.clear();
+
+}
+
+// ==============================
+// CLEAR ALL CACHE
+// ==============================
+
+function clearAllCache() {
+
+    for (const map of Object.values(HydYarCache)) {
+
+        map.clear();
+
+    }
+
+    console.log("🧹 Đã xóa toàn bộ HydYar Cache");
+
+}
+
+// ==============================
+// CACHE STATS
+// ==============================
+
+function cacheStats() {
+
+    const ram = process.memoryUsage();
+
+    return {
+
+        wikiArticles: HydYarCache.wikiArticles.size,
+        featuredArticles: HydYarCache.featuredArticles.size,
+        latestArticles: HydYarCache.latestArticles.size,
+        categories: HydYarCache.categories.size,
+        users: HydYarCache.users.size,
+        seo: HydYarCache.seo.size,
+
+        total:
+
+            HydYarCache.wikiArticles.size +
+            HydYarCache.featuredArticles.size +
+            HydYarCache.latestArticles.size +
+            HydYarCache.categories.size +
+            HydYarCache.users.size +
+            HydYarCache.seo.size,
+
+        heapUsedMB: Math.round(ram.heapUsed / 1024 / 1024),
+        heapTotalMB: Math.round(ram.heapTotal / 1024 / 1024),
+        rssMB: Math.round(ram.rss / 1024 / 1024)
+
+    };
+
+}
+
+// ==============================
+// CACHE CLEANER
+// ==============================
+
+setInterval(() => {
+
+    const now = Date.now();
+
+    let removed = 0;
+
+    for (const map of Object.values(HydYarCache)) {
+
+        if (!(map instanceof Map)) continue;
+
+        for (const [key, value] of map) {
+
+            if (value.expire <= now) {
+
+                map.delete(key);
+
+                removed++;
+
+            }
+
+        }
+
+    }
+
+    const ramMB = process.memoryUsage().heapUsed / 1024 / 1024;
+
+    if (ramMB > 420) {
+
+        console.log("⚠ RAM cao (" + Math.round(ramMB) + "MB) -> Dọn toàn bộ cache");
+
+        clearAllCache();
+
+        if (global.gc) {
+
+            global.gc();
+
+        }
+
+    }
+
+    if (removed > 0) {
+
+        console.log(`🗑️ Cache Cleaner: Đã xóa ${removed} cache`);
+
+    }
+
+}, 5 * 60 * 1000);
+
+// ==============================
+// CACHE LOGGER
+// ==============================
+
+setInterval(() => {
+
+    const s = cacheStats();
+
+    console.log(`
+================ HYDYAR CACHE ================
+
+📄 Articles  : ${s.wikiArticles}
+⭐ Featured  : ${s.featuredArticles}
+🆕 Latest    : ${s.latestArticles}
+📂 Category  : ${s.categories}
+👤 Users     : ${s.users}
+🌐 SEO       : ${s.seo}
+
+📦 Total Cache : ${s.total}
+
+🧠 Heap Used  : ${s.heapUsedMB} MB
+🧠 Heap Total : ${s.heapTotalMB} MB
+💾 RSS        : ${s.rssMB} MB
+
+==============================================
+`);
+
+}, 30 * 60 * 1000);
+
+// ==============================
 // MIDDLEWARE BẢO MẬT
 // ==============================
 const requireAuth = (req, res, next) => {
@@ -138,12 +404,162 @@ app.get("/api/auth/status", (req, res) => {
 // API NỘI DUNG
 // ==============================
 app.get("/api/featured", async (req, res) => {
-  try {
-    const snap = await db.collection("wikiArticles").where("featured", "==", true).limit(6).get();
-    res.json({ success: true, data: snap.docs.map(d => ({ id: d.id, ...d.data() })) });
-  } catch (err) {
-    res.status(500).json({ success: false, message: "Lỗi tải bài nổi bật" });
-  }
+
+    const cache = cacheGet(HydYarCache.featuredArticles, "featured");
+
+    if (cache) {
+        return res.json({
+            success: true,
+            cached: true,
+            data: cache
+        });
+    }
+
+    try {
+
+        const snap = await db.collection("wikiArticles")
+            .where("featured", "==", true)
+            .orderBy("updatedAt", "desc")
+            .limit(3)
+            .get();
+
+        const data = snap.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        cacheSet(
+            HydYarCache.featuredArticles,
+            "featured",
+            data,
+            CACHE_TIME.FEATURED
+        );
+
+        res.json({
+            success: true,
+            cached: false,
+            data
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false,
+            message: "Không thể tải bài nổi bật"
+        });
+
+    }
+
+});
+
+app.get("/api/latest", async (req, res) => {
+
+    const cache = cacheGet(HydYarCache.wikiArticles, "latest");
+
+    if (cache) {
+        return res.json({
+            success: true,
+            cached: true,
+            data: cache
+        });
+    }
+
+    try {
+
+        const snap = await db.collection("wikiArticles")
+            .orderBy("updatedAt", "desc")
+            .limit(3)
+            .get();
+
+        const data = snap.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        cacheSet(
+            HydYarCache.wikiArticles,
+            "latest",
+            data,
+            CACHE_TIME.FEATURED
+        );
+
+        res.json({
+            success: true,
+            cached: false,
+            data
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false,
+            message: "Không thể tải bài mới"
+        });
+
+    }
+
+});
+
+app.get("/api/article/:id", async (req, res) => {
+
+    const id = req.params.id;
+
+    const cache = cacheGet(HydYarCache.wikiArticles, id);
+
+    if (cache) {
+        return res.json({
+            success: true,
+            cached: true,
+            data: cache
+        });
+    }
+
+    try {
+
+        const doc = await db.collection("wikiArticles")
+            .doc(id)
+            .get();
+
+        if (!doc.exists) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy bài viết"
+            });
+        }
+
+        const data = {
+            id: doc.id,
+            ...doc.data()
+        };
+
+        cacheSet(
+            HydYarCache.wikiArticles,
+            id,
+            data,
+            CACHE_TIME.ARTICLE
+        );
+
+        res.json({
+            success: true,
+            cached: false,
+            data
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false,
+            message: "Không thể tải bài viết"
+        });
+
+    }
+
 });
 
 app.post("/api/article/:id/view", async (req, res) => {

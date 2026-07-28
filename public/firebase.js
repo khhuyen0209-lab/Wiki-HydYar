@@ -38,7 +38,10 @@ export const googleProvider = new GoogleAuthProvider();
 // ===============================
 const API_URL = "https://wiki-hydyar.onrender.com";
 
-async function syncLoginToServer(user) {
+export async function syncLoginToServer(user) {
+
+  alert("Đã vào syncLoginToServer");
+  
     try {
         const token = await user.getIdToken(true);
 
@@ -182,44 +185,66 @@ function setCachedData(key, data, persist = false) {
 // WIKI NỔI BẬT
 // ===============================
 export async function getFeaturedArticles() {
+
     const cacheKey = "featuredArticles";
+
     const cached = getCachedData(cacheKey);
+
     if (cached) return cached;
 
     try {
-        const res = await fetch(`${API_URL}/api/featured`, {
-            method: "GET",
-            headers: { "Accept": "application/json" }
-        });
-        const text = await res.text();
-        console.log("API RESPONSE:", text);
 
-        const json = JSON.parse(text);
-        if (!json.success) throw new Error("API trả về lỗi");
+        const res = await fetch(`${API_URL}/api/featured`);
+
+        const json = await res.json();
+
+        if (!json.success) throw new Error();
 
         setCachedData(cacheKey, json.data, true);
+
         return json.data;
-    } catch(err) {
-        console.error("Lỗi tải wiki nổi bật:", err);
+
+    } catch (err) {
+
+        console.error(err);
+
         return [];
+
     }
+
 }
 
 // ===============================
 // WIKI MỚI CẬP NHẬT
 // ===============================
-export async function getLatestArticles(){
+export async function getLatestArticles() {
+
     const cacheKey = "latestArticles";
     const cached = getCachedData(cacheKey);
+
     if (cached) return cached;
 
-    const q = query(collection(db, "wikiArticles"), orderBy("updatedAt", "desc"), limit(10));
-    const snap = await getDocs(q);
-    const result = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    setCachedData(cacheKey, result, true);
-    return result;
-}
+    try {
 
+        const res = await fetch(`${API_URL}/api/latest`);
+
+        const json = await res.json();
+
+        if (!json.success) throw new Error();
+
+        setCachedData(cacheKey, json.data, true);
+
+        return json.data;
+
+    } catch (err) {
+
+        console.error("Lỗi tải bài mới:", err);
+
+        return [];
+
+    }
+
+} 
 // ===============================
 // DANH MỤC
 // ===============================
@@ -241,31 +266,37 @@ export async function getCategories() {
 // ✅ TÌM BÀI VIẾT ĐÚNG + CACHE
 // ===============================
 export async function getArticleBySlug(slug) {
-    if (!slug || typeof slug !== 'string' || slug.trim() === '') return null;
+
+    if (!slug) return null;
+
     const cleanSlug = slug.trim().toLowerCase();
+
     const cacheKey = `article_${cleanSlug}`;
+
     const cached = getCachedData(cacheKey);
+
     if (cached) return cached;
 
     try {
-        const ref = doc(db, "wikiArticles", cleanSlug);
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-            const result = { id: snap.id, ...snap.data() };
-            setCachedData(cacheKey, result);
-            return result;
-        }
-    } catch {}
 
-    try {
-        const q = query(collection(db, "wikiArticles"), where("slug", "==", cleanSlug), limit(1));
-        const snap = await getDocs(q);
-        if (snap.empty) return null;
-        const d = snap.docs[0];
-        const result = { id: d.id, ...d.data() };
-        setCachedData(cacheKey, result);
-        return result;
-    } catch { return null; }
+        const res = await fetch(`${API_URL}/api/article/${encodeURIComponent(cleanSlug)}`);
+
+        const json = await res.json();
+
+        if (!json.success) return null;
+
+        setCachedData(cacheKey, json.data);
+
+        return json.data;
+
+    } catch (err) {
+
+        console.error(err);
+
+        return null;
+
+    }
+
 }
 
 // ===============================
