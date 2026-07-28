@@ -34,6 +34,36 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
 // ===============================
+// ĐỒNG BỘ FIREBASE -> SERVER
+// ===============================
+const API_URL = "https://wiki-hydyar.onrender.com";
+
+async function syncLoginToServer(user) {
+    try {
+        const token = await user.getIdToken(true);
+
+        const res = await fetch(`${API_URL}/api/login`, {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ token })
+        });
+
+        const json = await res.json();
+
+        if (!json.success) {
+            throw new Error(json.message || "Đồng bộ thất bại");
+        }
+
+        console.log("✅ Đã đồng bộ với Server");
+    } catch (err) {
+        console.error("❌ Không thể đồng bộ Server:", err);
+    }
+}
+
+// ===============================
 // 🔐 KHỞI TẠO VÀ XỬ LÝ AUTHENTICATION
 // ===============================
 
@@ -47,16 +77,24 @@ function isWebView() {
 export async function loginWithGoogle() {
     try {
         if (isWebView()) {
-            console.log("Đang chạy trong WebView/Acode -> Dùng Redirect");
+            console.log("Đang chạy trong WebView -> Redirect");
             await signInWithRedirect(auth, googleProvider);
-        } else {
-            console.log("Đang chạy trên trình duyệt chuẩn -> Dùng Popup");
-            await signInWithPopup(auth, googleProvider);
+            return;
         }
+
+        console.log("Đang chạy trên trình duyệt -> Popup");
+
+        const result = await signInWithPopup(auth, googleProvider);
+
+        await syncLoginToServer(result.user);
+
     } catch (error) {
         console.error("Lỗi đăng nhập:", error);
-        // Fallback: Nếu popup bị trình duyệt chặn thì ép dùng Redirect
-        if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+
+        if (
+            error.code === "auth/popup-blocked" ||
+            error.code === "auth/popup-closed-by-user"
+        ) {
             await signInWithRedirect(auth, googleProvider);
         }
     }
@@ -65,8 +103,16 @@ export async function loginWithGoogle() {
 // 2. Hàm Đăng xuất
 export async function logoutUser() {
     try {
+
+        await fetch(`${API_URL}/api/logout`, {
+            method: "POST",
+            credentials: "include"
+        });
+
         await signOut(auth);
+
         console.log("Đã đăng xuất");
+
     } catch (error) {
         console.error("Lỗi đăng xuất:", error);
     }
@@ -74,27 +120,40 @@ export async function logoutUser() {
 
 // 3. Hàm Khởi tạo Auth (BẮT BUỘC KHỞI CHẠY LÚC APP LOAD)
 export function initAuth(onUserChanged) {
-    // A. Bắt kết quả trả về từ Redirect (Nếu trước đó dùng signInWithRedirect)
+
     getRedirectResult(auth)
-        .then((result) => {
-            if (result) {
-                console.log("Đăng nhập thành công từ Redirect:", result.user);
+        .then(async (result) => {
+
+            if (result?.user) {
+                console.log("Đăng nhập Redirect thành công");
+
+                await syncLoginToServer(result.user);
             }
+
         })
         .catch((error) => {
-            console.error("Lỗi xử lý Redirect:", error);
+            console.error("Lỗi Redirect:", error);
         });
 
-    // B. Lắng nghe trạng thái User (Login / Logout)
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
+
         if (user) {
-            console.log("User hiện tại:", user.displayName, user.email);
+
+            await syncLoginToServer(user);
+
+            console.log("User:", user.displayName);
+
             if (onUserChanged) onUserChanged(user);
+
         } else {
+
             console.log("Chưa đăng nhập");
+
             if (onUserChanged) onUserChanged(null);
         }
+
     });
+
 }
 
 // ===============================
@@ -118,11 +177,6 @@ function setCachedData(key, data, persist = false) {
         sessionStorage.setItem("wikiMetaCache", JSON.stringify(wikiMetaCache));
     }
 }
-
-// ===============================
-// API CONFIG
-// ===============================
-const API_URL = "https://wiki-hydyar.onrender.com";
 
 // ===============================
 // WIKI NỔI BẬT

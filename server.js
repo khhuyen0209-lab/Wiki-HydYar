@@ -8,10 +8,20 @@ const session = require("express-session");
 const app = express();
 
 // ==============================
-// CORS + JSON + SESSION
+// 🔧 CẤU HÌNH CÙNG DOMAIN
 // ==============================
-app.use(cors({ origin: "*", credentials: true }));
+// 1. Tin tưởng proxy (bắt buộc trên Render)
+app.set("trust proxy", 1);
+
+// 2. CORS an toàn khi cùng domain
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
+
 app.use(express.json());
+
+// 3. Session giữ nguyên cấu hình phù hợp cùng domain
 app.use(session({
   secret: process.env.SESSION_SECRET || "hydyar-wiki-secret-2026",
   resave: false,
@@ -49,7 +59,7 @@ const requireAdmin = (req, res, next) => {
 app.use(express.static(path.join(__dirname, "public")));
 
 // ==============================================
-// ✅ XỬ LÝ ĐƯỜNG DẪN FIREBASE AUTH – ĐÚNG VỊ TRÍ
+// XỬ LÝ ĐƯỜNG DẪN FIREBASE AUTH
 // ==============================================
 app.get("/__/auth/handler", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
@@ -85,7 +95,15 @@ app.post("/api/login", async (req, res) => {
     }
 
     req.session.user = { uid, email: userData.email, name: userData.name, role: userSnap.exists ? userSnap.data().role : "user" };
-    res.json({ success: true, user: req.session.user });
+    
+    // 4. Lưu session rõ ràng trước khi trả về
+    req.session.save((err) => {
+      if (err) {
+        console.error("❌ Lỗi lưu session:", err);
+        return res.status(500).json({ success: false, message: "Không thể lưu phiên đăng nhập" });
+      }
+      res.json({ success: true, user: req.session.user });
+    });
   } catch (err) {
     console.error("❌ Lỗi đăng nhập:", err);
     res.status(401).json({ success: false, message: "Token không hợp lệ" });
@@ -93,13 +111,27 @@ app.post("/api/login", async (req, res) => {
 });
 
 app.post("/api/logout", (req, res) => {
-  req.session.destroy();
-  res.clearCookie("connect.sid");
-  res.json({ success: true });
+  // 5. Hủy session an toàn
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("❌ Lỗi đăng xuất:", err);
+      return res.status(500).json({ success: false, message: "Không thể đăng xuất" });
+    }
+    res.clearCookie("connect.sid");
+    res.json({ success: true });
+  });
 });
 
 app.get("/api/me", requireAuth, (req, res) => {
   res.json({ success: true, user: req.session.user });
+});
+
+// 6. API kiểm tra trạng thái đăng nhập
+app.get("/api/auth/status", (req, res) => {
+  if (!req.session.user) {
+    return res.json({ success: false, loggedIn: false });
+  }
+  res.json({ success: true, loggedIn: true, user: req.session.user });
 });
 
 // ==============================
