@@ -59,7 +59,7 @@ async function splitWikiPages() {
     return;
   }
 
-  const content = snap.data().Content;
+  const content = snap.data().content || "";
 
   const pages = content.split(/---trang\d+---/);
 
