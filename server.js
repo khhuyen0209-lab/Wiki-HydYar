@@ -59,14 +59,17 @@ async function splitWikiPages() {
     return;
   }
 
+
   const data = snap.data();
 
   const content = data.content;
 
+
   if (!content) {
-    console.log("❌ Bài viết không có content");
+    console.log("❌ Không có content");
     return;
   }
+
 
 
   // ==============================
@@ -82,21 +85,24 @@ async function splitWikiPages() {
 
     const batch = db.batch();
 
-    oldPages.forEach(doc => {
+    oldPages.forEach(doc=>{
       batch.delete(doc.ref);
     });
 
+
     await batch.commit();
 
+
     console.log(
-      `🗑️ Đã xóa ${oldPages.size} trang cũ`
+      `🗑️ Đã xóa ${oldPages.size} page cũ`
     );
+
   }
 
 
 
   // ==============================
-  // TÁCH TRANG
+  // TÁCH PAGE
   // ==============================
 
   const pages = content.split(
@@ -107,13 +113,14 @@ async function splitWikiPages() {
   let count = 0;
 
 
-  for (let i = 1; i < pages.length; i++) {
+
+  for(let i = 1; i < pages.length; i++){
 
 
     let pageContent = pages[i].trim();
 
 
-    if (!pageContent)
+    if(!pageContent)
       continue;
 
 
@@ -121,20 +128,22 @@ async function splitWikiPages() {
     let title = `Trang ${i}`;
 
 
+
     const titleMatch =
       pageContent.match(
-        /^## Trang \d+: (.*)/m
+        /^## (?:Trang \d+: )?(.*)/m
       );
 
 
-    if (titleMatch) {
+
+    if(titleMatch){
 
       title = titleMatch[1].trim();
 
 
       pageContent =
         pageContent.replace(
-          /^## Trang \d+: .*\n?/m,
+          /^## .*\n?/m,
           ""
         ).trim();
 
@@ -143,23 +152,22 @@ async function splitWikiPages() {
 
 
     // ==============================
-    // XÁC ĐỊNH LEVEL
+    // LEVEL
     // ==============================
 
     let level = 1;
 
 
-    if (
-      /^\d+\.\d+\.\d+\s/m.test(pageContent)
-    ) {
+    if(
+      /^\s*\d+\.\d+\.\d+/m.test(pageContent)
+    ){
 
       level = 3;
 
     }
-
-    else if (
-      /^\d+\.\d+\s/m.test(pageContent)
-    ) {
+    else if(
+      /^\s*\d+\.\d+/m.test(pageContent)
+    ){
 
       level = 2;
 
@@ -174,13 +182,17 @@ async function splitWikiPages() {
 
         title,
 
-        content: pageContent,
+        content:pageContent,
 
         level,
 
-        order: i,
+        order:i,
 
-        updatedAt: new Date()
+        createdAt:
+          admin.firestore.FieldValue.serverTimestamp(),
+
+        updatedAt:
+          admin.firestore.FieldValue.serverTimestamp()
 
       });
 
@@ -190,7 +202,7 @@ async function splitWikiPages() {
 
 
     console.log(
-      `✅ Tạo trang ${i}: ${title} (level ${level})`
+      `✅ Page ${i}: ${title} | level ${level}`
     );
 
   }
@@ -198,7 +210,7 @@ async function splitWikiPages() {
 
 
   console.log(
-    `🎉 Hoàn tất! Đã tạo ${count} trang`
+    `🎉 Hoàn tất tách ${count} page`
   );
 
 }
@@ -666,59 +678,117 @@ app.get("/api/latest", async (req, res) => {
 
 });
 
-app.get("/api/article/:id", async (req, res) => {
+app.get("/api/article/:id", async (req,res)=>{
 
     const id = req.params.id;
 
-    const cache = cacheGet(HydYarCache.wikiArticles, id);
 
-    if (cache) {
-        return res.json({
-            success: true,
-            cached: true,
-            data: cache
-        });
+    const cache =
+      cacheGet(
+        HydYarCache.wikiArticles,
+        id
+      );
+
+
+    if(cache){
+
+      return res.json({
+        success:true,
+        cached:true,
+        data:cache
+      });
+
     }
+
+
 
     try {
 
-        const doc = await db.collection("wikiArticles")
-            .doc(id)
-            .get();
 
-        if (!doc.exists) {
-            return res.status(404).json({
-                success: false,
-                message: "Không tìm thấy bài viết"
-            });
-        }
+      const articleSnap =
+        await db.collection("wikiArticles")
+        .doc(id)
+        .get();
 
-        const data = {
-            id: doc.id,
-            ...doc.data()
-        };
 
-        cacheSet(
-            HydYarCache.wikiArticles,
-            id,
-            data,
-            CACHE_TIME.ARTICLE
-        );
 
-        res.json({
-            success: true,
-            cached: false,
-            data
+      if(!articleSnap.exists){
+
+        return res.status(404).json({
+          success:false,
+          message:"Không tìm thấy bài viết"
         });
 
-    } catch (err) {
+      }
 
-        console.error(err);
 
-        res.status(500).json({
-            success: false,
-            message: "Không thể tải bài viết"
-        });
+
+      const pagesSnap =
+        await db.collection("wikiArticles")
+        .doc(id)
+        .collection("pages")
+        .orderBy("order","asc")
+        .get();
+
+
+
+      const pages =
+        pagesSnap.docs.map(doc=>({
+
+          id:doc.id,
+
+          ...doc.data()
+
+        }));
+
+
+
+      const data={
+
+        id:articleSnap.id,
+
+        ...articleSnap.data(),
+
+        pages
+
+      };
+
+
+
+      cacheSet(
+        HydYarCache.wikiArticles,
+        id,
+        data,
+        CACHE_TIME.ARTICLE
+      );
+
+
+
+      res.json({
+
+        success:true,
+
+        cached:false,
+
+        data
+
+      });
+
+
+
+    }
+    catch(err){
+
+      console.error(err);
+
+
+      res.status(500).json({
+
+        success:false,
+
+        message:"Lỗi tải bài viết"
+
+      });
 
     }
 
