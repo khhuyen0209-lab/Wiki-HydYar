@@ -55,49 +55,152 @@ async function splitWikiPages() {
   const snap = await articleRef.get();
 
   if (!snap.exists) {
-    console.log("Không tìm thấy bài viết");
+    console.log("❌ Không tìm thấy bài viết");
     return;
   }
 
-  const content = snap.data().content || "";
+  const data = snap.data();
 
-  const pages = content.split(/---trang\d+---/);
+  const content = data.content;
+
+  if (!content) {
+    console.log("❌ Bài viết không có content");
+    return;
+  }
+
+
+  // ==============================
+  // XÓA PAGE CŨ
+  // ==============================
+
+  const oldPages = await articleRef
+    .collection("pages")
+    .get();
+
+
+  if (!oldPages.empty) {
+
+    const batch = db.batch();
+
+    oldPages.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+
+    console.log(
+      `🗑️ Đã xóa ${oldPages.size} trang cũ`
+    );
+  }
+
+
+
+  // ==============================
+  // TÁCH TRANG
+  // ==============================
+
+  const pages = content.split(
+    /---trang\d+---/i
+  );
+
+
+  let count = 0;
+
 
   for (let i = 1; i < pages.length; i++) {
 
+
     let pageContent = pages[i].trim();
 
-    if (!pageContent) continue;
+
+    if (!pageContent)
+      continue;
+
+
 
     let title = `Trang ${i}`;
 
-    const match = pageContent.match(
-      /## Trang \d+: (.*)/
-    );
 
-    if (match) {
-      title = match[1];
+    const titleMatch =
+      pageContent.match(
+        /^## Trang \d+: (.*)/m
+      );
 
-      pageContent = pageContent.replace(
-        /## Trang \d+: .*\n/,
-        ""
-      ).trim();
+
+    if (titleMatch) {
+
+      title = titleMatch[1].trim();
+
+
+      pageContent =
+        pageContent.replace(
+          /^## Trang \d+: .*\n?/m,
+          ""
+        ).trim();
+
     }
+
+
+
+    // ==============================
+    // XÁC ĐỊNH LEVEL
+    // ==============================
+
+    let level = 1;
+
+
+    if (
+      /^\d+\.\d+\.\d+\s/m.test(pageContent)
+    ) {
+
+      level = 3;
+
+    }
+
+    else if (
+      /^\d+\.\d+\s/m.test(pageContent)
+    ) {
+
+      level = 2;
+
+    }
+
+
 
     await articleRef
       .collection("pages")
       .doc(String(i))
       .set({
+
         title,
+
         content: pageContent,
+
+        level,
+
         order: i,
+
         updatedAt: new Date()
+
       });
 
-    console.log(`✅ Tạo trang ${i}: ${title}`);
+
+
+    count++;
+
+
+    console.log(
+      `✅ Tạo trang ${i}: ${title} (level ${level})`
+    );
+
   }
 
-  console.log("🎉 Tách trang hoàn tất");
+
+
+  console.log(
+    `🎉 Hoàn tất! Đã tạo ${count} trang`
+  );
+
 }
 
 // ==============================
