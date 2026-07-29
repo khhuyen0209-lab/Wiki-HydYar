@@ -287,7 +287,52 @@ profile: {
       parseInline(h){return h.replace(/\*\*\*(.*?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\*(.*?)\*/g,"<em>$1</em>").replace(/__(.*?)__/g,"<strong>$1</strong>").replace(/_(.*?)_/g,"<em>$1</em>").replace(/~~(.*?)~~/g,"<del>$1</del>").replace(/\^([^^]+)\^/g,"<sup>$1</sup>").replace(/~([^~]+)~/g,"<sub>$1</sub>").replace(/:warning:/g,"⚠️").replace(/:white_check_mark:/g,"✅").replace(/:x:/g,"❌").replace(/:bulb:/g,"💡").replace(/:rocket:/g,"🚀").replace(/:book:/g,"📖");},
       parseParagraph(h){return h.split(/\n{2,}/).map(p=>/^\s*<(h\d|blockquote|ul|ol|table|pre|hr|div|img)/i.test(p)?p:`<p>${p.replace(/\n/g,"<br>")}</p>`).join("");},
       parse(t){if(!t)return"";let h=this.escapeHTML(t);h=this.parseCode(h);h=this.parseTable(h);h=this.parseImage(h);h=this.parseLink(h);h=this.parseHeading(h);h=h.replace(/^\s*&gt;\s?(.*)$/gm,"<blockquote>$1</blockquote>").replace(/^(---|\*\*\*|___)$/gm,"<hr>");h=this.parseList(h);h=this.parseInline(h);h=this.parseParagraph(h);return h;},
-      splitContentToPages(h){return h?h.split(/---trang\d+---/g).map(x=>x.trim()).filter(Boolean):[""];}
+      buildPages(article){
+
+    let h1 = 0;
+    let h2 = 0;
+    let h3 = 0;
+
+    return article.pages.map(page=>{
+
+        if(page.type) return page;
+
+        let number = "";
+
+        if(page.level===1){
+
+            h1++;
+            h2=0;
+            h3=0;
+            number=`${h1}`;
+
+        }
+
+        else if(page.level===2){
+
+            h2++;
+            h3=0;
+            number=`${h1}.${h2}`;
+
+        }
+
+        else if(page.level===3){
+
+            h3++;
+            number=`${h1}.${h2}.${h3}`;
+
+        }
+
+        return{
+
+            ...page,
+            number
+
+        };
+
+    });
+
+}
     },
 
         auth: {
@@ -820,7 +865,7 @@ if (header && searchInput) {
     },
     renderArticle(article) {
       const { $dom: d, bookState: b } = appStatus.state;
-      const pages = appStatus.markdown.splitContentToPages(article.content || "");
+      const pages = appStatus.markdown.buildPages(article);
 
       appStatus.article.book.reset(article.id, pages.length);
 
@@ -841,7 +886,52 @@ if (header && searchInput) {
           <div class="book-wrapper" id="bookWrapper">
             <button class="fullscreen-btn" id="fullscreenBtn">${appStatus.ui.icon("solar:full-screen-square-bold")}</button>
             <div class="book-pages" id="bookPages">
-              ${pages.map(x => `<div class="book-page markdown-body">${appStatus.markdown.parse(x)}</div>`).join("")}
+            ${pages.map(page=>{
+
+    if(page.type==="infobox"){
+
+        return `
+        <div class="book-page">
+
+            <h2>Thông tin</h2>
+
+        </div>`;
+    }
+
+    if(page.type==="toc"){
+
+        return `
+        <div class="book-page">
+
+            <h2>Mục lục</h2>
+
+            ${pages
+                .filter(x=>x.number)
+                .map(x=>`
+                    <div class="toc-item">
+                        ${x.number} ${x.title}
+                    </div>
+                `)
+                .join("")}
+
+        </div>`;
+    }
+
+    return `
+    <div class="book-page markdown-body">
+
+        <h2>
+
+            ${page.number}
+            ${page.title}
+
+        </h2>
+
+        ${appStatus.markdown.parse(page.content)}
+
+    </div>`;
+
+}).join("")}
             </div>
           </div>
           <div class="book-nav" id="normalBookNav">
