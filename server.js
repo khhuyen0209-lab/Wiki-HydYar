@@ -41,6 +41,65 @@ const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
 
+
+// ==============================
+// TOOL: TÁCH WIKI PAGES
+// ==============================
+
+async function splitWikiPages() {
+
+  const articleRef = db
+    .collection("wikiArticles")
+    .doc("big-bang");
+
+  const snap = await articleRef.get();
+
+  if (!snap.exists) {
+    console.log("Không tìm thấy bài viết");
+    return;
+  }
+
+  const content = snap.data().Content;
+
+  const pages = content.split(/---trang\d+---/);
+
+  for (let i = 1; i < pages.length; i++) {
+
+    let pageContent = pages[i].trim();
+
+    if (!pageContent) continue;
+
+    let title = `Trang ${i}`;
+
+    const match = pageContent.match(
+      /## Trang \d+: (.*)/
+    );
+
+    if (match) {
+      title = match[1];
+
+      pageContent = pageContent.replace(
+        /## Trang \d+: .*\n/,
+        ""
+      ).trim();
+    }
+
+    await articleRef
+      .collection("pages")
+      .doc(String(i))
+      .set({
+        title,
+        content: pageContent,
+        order: i,
+        updatedAt: new Date()
+      });
+
+    console.log(`✅ Tạo trang ${i}: ${title}`);
+  }
+
+  console.log("🎉 Tách trang hoàn tất");
+}
+
 // ==============================
 // HYDYAR RAM CACHE SYSTEM
 // ==============================
@@ -603,4 +662,10 @@ app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.ht
 // KHỞI ĐỘNG
 // ==============================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Wiki HydYar chạy tại cổng ${PORT}`));
+splitWikiPages().then(() => {
+
+  app.listen(PORT, () => 
+    console.log(`✅ Wiki HydYar chạy tại cổng ${PORT}`)
+  );
+
+});
