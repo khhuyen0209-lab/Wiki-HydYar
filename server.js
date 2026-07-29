@@ -832,10 +832,4 @@ app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.ht
 // KHỞI ĐỘNG
 // ==============================
 const PORT = process.env.PORT || 3000;
-splitWikiPages().then(() => {
-
-  app.listen(PORT, () => 
-    console.log(`✅ Wiki HydYar chạy tại cổng ${PORT}`)
-  );
-
-});
+app.listen(PORT, () => console.log(`✅ Wiki HydYar chạy tại cổng ${PORT}`));
