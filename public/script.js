@@ -297,14 +297,17 @@ profile: {
 
         if(page.type) return page;
 
+
         let number = "";
+
 
         if(page.level===1){
 
             h1++;
             h2=0;
             h3=0;
-            number=`${h1}`;
+
+            number=`${h1}.`;
 
         }
 
@@ -312,16 +315,19 @@ profile: {
 
             h2++;
             h3=0;
-            number=`${h1}.${h2}`;
+
+            number=`${h1}.${h2}.`;
 
         }
 
         else if(page.level===3){
 
             h3++;
-            number=`${h1}.${h2}.${h3}`;
+
+            number=`${h1}.${h2}.${h3}.`;
 
         }
+
 
         return{
 
@@ -889,14 +895,11 @@ if (header && searchInput) {
             ${pages.map(page=>{
 
     if(page.type==="infobox"){
-
-        return `
-        <div class="book-page">
-
-            <h2>Thông tin</h2>
-
-        </div>`;
-    }
+    return `
+    <div class="book-page markdown-body">
+        ${appStatus.markdown.parse(page.info || "")}
+    </div>`;
+}
 
     if(page.type==="toc"){
 

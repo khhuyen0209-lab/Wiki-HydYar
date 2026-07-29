@@ -724,22 +724,19 @@ app.get("/api/article/:id", async (req,res)=>{
 
 
       const pagesSnap =
-        await db.collection("wikiArticles")
-        .doc(id)
-        .collection("pages")
-        .orderBy("order","asc")
-        .get();
+  await db.collection("wikiArticles")
+  .doc(id)
+  .collection("pages")
+  .get();
 
 
-
-      const pages =
-        pagesSnap.docs.map(doc=>({
-
-          id:doc.id,
-
-          ...doc.data()
-
-        }));
+const pages =
+  pagesSnap.docs
+  .map(doc => ({
+      id: Number(doc.id),
+      ...doc.data()
+  }))
+  .sort((a,b)=>a.id-b.id);
 
 
 
