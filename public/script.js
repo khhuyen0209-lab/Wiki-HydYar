@@ -3,6 +3,7 @@ import {
     getLatestArticles,
     getCategories,
     getArticleBySlug,
+    getArticleById,
     searchArticles,
     db,
     auth,
@@ -129,39 +130,57 @@ import {
 
 
     return {
+    close:()=>{
+
+        if(done) return;
+
+        done=true;
+
+        clearTimeout(timer);
+        clearInterval(interval);
+
+        if(bar)
+            bar.style.width="100%";
+
+        setTimeout(()=>{
+
+            if(screen.parentNode)
+                screen.remove();
+
+        },200);
+
+    },
 
 
-        close:()=>{
+    offline,
+
+    success(){
+
+        if(done) return;
+
+        done=true;
+
+        clearTimeout(timer);
+        clearInterval(interval);
+
+        if(text)
+            text.textContent="Đã kết nối máy chủ ✓";
 
 
-            if(done) return;
+        if(bar)
+            bar.style.width="100%";
 
 
-            done=true;
+        setTimeout(()=>{
 
+            if(screen.parentNode)
+                screen.remove();
 
-            clearTimeout(timer);
-            clearInterval(interval);
+        },300);
 
+    }
 
-            if(bar)
-                bar.style.width="100%";
-
-
-            setTimeout(()=>{
-
-                if(screen.parentNode)
-                    screen.remove();
-
-            },200);
-
-
-        },
-
-
-        offline
-
-    };
+};
 
 }
 };
@@ -439,7 +458,53 @@ ${body}
 });
 },
       parseImage(h){return h.replace(/!\[([^\]]*)\]\(\s*([^)]+?)\s*(?:"([^"]+)")?\)/g,(_,a,s,c)=>{if(!/^https?:\/\//.test(s))return`<p class="img-error">Link ảnh không hợp lệ</p>`;return`<div class="img-wrapper"><img src="${encodeURI(s)}" alt="${this.escapeHTML(a)}" loading="lazy" onerror="this.parentElement.innerHTML='<p class=&quot;img-error&quot;>Không tải được ảnh</p>'">${c?`<div class="img-caption">${this.escapeHTML(c)}</div>`:""}</div>`;});},
-      parseLink(h){const t=this;return h.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer" class="md-link">$1</a>').replace(/\(\s*([^)]+?)\s*\)\s*\[(https?:\/\/[^\s\]]+)\]/g,'<a href="$2" target="_blank" rel="noopener noreferrer" class="md-link">$1</a>').replace(/^-?\s*([^:\n]+?)\s*:\s*(https?:\/\/[^\s<]+)/gm,(_,n,u)=>`<a href="${encodeURI(u)}" target="_blank" rel="noopener noreferrer" class="md-link">${t.escapeHTML(n)}</a>`).replace(/(^|[\s>])(https?:\/\/[^\s<"]+)/gm,(m,s,u)=>{try{const h=new URL(u).hostname.replace(/^www\./,""),n=/wikipedia\.org/.test(h)?"Wikipedia":/wikimedia\.org/.test(h)?"Wikimedia Commons":/nasa\.gov/.test(h)?"NASA":/esa\.int/.test(h)?"ESA":/youtube\.com/.test(h)?"YouTube":/github\.com/.test(h)?"GitHub":h;return`${s}<a href="${encodeURI(u)}" target="_blank" rel="noopener noreferrer" class="md-link">${n}</a>`;}catch{return m;}});},
+      parseLink(h){
+    const t = this;
+
+    // ===== Link nội bộ =====
+    h = h.replace(/\[([^\]|]+)\|([^\]]+)\]/g, (m, id, text) => {
+        return `
+<a href="#" class="wiki-link" data-id="${id.trim()}">
+    ${t.escapeHTML(text.trim())}
+</a>`;
+    });
+
+    // ===== Link ngoài =====
+    return h
+        .replace(
+            /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+            '<a href="$2" target="_blank" rel="noopener noreferrer" class="md-link">$1</a>'
+        )
+        .replace(
+            /\(\s*([^)]+?)\s*\)\s*\[(https?:\/\/[^\s\]]+)\]/g,
+            '<a href="$2" target="_blank" rel="noopener noreferrer" class="md-link">$1</a>'
+        )
+        .replace(
+            /^-?\s*([^:\n]+?)\s*:\s*(https?:\/\/[^\s<]+)/gm,
+            (_, n, u) =>
+                `<a href="${encodeURI(u)}" target="_blank" rel="noopener noreferrer" class="md-link">${t.escapeHTML(n)}</a>`
+        )
+        .replace(
+            /(^|[\s>])(https?:\/\/[^\s<"]+)/gm,
+            (m, s, u) => {
+                try{
+                    const host = new URL(u).hostname.replace(/^www\./,"");
+                    const name =
+                        /wikipedia\.org/.test(host) ? "Wikipedia" :
+                        /wikimedia\.org/.test(host) ? "Wikimedia Commons" :
+                        /nasa\.gov/.test(host) ? "NASA" :
+                        /esa\.int/.test(host) ? "ESA" :
+                        /youtube\.com/.test(host) ? "YouTube" :
+                        /github\.com/.test(host) ? "GitHub" :
+                        host;
+
+                    return `${s}<a href="${encodeURI(u)}" target="_blank" rel="noopener noreferrer" class="md-link">${name}</a>`;
+                }catch{
+                    return m;
+                }
+            }
+        );
+},
       parseHeading(h){return h.replace(/^###### (.*)$/gm,"<h6>$1</h6>").replace(/^##### (.*)$/gm,"<h5>$1</h5>").replace(/^#### (.*)$/gm,"<h4>$1</h4>").replace(/^### (.*)$/gm,"<h3>$1</h3>").replace(/^## (.*)$/gm,"<h2>$1</h2>").replace(/^# (.*)$/gm,"<h1>$1</h1>").replace(/^(\d+\.\d+(?:\.\d+)?)\s+(.*)$/gm,'<h4 class="md-sub-heading">$1 $2</h4>');},
       parseList(h){return h.replace(/^- \[ \] (.*)$/gm,'<div class="md-check"><input type="checkbox" disabled> $1</div>').replace(/^- \[x\] (.*)$/gmi,'<div class="md-check"><input type="checkbox" checked disabled> $1</div>').replace(/(?:^([-*]|\d+\.) .*(?:\r?\n|$))+/gm,m=>{const i=m.trim().split("\n").map(x=>x.replace(/^([-*]|\d+\.)\s*/,"").trim()).filter(Boolean);return`<ul>${i.map(x=>`<li>${x}</li>`).join("")}</ul>`;});},
       generateTOC(text){
@@ -1266,6 +1331,28 @@ d.fullscreenBtn.addEventListener("click", () => appStatus.article.fullscreen.tog
     appStatus.article.reader.bindEvents();
     appStatus.article.book.updateView();
 
+document.querySelectorAll(".wiki-link").forEach(link => {
+
+    link.onclick = async e => {
+
+        e.preventDefault();
+
+        const article = await getArticleById(link.dataset.id);
+
+        if(!article){
+            alert("Không tìm thấy bài viết.");
+            return;
+        }
+
+        HydYarWiki.navigate("article",{
+            category: article.categoryId || "khac",
+            id: article.id
+        });
+
+    };
+
+});
+    
     const tocBtn = document.getElementById("tocBtn");
     const tocOverlay = document.getElementById("tocOverlay");
     const closeToc = document.getElementById("closeToc");
@@ -1570,15 +1657,19 @@ searchClose: document.getElementById("searchClose"),
 
     // Hiện màn hình khởi động
     const boot = await Boot.wait();
+    const result = await Promise.race([
+    this.auth.check(),
+    boot.offline
+]);
 
 try{
 
     this.ui.initDomCache();
 
-    await Promise.race([
-        this.auth.check(),
-        boot.offline
-    ]);
+
+if(result !== true){
+    boot.success();
+}
 
         this.ui.initDarkMode();
 

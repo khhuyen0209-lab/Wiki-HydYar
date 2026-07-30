@@ -406,6 +406,17 @@ export async function getArticleBySlug(slug) {
 
 }
 
+export async function getArticleById(id){
+    const snap = await getDoc(doc(db, "wikiArticles", id));
+
+    if(!snap.exists()) return null;
+
+    return {
+        id: snap.id,
+        ...snap.data()
+    };
+}
+
 // ===============================
 // TÌM KIẾM / BÀI CỘNG ĐỒNG / USER
 // ===============================

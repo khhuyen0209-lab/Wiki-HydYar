@@ -493,6 +493,7 @@ db.collection("wikiArticles")
 
         const id = change.doc.id;
 
+        // Bài bị xóa
         if (change.type === "removed") {
 
             cacheDelete(HydYarCache.wikiArticles, id);
@@ -502,28 +503,11 @@ db.collection("wikiArticles")
             return;
         }
 
-        const data = {
-            id,
-            ...change.doc.data()
-        };
+        // Khi bài được thêm hoặc sửa:
+        // Chỉ xóa cache để lần truy cập sau tải lại đầy đủ (bao gồm pages)
+        cacheDelete(HydYarCache.wikiArticles, id);
 
-        if (data.updatedAt?.toDate) {
-            data.updatedAt = data.updatedAt.toDate().toISOString();
-        }
-
-        if (data.createdAt?.toDate) {
-            data.createdAt = data.createdAt.toDate().toISOString();
-        }
-
-        cacheSet(
-            HydYarCache.wikiArticles,
-            id,
-            data,
-            CACHE_TIME.ARTICLE,
-            CACHE_LIMIT.ARTICLE
-        );
-
-        console.log(`🔄 Cập nhật cache: ${id}`);
+        console.log(`♻️ Cache hết hạn: ${id}`);
 
     });
 
