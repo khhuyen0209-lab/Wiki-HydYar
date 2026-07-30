@@ -23,6 +23,149 @@ import {
 (function () {
 "use strict";
 
+  const Boot = {
+
+    timeout:5000,
+    offlineResolve:null,
+
+    async wait(){
+
+    const screen = document.getElementById("bootScreen");
+    const text = document.getElementById("bootText");
+    const bar = document.getElementById("bootBar");
+    const btn = document.getElementById("bootContinue");
+
+
+    if(!screen) return {
+        close:()=>{},
+        offline:Promise.resolve()
+    };
+
+
+    // Giữ lại ready
+    setTimeout(()=>{
+        screen.classList.add("ready");
+    },1000);
+
+
+
+    let done = false;
+    let progress = 0;
+
+
+    const interval = setInterval(()=>{
+
+        if(progress < 90){
+
+            progress++;
+
+            if(bar)
+                bar.style.width = progress + "%";
+
+        }
+
+    },50);
+
+
+
+    const offline = new Promise(resolve=>{
+
+        this.offlineResolve = resolve;
+
+    });
+
+
+
+    const timer = setTimeout(()=>{
+
+
+        if(done) return;
+
+
+        if(text)
+            text.textContent =
+            "⚠️ Máy chủ phản hồi chậm hoặc mất kết nối.";
+
+
+        if(btn)
+            btn.style.display="block";
+
+
+    },5000);
+
+
+
+
+    if(btn){
+
+        btn.onclick=()=>{
+
+
+            done=true;
+
+
+            clearTimeout(timer);
+            clearInterval(interval);
+
+
+            if(text)
+                text.textContent =
+                "Đang chạy ngoại tuyến.";
+
+
+            if(this.offlineResolve)
+                this.offlineResolve(true);
+
+
+
+            if(screen.parentNode)
+                screen.remove();
+
+
+        };
+
+    }
+
+
+
+    return {
+
+
+        close:()=>{
+
+
+            if(done) return;
+
+
+            done=true;
+
+
+            clearTimeout(timer);
+            clearInterval(interval);
+
+
+            if(bar)
+                bar.style.width="100%";
+
+
+            setTimeout(()=>{
+
+                if(screen.parentNode)
+                    screen.remove();
+
+            },200);
+
+
+        },
+
+
+        offline
+
+    };
+
+}
+};
+
   // ==============================================
   // 🧭 ROUTER – ĐÃ SỬA LỖI NÚT BOTTOM & HIỂN THỊ TRANG
   // ==============================================
@@ -386,32 +529,117 @@ ${body}
     },
 
     async check() {
-        // Bắt kết quả Redirect nếu trước đó dùng Redirect Login
-        try {
-            const redirectRes = await getRedirectResult(auth);
-            if (redirectRes) {
-                console.log("Đăng nhập thành công từ Redirect:", redirectRes.user);
-            }
-        } catch (err) {
-            console.warn("Bỏ qua lỗi redirect:", err.code);
+
+    // Bắt kết quả Redirect nếu trước đó dùng Redirect Login
+    try {
+
+        const redirectRes = await getRedirectResult(auth);
+
+        if (redirectRes) {
+            console.log(
+                "Đăng nhập thành công từ Redirect:",
+                redirectRes.user
+            );
         }
 
-        return new Promise((resolve) => {
-            onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        console.log("✅ Firebase Auto Login", user.uid);
-    } else {
-        console.log("❌ Chưa đăng nhập");
+    } catch (err) {
+
+        console.warn(
+            "Bỏ qua lỗi redirect:",
+            err.code
+        );
+
     }
 
-    await syncLoginToServer(user);
 
-    this.user = user || null;
-    this.updateUI();
-    resolve(user);
-});
+    return new Promise((resolve) => {
+
+
+        onAuthStateChanged(auth, async (user) => {
+
+
+            if (user) {
+
+                console.log(
+                    "✅ Firebase Auto Login",
+                    user.uid
+                );
+
+            } else {
+
+                console.log(
+                    "❌ Chưa đăng nhập"
+                );
+
+            }
+
+
+
+            try {
+
+
+                // Không có user thì bỏ qua đồng bộ server
+                if(user){
+
+                    await syncLoginToServer(user);
+
+                }
+
+
+                this.user = user || null;
+
+                this.updateUI();
+
+
+                resolve(user);
+
+
+
+            } catch(err){
+
+
+                console.warn(
+                    "⚠️ Không thể kết nối Server:",
+                    err
+                );
+
+
+                const text =
+                    document.getElementById("bootText");
+
+                const btn =
+                    document.getElementById("bootContinue");
+
+
+                if(text)
+                    text.textContent =
+                    "⚠️ Mất kết nối máy chủ.";
+
+
+                if(btn)
+                    btn.style.display =
+                    "block";
+
+
+
+                // Cho app tiếp tục chạy offline
+                this.user = user || null;
+
+                this.updateUI();
+
+
+                resolve(user);
+
+
+            }
+
+
         });
-    },
+
+
+    });
+
+},
 
     async login() {
         try {
@@ -1339,17 +1567,52 @@ searchClose: document.getElementById("searchClose"),
     },
 
     async init(){
-      this.ui.initDomCache();
-      await this.auth.check();
-      this.ui.initDarkMode();
-      this.ui.initPerformance();
-      this.ui.initNavigation();
-      this.category.initCategoryClick();
-      this.article.initArticleClick();
-      this.search.init();
-    
-      document.getElementById("wikiPolicy")?.addEventListener("click",()=>
-        HydYarWiki.navigate("policy"));Router.init();
+
+    // Hiện màn hình khởi động
+    const boot = await Boot.wait();
+
+try{
+
+    this.ui.initDomCache();
+
+    await Promise.race([
+        this.auth.check(),
+        boot.offline
+    ]);
+
+        this.ui.initDarkMode();
+
+        this.ui.initPerformance();
+
+        this.ui.initNavigation();
+
+        this.category.initCategoryClick();
+
+        this.article.initArticleClick();
+
+        this.search.init();
+
+        document
+            .getElementById("wikiPolicy")
+            ?.addEventListener(
+                "click",
+                ()=>HydYarWiki.navigate("policy")
+            );
+
+        Router.init();
+
+    }catch(err){
+
+        console.error("Khởi tạo thất bại:",err);
+
+    }finally{
+
+    if(navigator.onLine){
+        bootDone();
+    }
+
+}
+
     }
   };
 

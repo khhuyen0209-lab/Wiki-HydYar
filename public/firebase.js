@@ -40,9 +40,12 @@ const API_URL = "https://wiki-hydyar.onrender.com";
 
 export async function syncLoginToServer(user) {
 
-  alert("Đã vào syncLoginToServer");
-  
     try {
+
+        if(!user){
+            throw new Error("Chưa đăng nhập");
+        }
+
         const token = await user.getIdToken(true);
 
         const res = await fetch(`${API_URL}/api/login`, {
@@ -54,16 +57,34 @@ export async function syncLoginToServer(user) {
             body: JSON.stringify({ token })
         });
 
+
+        if(!res.ok){
+            throw new Error("Server không phản hồi");
+        }
+
+
         const json = await res.json();
 
-        if (!json.success) {
+
+        if(!json.success){
             throw new Error(json.message || "Đồng bộ thất bại");
         }
 
+
         console.log("✅ Đã đồng bộ với Server");
-    } catch (err) {
+
+        return true;
+
+
+    } catch(err){
+
         console.error("❌ Không thể đồng bộ Server:", err);
+
+        // Quan trọng: đẩy lỗi ra ngoài
+        throw err;
+
     }
+
 }
 
 // ===============================
@@ -249,17 +270,103 @@ export async function getLatestArticles() {
 // DANH MỤC
 // ===============================
 export async function getCategories() {
-    const cacheKey = "categories";
-    const cached = getCachedData(cacheKey);
-    if (cached) return cached;
 
-    const snap = await getDocs(collection(db, "categories"));
-    const result = snap.docs.map(d => ({
-        id: d.data().id || d.id, docId: d.id, name: d.data().name || "Khác",
-        icon: d.data().icon, count: d.data().count || 0, ...d.data()
-    }));
-    setCachedData(cacheKey, result, true);
-    return result;
+    const cacheKey = "categories";
+
+
+    // Kiểm tra cache trước
+    const cached = getCachedData(cacheKey);
+
+    if (cached) {
+
+        return cached;
+
+    }
+
+
+    try {
+
+        const res = await fetch(
+            `${API_URL}/api/categories`
+        );
+
+
+        if(!res.ok){
+
+            throw new Error(
+                "API danh mục không phản hồi"
+            );
+
+        }
+
+
+        const json = await res.json();
+
+
+        if(!json.success){
+
+            throw new Error(
+                json.message || "Lỗi tải danh mục"
+            );
+
+        }
+
+
+        const result = json.data.map(item => ({
+
+            id: item.id || item.docId,
+
+            docId: item.docId || item.id,
+
+            name: item.name || "Khác",
+
+            icon: item.icon || "",
+
+            count: item.count || 0,
+
+            ...item
+
+        }));
+
+
+        // Lưu cache client
+        setCachedData(
+            cacheKey,
+            result,
+            true
+        );
+
+
+        return result;
+
+
+    } catch(err){
+
+
+        console.error(
+            "❌ Lỗi tải danh mục:",
+            err
+        );
+
+
+        // Nếu mất mạng thì lấy cache cũ
+        const oldCache = getCachedData(cacheKey);
+
+        if(oldCache){
+
+            console.warn(
+                "⚠️ Dùng danh mục từ cache"
+            );
+
+            return oldCache;
+
+        }
+
+
+        return [];
+
+    }
+
 }
 
 // ===============================
@@ -302,16 +409,28 @@ export async function getArticleBySlug(slug) {
 // ===============================
 // TÌM KIẾM / BÀI CỘNG ĐỒNG / USER
 // ===============================
-export async function searchArticles(keyword){
-    keyword = keyword.toLowerCase();
-    const snap = await getDocs(collection(db, "wikiArticles"));
-    return snap.docs
-        .map(d => ({ id: d.id, ...d.data() }))
-        .filter(article => (
-            article.title?.toLowerCase().includes(keyword) ||
-            article.desc?.toLowerCase().includes(keyword) ||
-            article.keywords?.toLowerCase().includes(keyword)
-        ));
+export async function searchArticles(keyword) {
+
+    try {
+
+        const res = await fetch(
+            `${API_URL}/api/search?q=${encodeURIComponent(keyword)}`
+        );
+
+        const json = await res.json();
+
+        if (!json.success) return [];
+
+        return json.data;
+
+    } catch (err) {
+
+        console.error(err);
+
+        return [];
+
+    }
+
 }
 
 export async function getCommunityPosts(){

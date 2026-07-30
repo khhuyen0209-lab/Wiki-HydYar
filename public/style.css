@@ -2628,3 +2628,275 @@ font-size:22px;
     backdrop-filter:none !important;
     -webkit-backdrop-filter:none !important;
 }
+
+/* ==========================
+   BOOT SCREEN - COSMIC WIKI
+========================== */
+
+.boot-screen{
+    position:fixed;
+    inset:0;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:
+        radial-gradient(circle at center,
+            rgba(111,168,255,.22),
+            transparent 35%),
+        radial-gradient(circle at 20% 80%,
+            rgba(143,124,255,.18),
+            transparent 35%),
+        #050816;
+
+    z-index:2147483647;
+    overflow:hidden;
+
+    opacity:1;
+    visibility:visible;
+
+    transition:
+        opacity .35s ease,
+        visibility .35s ease;
+}
+
+
+.boot-screen::before{
+
+    content:"";
+
+    position:absolute;
+    inset:-50%;
+
+    background:
+        radial-gradient(circle,
+            rgba(111,168,255,.12),
+            transparent 30%);
+
+    animation:bootGlow 8s ease-in-out infinite alternate;
+
+}
+
+
+@keyframes bootGlow{
+
+    from{
+        transform:translate(-5%,-5%) scale(1);
+    }
+
+    to{
+        transform:translate(5%,5%) scale(1.15);
+    }
+
+}
+
+
+/* ==========================
+   LOGO GIỮA MÀN HÌNH
+========================== */
+
+.boot-box{
+
+    width:100%;
+    height:100%;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+}
+
+
+.boot-box h2{
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    transform:translate(-50%,-50%);
+
+    margin:0;
+
+    font-size:48px;
+    font-weight:800;
+
+    letter-spacing:2px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #6FA8FF,
+            #8F7CFF
+        );
+
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+
+    background-clip:text;
+
+    filter:
+        drop-shadow(0 0 25px rgba(111,168,255,.45));
+
+    transition:
+        top .8s cubic-bezier(.2,.8,.2,1),
+        left .8s cubic-bezier(.2,.8,.2,1),
+        transform .8s cubic-bezier(.2,.8,.2,1),
+        font-size .8s cubic-bezier(.2,.8,.2,1);
+
+}
+
+
+/* ==========================
+   TEXT LOADING
+========================== */
+
+#bootText{
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    transform:translate(-50%,55px);
+
+    width:90%;
+
+    text-align:center;
+
+    color:rgba(224,231,255,.75);
+
+    font-size:16px;
+
+    opacity:0;
+
+    transition:.5s;
+
+}
+
+
+/* ==========================
+   THANH TIẾN TRÌNH
+========================== */
+
+.boot-progress{
+
+    position:absolute;
+
+    left:50%;
+    top:50%;
+
+    transform:translate(-50%,95px);
+
+    width:min(300px,80vw);
+
+    height:8px;
+
+    border-radius:999px;
+
+    overflow:hidden;
+
+    background:rgba(255,255,255,.12);
+
+    backdrop-filter:blur(10px);
+
+    opacity:0;
+
+    transition:.5s;
+
+}
+
+
+#bootBar{
+
+    height:100%;
+    width:0%;
+
+    background:
+        linear-gradient(
+            90deg,
+            #6FA8FF,
+            #8F7CFF
+        );
+
+    box-shadow:
+        0 0 15px rgba(111,168,255,.7);
+
+    border-radius:999px;
+
+    transition:width .3s linear;
+
+}
+
+
+/* ==========================
+   READY - BAY LÊN HEADER
+========================== */
+
+.boot-screen.ready .boot-box h2{
+
+    left:24px;
+    top:24px;
+
+    transform:none;
+
+    font-size:34px;
+
+}
+
+
+.boot-screen.ready #bootText{
+
+    opacity:1;
+
+    transform:translate(-50%,0);
+
+}
+
+
+.boot-screen.ready .boot-progress{
+
+    opacity:1;
+
+    transform:translate(-50%,40px);
+
+}
+
+#bootContinue{
+
+    position:absolute;
+
+    left:50%;
+
+    top:50%;
+
+    transform:translate(-50%,120px);
+
+    display:none;
+
+    padding:12px 20px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#4f7cff;
+
+    color:#fff;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+}
+
+#bootContinue:hover{
+    background:#6690ff;
+}
+
+#bootContinue:active{
+    transform:translate(-50%,120px) scale(.96);
+}

@@ -481,6 +481,58 @@ setInterval(() => {
 
 }, 30 * 60 * 1000);
 
+
+// ==============================
+// FIRESTORE REALTIME CACHE UPDATE
+// ==============================
+
+db.collection("wikiArticles")
+.onSnapshot(snapshot => {
+
+    snapshot.docChanges().forEach(change => {
+
+        const id = change.doc.id;
+
+        if (change.type === "removed") {
+
+            cacheDelete(HydYarCache.wikiArticles, id);
+
+            console.log(`🗑 Xóa cache: ${id}`);
+
+            return;
+        }
+
+        const data = {
+            id,
+            ...change.doc.data()
+        };
+
+        if (data.updatedAt?.toDate) {
+            data.updatedAt = data.updatedAt.toDate().toISOString();
+        }
+
+        if (data.createdAt?.toDate) {
+            data.createdAt = data.createdAt.toDate().toISOString();
+        }
+
+        cacheSet(
+            HydYarCache.wikiArticles,
+            id,
+            data,
+            CACHE_TIME.ARTICLE,
+            CACHE_LIMIT.ARTICLE
+        );
+
+        console.log(`🔄 Cập nhật cache: ${id}`);
+
+    });
+
+}, err => {
+
+    console.error("❌ Firestore Watch Error:", err);
+
+});
+
 // ==============================
 // MIDDLEWARE BẢO MẬT
 // ==============================
@@ -611,11 +663,12 @@ app.get("/api/featured", async (req, res) => {
 });
 
         cacheSet(
-            HydYarCache.featuredArticles,
-            "featured",
-            data,
-            CACHE_TIME.FEATURED
-        );
+    HydYarCache.featuredArticles,
+    "featured",
+    data,
+    CACHE_TIME.FEATURED,
+    CACHE_LIMIT.FEATURED
+);
 
         res.json({
             success: true,
@@ -669,11 +722,12 @@ app.get("/api/latest", async (req, res) => {
 });
 
         cacheSet(
-            HydYarCache.wikiArticles,
-            "latest",
-            data,
-            CACHE_TIME.FEATURED
-        );
+    HydYarCache.latestArticles,
+    "latest",
+    data,
+    CACHE_TIME.LATEST,
+    CACHE_LIMIT.LATEST
+);
 
         res.json({
             success: true,
@@ -785,11 +839,12 @@ if (data.createdAt?.toDate) {
 
 
       cacheSet(
-        HydYarCache.wikiArticles,
-        id,
-        data,
-        CACHE_TIME.ARTICLE
-      );
+    HydYarCache.wikiArticles,
+    id,
+    data,
+    CACHE_TIME.ARTICLE,
+    CACHE_LIMIT.ARTICLE
+);
 
 
 
@@ -818,6 +873,182 @@ if (data.createdAt?.toDate) {
         message:"Lỗi tải bài viết"
 
       });
+
+    }
+
+});
+
+app.get("/api/categories", async (req, res) => {
+
+    const cache = cacheGet(
+        HydYarCache.categories,
+        "categories"
+    );
+
+
+    if (cache) {
+
+        return res.json({
+            success: true,
+            cached: true,
+            data: cache
+        });
+
+    }
+
+
+    try {
+
+        const snap = await db
+            .collection("categories")
+            .get();
+
+
+        const data = snap.docs.map(doc => {
+
+            return {
+                id: doc.data().id || doc.id,
+                docId: doc.id,
+                name: doc.data().name || "Khác",
+                icon: doc.data().icon || "",
+                count: doc.data().count || 0,
+                ...doc.data()
+            };
+
+        });
+
+
+        cacheSet(
+            HydYarCache.categories,
+            "categories",
+            data,
+            CACHE_TIME.CATEGORY,
+            CACHE_LIMIT.CATEGORY
+        );
+
+
+        res.json({
+
+            success:true,
+
+            cached:false,
+
+            data
+
+        });
+
+
+    } catch(err){
+
+        console.error(
+            "❌ Lỗi tải danh mục:",
+            err
+        );
+
+
+        res.status(500).json({
+
+            success:false,
+
+            message:"Không thể tải danh mục"
+
+        });
+
+    }
+
+});
+
+app.get("/api/search", async (req, res) => {
+
+    try {
+
+        const keyword = (req.query.q || "")
+            .trim()
+            .toLowerCase();
+
+        if (!keyword) {
+            return res.json({
+                success: true,
+                data: []
+            });
+        }
+
+        let result = [];
+
+        // Tìm trước trong cache
+        for (const [, item] of HydYarCache.wikiArticles) {
+
+            if (item.expire <= Date.now()) continue;
+
+            const article = item.data;
+
+            if (!article || Array.isArray(article)) continue;
+
+            if (
+                article.title?.toLowerCase().includes(keyword) ||
+                article.desc?.toLowerCase().includes(keyword) ||
+                article.keywords?.toLowerCase().includes(keyword)
+            ) {
+                result.push(article);
+            }
+
+        }
+
+        // Nếu cache chưa có kết quả thì đọc Firestore
+        if (result.length === 0) {
+
+            const snap = await db.collection("wikiArticles").get();
+
+            result = snap.docs
+                .map(doc => {
+
+                    const data = {
+                        id: doc.id,
+                        ...doc.data()
+                    };
+
+                    if (data.updatedAt?.toDate) {
+                        data.updatedAt = data.updatedAt.toDate().toISOString();
+                    }
+
+                    if (data.createdAt?.toDate) {
+                        data.createdAt = data.createdAt.toDate().toISOString();
+                    }
+
+                    // Lưu luôn vào cache bài viết
+                    cacheSet(
+    HydYarCache.wikiArticles,
+    data.id,
+    data,
+    CACHE_TIME.ARTICLE,
+    CACHE_LIMIT.ARTICLE
+);
+
+                    return data;
+
+                })
+                .filter(article =>
+                    article.title?.toLowerCase().includes(keyword) ||
+                    article.desc?.toLowerCase().includes(keyword) ||
+                    article.keywords?.toLowerCase().includes(keyword)
+                );
+
+        }
+
+        res.json({
+            success: true,
+            cached: result.length > 0,
+            data: result
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false,
+            message: "Lỗi tìm kiếm"
+        });
 
     }
 
