@@ -597,10 +597,18 @@ app.get("/api/featured", async (req, res) => {
             .limit(3)
             .get();
 
-        const data = snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+        const data = snap.docs.map(doc => {
+    const d = {
+        id: doc.id,
+        ...doc.data()
+    };
+
+    if (d.updatedAt?.toDate) {
+        d.updatedAt = d.updatedAt.toDate().toISOString();
+    }
+
+    return d;
+});
 
         cacheSet(
             HydYarCache.featuredArticles,
@@ -647,10 +655,18 @@ app.get("/api/latest", async (req, res) => {
             .limit(3)
             .get();
 
-        const data = snap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+        const data = snap.docs.map(doc => {
+    const d = {
+        id: doc.id,
+        ...doc.data()
+    };
+
+    if (d.updatedAt?.toDate) {
+        d.updatedAt = d.updatedAt.toDate().toISOString();
+    }
+
+    return d;
+});
 
         cacheSet(
             HydYarCache.wikiArticles,
@@ -730,25 +746,41 @@ app.get("/api/article/:id", async (req,res)=>{
   .get();
 
 
-const pages =
-  pagesSnap.docs
-  .map(doc => ({
+const pages = pagesSnap.docs
+  .map(doc => {
+    const p = {
       id: Number(doc.id),
       ...doc.data()
-  }))
-  .sort((a,b)=>a.id-b.id);
+    };
+
+    if (p.createdAt?.toDate) {
+      p.createdAt = p.createdAt.toDate().toISOString();
+    }
+
+    if (p.updatedAt?.toDate) {
+      p.updatedAt = p.updatedAt.toDate().toISOString();
+    }
+
+    return p;
+  })
+  .sort((a, b) => a.id - b.id);
 
 
 
-      const data={
+      const data = {
+    id: articleSnap.id,
+    ...articleSnap.data(),
+    pages
+};
 
-        id:articleSnap.id,
+// Chuyển Timestamp -> ISO String
+if (data.updatedAt?.toDate) {
+    data.updatedAt = data.updatedAt.toDate().toISOString();
+}
 
-        ...articleSnap.data(),
-
-        pages
-
-      };
+if (data.createdAt?.toDate) {
+    data.createdAt = data.createdAt.toDate().toISOString();
+}
 
 
 

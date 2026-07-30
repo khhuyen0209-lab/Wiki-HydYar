@@ -259,7 +259,42 @@ profile: {
     markdown: {
       escapeHTML(s){return s?s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"):"";},
       parseCode(h){return h.replace(/```([\s\S]*?)```/g,(_,c)=>`<pre><code>${c.trim()}</code></pre>`).replace(/`([^`]+)`/g,"<code>$1</code>");},
-      parseTable(h){return h.replace(/^\|.+\|\n\|[-:| ]+\|\n(?:\|.+\|\n)*$/gm,t=>{const r=t.trim().split("\n"),h=r[0].split("|").map(c=>c.trim()).filter(Boolean),b=r.slice(2).map(x=>`<tr>${x.split("|").map(c=>c.trim()).filter(Boolean).map(c=>`<td>${c}</td>`).join("")}</tr>`).join("");return`<table class="md-table"><thead><tr>${h.map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>${b}</tbody></table>`;});},
+      parseTable(h){
+return h.replace(
+/(^\|.+\|\n\|[-:| ]+\|\n(?:\|.+\|\n?)+)/gm,
+(t)=>{
+    const rows = t.trim().split("\n");
+
+    const headers = rows[0]
+        .split("|")
+        .map(c=>c.trim())
+        .filter(Boolean);
+
+    const body = rows
+        .slice(2)
+        .map(row=>{
+            const cols = row
+                .split("|")
+                .map(c=>c.trim())
+                .filter(Boolean);
+
+            return `<tr>${cols.map(c=>`<td>${c}</td>`).join("")}</tr>`;
+        })
+        .join("");
+
+    return `
+<table class="md-table">
+<thead>
+<tr>
+${headers.map(h=>`<th>${h}</th>`).join("")}
+</tr>
+</thead>
+<tbody>
+${body}
+</tbody>
+</table>`;
+});
+},
       parseImage(h){return h.replace(/!\[([^\]]*)\]\(\s*([^)]+?)\s*(?:"([^"]+)")?\)/g,(_,a,s,c)=>{if(!/^https?:\/\//.test(s))return`<p class="img-error">Link ảnh không hợp lệ</p>`;return`<div class="img-wrapper"><img src="${encodeURI(s)}" alt="${this.escapeHTML(a)}" loading="lazy" onerror="this.parentElement.innerHTML='<p class=&quot;img-error&quot;>Không tải được ảnh</p>'">${c?`<div class="img-caption">${this.escapeHTML(c)}</div>`:""}</div>`;});},
       parseLink(h){const t=this;return h.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener noreferrer" class="md-link">$1</a>').replace(/\(\s*([^)]+?)\s*\)\s*\[(https?:\/\/[^\s\]]+)\]/g,'<a href="$2" target="_blank" rel="noopener noreferrer" class="md-link">$1</a>').replace(/^-?\s*([^:\n]+?)\s*:\s*(https?:\/\/[^\s<]+)/gm,(_,n,u)=>`<a href="${encodeURI(u)}" target="_blank" rel="noopener noreferrer" class="md-link">${t.escapeHTML(n)}</a>`).replace(/(^|[\s>])(https?:\/\/[^\s<"]+)/gm,(m,s,u)=>{try{const h=new URL(u).hostname.replace(/^www\./,""),n=/wikipedia\.org/.test(h)?"Wikipedia":/wikimedia\.org/.test(h)?"Wikimedia Commons":/nasa\.gov/.test(h)?"NASA":/esa\.int/.test(h)?"ESA":/youtube\.com/.test(h)?"YouTube":/github\.com/.test(h)?"GitHub":h;return`${s}<a href="${encodeURI(u)}" target="_blank" rel="noopener noreferrer" class="md-link">${n}</a>`;}catch{return m;}});},
       parseHeading(h){return h.replace(/^###### (.*)$/gm,"<h6>$1</h6>").replace(/^##### (.*)$/gm,"<h5>$1</h5>").replace(/^#### (.*)$/gm,"<h4>$1</h4>").replace(/^### (.*)$/gm,"<h3>$1</h3>").replace(/^## (.*)$/gm,"<h2>$1</h2>").replace(/^# (.*)$/gm,"<h1>$1</h1>").replace(/^(\d+\.\d+(?:\.\d+)?)\s+(.*)$/gm,'<h4 class="md-sub-heading">$1 $2</h4>');},
@@ -609,7 +644,7 @@ profile: {
 
                 HydYarWiki.navigate("search");
 
-                requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
 
                     appStatus.state.$dom.searchInput.value=input.value;
 
@@ -840,12 +875,15 @@ if (header && searchInput) {
         fsControls: document.getElementById("fsControls"),
         normalBookNav: document.getElementById("normalBookNav"),
         fullscreenBtn: document.getElementById("fullscreenBtn"),
-        wikiFooter: document.querySelector(".wiki-footer")
+        wikiFooter: document.querySelector(".wiki-footer"),
+        tocBtn: document.getElementById("tocBtn"),
+        tocOverlay: document.getElementById("tocOverlay"),
+        closeToc: document.getElementById("closeToc"),
       });
     },
     bindEvents() {
       const { $dom: d } = appStatus.state;
-      d.fullscreenBtn.addEventListener("click", () => appStatus.article.fullscreen.toggle());
+d.fullscreenBtn.addEventListener("click", () => appStatus.article.fullscreen.toggle());
       d.nextMainBtn.addEventListener("click", () => appStatus.article.book.changePage(1));
       d.fsNextBtn.addEventListener("click", () => appStatus.article.book.changePage(1));
       d.prevMainBtn.addEventListener("click", () => {
@@ -870,98 +908,180 @@ if (header && searchInput) {
         </p>`;
     },
     renderArticle(article) {
-      const { $dom: d, bookState: b } = appStatus.state;
-      const pages = appStatus.markdown.buildPages(article);
+  const { $dom: d, bookState: b } = appStatus.state;
+  const pages = appStatus.markdown.buildPages(article);
 
-      appStatus.article.book.reset(article.id, pages.length);
+  appStatus.article.book.reset(article.id, pages.length);
 
-      d.pageArticle.innerHTML = `
-        <div class="article-container">
-          <h1 class="wiki-title">${appStatus.markdown.escapeHTML(article.title)}</h1>
-          <hr class="divider-line">
-          <div class="wiki-meta-row">
-            <span>${appStatus.ui.icon("solar:library-2-bold")} ${appStatus.article.utils.getCategoryName(article.categoryId)}</span>
-            <span>${appStatus.ui.icon("solar:eye-bold")} ${article.views || 0} lượt xem</span>
-            <span>${appStatus.ui.icon("solar:calendar-bold")} ${article.updatedAt ? new Date(article.updatedAt).toLocaleDateString("vi-VN") : "Chưa cập nhật"}</span>
-          </div>
-          <div class="wiki-reliability">
-            ${appStatus.ui.icon("material-symbols:verified-rounded")}
-            Độ tin cậy: <strong>${appStatus.article.utils.getReliabilityLabel(article.reliability)}</strong>
-          </div>
-          <hr class="divider-line">
-          <div class="book-wrapper" id="bookWrapper">
-            <button class="fullscreen-btn" id="fullscreenBtn">${appStatus.ui.icon("solar:full-screen-square-bold")}</button>
-            <div class="book-pages" id="bookPages">
-            ${pages.map(page=>{
+  d.pageArticle.innerHTML = `
+    <div class="article-container">
+      <h1 class="wiki-title">${appStatus.markdown.escapeHTML(article.title)}</h1>
+      <hr class="divider-line">
+      <div class="wiki-meta-row">
+        <span>${appStatus.ui.icon("solar:library-2-bold")} ${appStatus.article.utils.getCategoryName(article.categoryId)}</span>
+        <span>${appStatus.ui.icon("solar:eye-bold")} ${article.views || 0} lượt xem</span>
+        <span>${appStatus.ui.icon("solar:calendar-bold")} ${article.updatedAt ? new Date(article.updatedAt).toLocaleDateString("vi-VN") : "Chưa cập nhật"}</span>
+      </div>
+      <div class="wiki-reliability">
+        ${appStatus.ui.icon("material-symbols:verified-rounded")}
+        Độ tin cậy: <strong>${appStatus.article.utils.getReliabilityLabel(article.reliability)}</strong>
+      </div>
+      <hr class="divider-line">
+      <div class="book-wrapper" id="bookWrapper">
+        <div class="book-tools">
+          <button class="toc-btn" id="tocBtn">
+            ${appStatus.ui.icon("solar:hamburger-menu-bold")}
+          </button>
+          <button class="fullscreen-btn" id="fullscreenBtn">
+            ${appStatus.ui.icon("solar:full-screen-square-bold")}
+          </button>
+        </div>
 
-    if(page.type==="infobox"){
+        <div class="book-pages" id="bookPages">
+          ${pages.map(page => {
+            if (page.type === "infobox") {
+              return `
+              <div class="book-page markdown-body">
+                ${appStatus.markdown.parse(page.info || "")}
+              </div>`;
+            }
+
+            let pageIndex = 2;
+            if (page.type === "toc") {
+              return `
+              <div class="book-page">
+                <h2>Mục lục</h2>
+                ${pages.map(page => {
+                  if (!page.number) return "";
+                  pageIndex++;
+                  return `
+                  <div class="toc-item" data-page="${pageIndex}">
+                    ${page.number} ${page.title}
+                  </div>`;
+                }).join("")}
+              </div>`;
+            }
+
+            return `
+            <div class="book-page markdown-body">
+              <h2>${page.number} ${page.title}</h2>
+              ${appStatus.markdown.parse(page.content)}
+            </div>`;
+          }).join("")}
+        </div>
+
+        <!-- OVERLAY MỤC LỤC ĐƯỢC THÊM ĐÚNG VỊ TRÍ -->
+        <div class="toc-overlay" id="tocOverlay">
+          <div class="toc-panel">
+            <div class="toc-header">
+              <span>Mục lục</span>
+              <button id="closeToc">✕</button>
+            </div>
+            <div class="toc-list">
+  ${pages
+    .map((p, i) => {
+
+      // Không hiện chính trang mục lục
+      if (p.type === "infobox") {
     return `
-    <div class="book-page markdown-body">
-        ${appStatus.markdown.parse(page.info || "")}
-    </div>`;
+        <div class="toc-item" data-page="${i + 1}">
+            ${appStatus.ui.icon("solar:widget-bold")}
+            Thông tin tổng quan
+        </div>
+    `;
+}
+      if (p.type === "toc") {
+    return `
+        <div class="toc-item" data-page="${i + 1}">
+            ${appStatus.ui.icon("solar:hamburger-menu-bold")}
+            Mục lục
+        </div>
+    `;
 }
 
-    if(page.type==="toc"){
+      // Trang nội dung
+      return `
+        <div class="toc-item" data-page="${i + 1}">
+          ${p.number} ${p.title}
+        </div>
+      `;
 
-        return `
-        <div class="book-page">
+    })
+    .join("")}
+</div>
+          </div>
+        </div>
+      </div>
 
-            <h2>Mục lục</h2>
-
-            ${pages
-                .filter(x=>x.number)
-                .map(x=>`
-                    <div class="toc-item">
-                        ${x.number} ${x.title}
-                    </div>
-                `)
-                .join("")}
-
-        </div>`;
-    }
-
-    return `
-    <div class="book-page markdown-body">
-
-        <h2>
-
-            ${page.number}
-            ${page.title}
-
-        </h2>
-
-        ${appStatus.markdown.parse(page.content)}
-
+      <div class="book-nav" id="normalBookNav">
+        <button class="book-nav-btn" id="prevMainBtn">Quay lại</button>
+        <span>Trang <span id="currentPageNum">${b.current}</span> / ${b.total}</span>
+        <button class="book-nav-btn" id="nextMainBtn" ${b.total <= 1 ? "disabled" : ""}>Sau</button>
+      </div>
+      <hr class="divider-line">
+      <div class="wiki-footer">
+        <span>Wiki HydYar</span>
+        <span class="verified-badge">${appStatus.ui.icon("material-symbols:verified-rounded")}</span>
+      </div>
+      <div class="fs-controls" id="fsControls" style="display:none;">
+        <button class="fs-btn" id="fsLeftBtn">Thoát</button>
+        <div class="fs-page-nav">
+          <span>Trang <span id="fsCurrentPage">${b.current}</span>/${b.total}</span>
+          <button class="fs-btn" id="fsNextBtn" ${b.total <= 1 ? "disabled" : ""}>Sau</button>
+        </div>
+      </div>
     </div>`;
 
-}).join("")}
-            </div>
-          </div>
-          <div class="book-nav" id="normalBookNav">
-            <button class="book-nav-btn" id="prevMainBtn">Quay lại</button>
-            <span>Trang <span id="currentPageNum">${b.current}</span> / ${b.total}</span>
-            <button class="book-nav-btn" id="nextMainBtn" ${b.total <= 1 ? "disabled" : ""}>Sau</button>
-          </div>
-          <hr class="divider-line">
-          <div class="wiki-footer">
-            <span>Wiki HydYar</span>
-            <span class="verified-badge">${appStatus.ui.icon("material-symbols:verified-rounded")}</span>
-          </div>
-          <div class="fs-controls" id="fsControls" style="display:none;">
-            <button class="fs-btn" id="fsLeftBtn">Thoát</button>
-            <div class="fs-page-nav">
-              <span>Trang <span id="fsCurrentPage">${b.current}</span>/${b.total}</span>
-              <button class="fs-btn" id="fsNextBtn" ${b.total <= 1 ? "disabled" : ""}>Sau</button>
-            </div>
-          </div>
-        </div>`;
+  appStatus.article.reader.cacheDom();
+  requestAnimationFrame(() => {
 
-      appStatus.article.reader.cacheDom();
-      requestAnimationFrame(() => {
-        appStatus.article.reader.bindEvents();
-        appStatus.article.book.updateView();
-      });
+    appStatus.article.reader.bindEvents();
+    appStatus.article.book.updateView();
+
+    const tocBtn = document.getElementById("tocBtn");
+    const tocOverlay = document.getElementById("tocOverlay");
+    const closeToc = document.getElementById("closeToc");
+
+    // Mở / đóng mục lục
+    tocBtn?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        tocOverlay?.classList.toggle("show");
+    });
+
+    closeToc?.addEventListener("click", () => {
+        tocOverlay?.classList.remove("show");
+    });
+
+    // Bấm ra ngoài để đóng
+    tocOverlay?.addEventListener("click", (e) => {
+        if (e.target === tocOverlay) {
+            tocOverlay.classList.remove("show");
+        }
+    });
+
+    // Chọn mục trong mục lục
+    document.querySelectorAll(".toc-item").forEach(item => {
+
+    item.onclick = () => {
+
+        const page = Number(item.dataset.page);
+
+        if(page >= 1 && page <= appStatus.state.bookState.total){
+
+            appStatus.state.bookState.current = page;
+
+            appStatus.article.book.updateView();
+
+        }
+
+        tocOverlay?.classList.remove("show");
+    };
+
+});
+
+});
     },
+
     async open(id) {
       const { $dom: d } = appStatus.state;
       d.pageArticle.innerHTML = `<div class="article-container">${appStatus.article.skeleton.articleDetailSkeleton()}</div>`;
