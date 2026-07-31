@@ -47,6 +47,8 @@ body {
     width: 100%;
     min-height: 100%;
     overflow-x: hidden;
+    scrollbar-width: none;      /* Firefox */
+    -ms-overflow-style: none;   /* IE/Edge cũ */
 }
 
 body {
@@ -70,6 +72,11 @@ body::before {
     filter: blur(60px);
     animation: spaceMove 18s ease-in-out infinite alternate;
     z-index: -1;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar{
+    display: none;              /* Chrome, Edge, Samsung Internet */
 }
 
 /* Lớp ánh sáng phụ */
@@ -2202,12 +2209,50 @@ font-size:22px;
 /* ===============================
    MARKDOWN TABLE - COSMIC STYLE
 =============================== */
+.table-wrapper{
+    width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+
+    margin:18px 0;
+    border-radius:16px;
+
+    /* Firefox */
+    scrollbar-width:thin;
+    scrollbar-color:rgba(255,255,255,.25) transparent;
+}
+
+/* Chrome, Edge, Samsung Internet */
+.table-wrapper::-webkit-scrollbar{
+    width:6px;
+    height:6px;
+}
+
+.table-wrapper::-webkit-scrollbar-track{
+    background:transparent;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb{
+    background:rgba(255,255,255,.25);
+    border-radius:999px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover{
+    background:rgba(255,255,255,.4);
+}
+
+.table-wrapper::-webkit-scrollbar-corner{
+    background:transparent;
+}
 
 .md-table{
     width:100%;
     margin:18px 0;
     border-collapse:collapse;
     overflow:hidden;
+    min-width:max-content;
+    border-collapse:collapse;
 
     background:var(--card);
     border:1px solid rgba(255,255,255,.08);
@@ -2899,4 +2944,22 @@ font-size:22px;
 
 #bootContinue:active{
     transform:translate(-50%,120px) scale(.96);
+}
+
+.wiki-link{
+    color: transparent;
+    background: var(--gradient);
+    background-clip: text;
+    -webkit-background-clip: text;
+    text-decoration: none;
+    font-weight: 600;
+
+    border-bottom: 1px dashed rgba(143,124,255,.35);
+
+    transition: var(--transition);
+}
+
+.wiki-link:hover{
+    filter: brightness(1.2);
+    border-bottom-color: rgba(143,124,255,.8);
 }

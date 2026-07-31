@@ -445,6 +445,7 @@ return h.replace(
         .join("");
 
     return `
+<div class="table-wrapper">
 <table class="md-table">
 <thead>
 <tr>
@@ -454,56 +455,32 @@ ${headers.map(h=>`<th>${h}</th>`).join("")}
 <tbody>
 ${body}
 </tbody>
-</table>`;
+</table>
+</div>`;
 });
 },
       parseImage(h){return h.replace(/!\[([^\]]*)\]\(\s*([^)]+?)\s*(?:"([^"]+)")?\)/g,(_,a,s,c)=>{if(!/^https?:\/\//.test(s))return`<p class="img-error">Link ảnh không hợp lệ</p>`;return`<div class="img-wrapper"><img src="${encodeURI(s)}" alt="${this.escapeHTML(a)}" loading="lazy" onerror="this.parentElement.innerHTML='<p class=&quot;img-error&quot;>Không tải được ảnh</p>'">${c?`<div class="img-caption">${this.escapeHTML(c)}</div>`:""}</div>`;});},
-      parseLink(h){
+      parseLink(h) {
     const t = this;
 
-    // ===== Link nội bộ =====
-    h = h.replace(/\[([^\]|]+)\|([^\]]+)\]/g, (m, id, text) => {
-        return `
-<a href="#" class="wiki-link" data-id="${id.trim()}">
-    ${t.escapeHTML(text.trim())}
-</a>`;
-    });
+    // 1. Link Markdown trước
+    h = h.replace(
+        /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+        (_, text, url) =>
+            `<a href="${encodeURI(url)}"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="md-link">${t.escapeHTML(text)}</a>`
+    );
 
-    // ===== Link ngoài =====
-    return h
-        .replace(
-            /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
-            '<a href="$2" target="_blank" rel="noopener noreferrer" class="md-link">$1</a>'
-        )
-        .replace(
-            /\(\s*([^)]+?)\s*\)\s*\[(https?:\/\/[^\s\]]+)\]/g,
-            '<a href="$2" target="_blank" rel="noopener noreferrer" class="md-link">$1</a>'
-        )
-        .replace(
-            /^-?\s*([^:\n]+?)\s*:\s*(https?:\/\/[^\s<]+)/gm,
-            (_, n, u) =>
-                `<a href="${encodeURI(u)}" target="_blank" rel="noopener noreferrer" class="md-link">${t.escapeHTML(n)}</a>`
-        )
-        .replace(
-            /(^|[\s>])(https?:\/\/[^\s<"]+)/gm,
-            (m, s, u) => {
-                try{
-                    const host = new URL(u).hostname.replace(/^www\./,"");
-                    const name =
-                        /wikipedia\.org/.test(host) ? "Wikipedia" :
-                        /wikimedia\.org/.test(host) ? "Wikimedia Commons" :
-                        /nasa\.gov/.test(host) ? "NASA" :
-                        /esa\.int/.test(host) ? "ESA" :
-                        /youtube\.com/.test(host) ? "YouTube" :
-                        /github\.com/.test(host) ? "GitHub" :
-                        host;
+    // 2. Link nội bộ sau
+    h = h.replace(
+        /\[([^\]|]+)\|([^\]]+)\]/g,
+        (_, id, text) =>
+            `<a href="#" class="wiki-link" data-id="${id.trim()}">${t.escapeHTML(text.trim())}</a>`
+    );
 
-                    return `${s}<a href="${encodeURI(u)}" target="_blank" rel="noopener noreferrer" class="md-link">${name}</a>`;
-                }catch{
-                    return m;
-                }
-            }
-        );
+    return h;
 },
       parseHeading(h){return h.replace(/^###### (.*)$/gm,"<h6>$1</h6>").replace(/^##### (.*)$/gm,"<h5>$1</h5>").replace(/^#### (.*)$/gm,"<h4>$1</h4>").replace(/^### (.*)$/gm,"<h3>$1</h3>").replace(/^## (.*)$/gm,"<h2>$1</h2>").replace(/^# (.*)$/gm,"<h1>$1</h1>").replace(/^(\d+\.\d+(?:\.\d+)?)\s+(.*)$/gm,'<h4 class="md-sub-heading">$1 $2</h4>');},
       parseList(h){return h.replace(/^- \[ \] (.*)$/gm,'<div class="md-check"><input type="checkbox" disabled> $1</div>').replace(/^- \[x\] (.*)$/gmi,'<div class="md-check"><input type="checkbox" checked disabled> $1</div>').replace(/(?:^([-*]|\d+\.) .*(?:\r?\n|$))+/gm,m=>{const i=m.trim().split("\n").map(x=>x.replace(/^([-*]|\d+\.)\s*/,"").trim()).filter(Boolean);return`<ul>${i.map(x=>`<li>${x}</li>`).join("")}</ul>`;});},
@@ -529,7 +506,27 @@ ${body}
 },
       parseInline(h){return h.replace(/\*\*\*(.*?)\*\*\*/g,"<strong><em>$1</em></strong>").replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>").replace(/\*(.*?)\*/g,"<em>$1</em>").replace(/__(.*?)__/g,"<strong>$1</strong>").replace(/_(.*?)_/g,"<em>$1</em>").replace(/~~(.*?)~~/g,"<del>$1</del>").replace(/\^([^^]+)\^/g,"<sup>$1</sup>").replace(/~([^~]+)~/g,"<sub>$1</sub>").replace(/:warning:/g,"⚠️").replace(/:white_check_mark:/g,"✅").replace(/:x:/g,"❌").replace(/:bulb:/g,"💡").replace(/:rocket:/g,"🚀").replace(/:book:/g,"📖");},
       parseParagraph(h){return h.split(/\n{2,}/).map(p=>/^\s*<(h\d|blockquote|ul|ol|table|pre|hr|div|img)/i.test(p)?p:`<p>${p.replace(/\n/g,"<br>")}</p>`).join("");},
-      parse(t){if(!t)return"";let h=this.escapeHTML(t);h=this.parseCode(h);h=this.parseTable(h);h=this.parseImage(h);h=this.parseLink(h);h=this.parseHeading(h);h=h.replace(/^\s*&gt;\s?(.*)$/gm,"<blockquote>$1</blockquote>").replace(/^(---|\*\*\*|___)$/gm,"<hr>");h=this.parseList(h);h=this.parseInline(h);h=this.parseParagraph(h);return h;},
+      parse(t){
+    if(!t) return "";
+
+    let h = t;
+
+    h = this.parseCode(h);
+    h = this.parseTable(h);
+    h = this.parseImage(h);
+    h = this.parseHeading(h);
+
+    h = h
+        .replace(/^\s*>\s?(.*)$/gm,"<blockquote>$1</blockquote>")
+        .replace(/^(---|\*\*\*|___)$/gm,"<hr>");
+
+    h = this.parseList(h);
+    h = this.parseLink(h);
+    h = this.parseInline(h);
+    h = this.parseParagraph(h);
+
+    return h;
+},
       buildPages(article){
 
     let h1 = 0;
@@ -1231,37 +1228,54 @@ d.fullscreenBtn.addEventListener("click", () => appStatus.article.fullscreen.tog
         </div>
 
         <div class="book-pages" id="bookPages">
-          ${pages.map(page => {
-            if (page.type === "infobox") {
-              return `
-              <div class="book-page markdown-body">
-                ${appStatus.markdown.parse(page.info || "")}
-              </div>`;
-            }
+  ${pages.map(page => {
 
-            let pageIndex = 2;
-            if (page.type === "toc") {
-              return `
-              <div class="book-page">
-                <h2>Mục lục</h2>
-                ${pages.map(page => {
-                  if (!page.number) return "";
-                  pageIndex++;
-                  return `
-                  <div class="toc-item" data-page="${pageIndex}">
-                    ${page.number} ${page.title}
-                  </div>`;
-                }).join("")}
-              </div>`;
-            }
+    if (page.type === "infobox") {
+      return `
+      <div class="book-page markdown-body">
+        ${appStatus.markdown.parse(page.info || "")}
+      </div>`;
+    }
 
-            return `
-            <div class="book-page markdown-body">
-              <h2>${page.number} ${page.title}</h2>
-              ${appStatus.markdown.parse(page.content)}
-            </div>`;
-          }).join("")}
-        </div>
+    let pageIndex = 2;
+
+    if (page.type === "toc") {
+      return `
+      <div class="book-page">
+        <h2>Mục lục</h2>
+        ${pages.map(page => {
+          if (!page.number) return "";
+          pageIndex++;
+          return `
+          <div class="toc-item" data-page="${pageIndex}">
+            ${page.number} ${page.title}
+          </div>`;
+        }).join("")}
+      </div>`;
+    }
+
+    // 📚 Trang tham khảo
+    if (page.type === "reference") {
+      return `
+      <div class="book-page markdown-body reference-page">
+        <h2>
+          ${appStatus.ui.icon("solar:book-bookmark-bold")}
+          Trang tham khảo
+        </h2>
+
+        ${appStatus.markdown.parse(page.content || "")}
+      </div>`;
+    }
+
+    // Trang nội dung bình thường
+    return `
+    <div class="book-page markdown-body">
+      <h2>${page.number} ${page.title}</h2>
+      ${appStatus.markdown.parse(page.content)}
+    </div>`;
+
+  }).join("")}
+</div>
 
         <!-- OVERLAY MỤC LỤC ĐƯỢC THÊM ĐÚNG VỊ TRÍ -->
         <div class="toc-overlay" id="tocOverlay">
@@ -1274,32 +1288,44 @@ d.fullscreenBtn.addEventListener("click", () => appStatus.article.fullscreen.tog
   ${pages
     .map((p, i) => {
 
-      // Không hiện chính trang mục lục
-      if (p.type === "infobox") {
-    return `
+    // Trang thông tin tổng quan
+    if (p.type === "infobox") {
+        return `
         <div class="toc-item" data-page="${i + 1}">
             ${appStatus.ui.icon("solar:widget-bold")}
             Thông tin tổng quan
         </div>
-    `;
-}
-      if (p.type === "toc") {
-    return `
+        `;
+    }
+
+    // Trang mục lục
+    if (p.type === "toc") {
+        return `
         <div class="toc-item" data-page="${i + 1}">
             ${appStatus.ui.icon("solar:hamburger-menu-bold")}
             Mục lục
         </div>
-    `;
-}
+        `;
+    }
 
-      // Trang nội dung
-      return `
+    // Trang tham khảo
+    if (p.type === "reference") {
+        return `
         <div class="toc-item" data-page="${i + 1}">
-          ${p.number} ${p.title}
+            ${appStatus.ui.icon("solar:book-bookmark-bold")}
+            Trang tham khảo
         </div>
-      `;
+        `;
+    }
 
-    })
+    // Trang nội dung
+    return `
+    <div class="toc-item" data-page="${i + 1}">
+        ${p.number} ${p.title}
+    </div>
+    `;
+
+})
     .join("")}
 </div>
           </div>

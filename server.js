@@ -251,7 +251,7 @@ const CACHE_TIME = {
 
 const CACHE_LIMIT = {
 
-    ARTICLE: 1000,
+    ARTICLE: 250,
     FEATURED: 20,
     LATEST: 20,
     CATEGORY: 100,
@@ -430,7 +430,7 @@ setInterval(() => {
 
     const ramMB = process.memoryUsage().heapUsed / 1024 / 1024;
 
-    if (ramMB > 420) {
+    if (ramMB > 320) {
 
         console.log("⚠ RAM cao (" + Math.round(ramMB) + "MB) -> Dọn toàn bộ cache");
 
@@ -675,7 +675,10 @@ app.get("/api/featured", async (req, res) => {
 
 app.get("/api/latest", async (req, res) => {
 
-    const cache = cacheGet(HydYarCache.wikiArticles, "latest");
+   const cache = cacheGet(
+    HydYarCache.latestArticles,
+    "latest"
+);
 
     if (cache) {
         return res.json({
