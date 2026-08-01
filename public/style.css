@@ -292,13 +292,14 @@ select,
 ============================================= */
 .page {
     display: none;
-    padding: 16px;
+    padding: 20px 16px 16px;
 }
 
 .page.active {
     display: block;
-    animation: fadeIn 0.25s ease;
+    animation: fadeIn .25s ease;
 }
+
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(18px); }
@@ -309,6 +310,7 @@ select,
 .banner {
     background: var(--card);
     border-radius: var(--radius);
+    padding-top: 16px;
     padding: 32px 20px;
     text-align: center;
     margin-bottom: 24px;
@@ -2962,4 +2964,361 @@ font-size:22px;
 .wiki-link:hover{
     filter: brightness(1.2);
     border-bottom-color: rgba(143,124,255,.8);
+}
+
+#page-chat{
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    background:var(--bg);
+}
+
+.chat-header{
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    width: 100%;
+
+    display:flex;
+    align-items:center;
+    gap:10px;
+
+    padding:12px 16px;
+
+    background:var(--card);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+
+    border:var(--border-light);
+    border-top:none;
+
+    border-radius:0 0 24px 24px;
+
+    box-shadow:var(--shadow);
+
+    z-index:1000;
+}
+
+.chat-title{
+    display:flex;
+    flex-direction:column;
+    margin-left:auto
+}
+
+.chat-title span{
+    font-size:.8rem;
+    opacity:.7;
+}
+
+.chat-pinned{
+    margin:12px;
+    padding:12px 16px;
+    border-radius:16px;
+    background:rgba(111,168,255,.12);
+    border:1px solid rgba(111,168,255,.25);
+    color:var(--text);
+    backdrop-filter:blur(12px);
+}
+
+.chat-messages{
+    flex:1;
+    overflow-y:auto;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.chat-input{
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+
+    padding: 14px;
+
+    background: var(--card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+
+    border-top: 1px solid rgba(255,255,255,.06);
+    border-radius: 24px 24px 0 0;
+
+    z-index: 1000;
+}
+
+.chat-input textarea{
+    flex: 1;
+    border: none;
+    outline: none;
+    resize: none;
+
+    background: rgba(255,255,255,.05);
+    color: var(--text);
+    border-radius: 18px;
+    padding: 12px 16px;
+}
+
+.chat-input button{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    height: 48px;
+    padding: 0 18px;
+
+    border: none;
+    border-radius: 16px;
+
+    background: var(--gradient);
+    color: #fff;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 0 20px rgba(111,168,255,.3);
+}
+
+.chat-input button iconify-icon{
+    font-size: 20px;
+}
+
+.chat-guest{
+    text-align:center;
+    padding:10px;
+    opacity:.7;
+}
+
+.community-card{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:18px;
+    border-radius:16px;
+    background:var(--card-bg);
+    cursor:pointer;
+    transition:.2s;
+    box-shadow:var(--shadow);
+}
+
+.community-card:hover{
+    transform:translateY(-2px);
+}
+
+.community-card-icon{
+    width:52px;
+    height:52px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border-radius:50%;
+    background:var(--gradient);
+    color:#fff;
+    font-size:26px;
+}
+
+.community-card-content{
+    flex:1;
+}
+
+.community-card-content h3{
+    margin:0;
+}
+
+.community-card-content p{
+    margin-top:4px;
+    opacity:.7;
+    font-size:.9rem;
+}
+
+.chat-message{
+    max-width: 78%;
+    padding: 12px 16px;
+    margin: 10px 0;
+    border-radius: 18px;
+    word-break: break-word;
+}
+
+.chat-message.self{
+    margin-left: auto;
+    background: var(--gradient);
+    color: #fff;
+    border-bottom-right-radius: 6px;
+}
+
+.chat-message.other{
+    margin-right: auto;
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,.08);
+    color: var(--text);
+    border-bottom-left-radius: 6px;
+}
+
+/* Tên người gửi */
+.chat-message .chat-name{
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    opacity: .9;
+}
+
+/* Nội dung */
+.chat-message .chat-text{
+    white-space: pre-wrap;
+    line-height: 1.5;
+}
+
+/* Thời gian */
+.chat-message .chat-time{
+    display: block;
+    margin-top: 6px;
+    font-size: 11px;
+    opacity: .65;
+    text-align: right;
+}
+
+.chat-message.self{
+    margin-left:auto;
+    background:var(--gradient);
+    color:#fff;
+}
+
+.chat-message.other{
+    background:var(--card);
+    border:1px solid rgba(255,255,255,.08);
+    color:var(--text);
+}
+
+/* Ẩn bottom nav */
+.bottom-nav,
+.header{
+    transition: transform .3s ease, opacity .3s ease;
+}
+
+.bottom-nav.hidden,
+.header.hidden{
+    transform: translateY(120%);
+    opacity: 0;
+    pointer-events:none;
+}
+
+/* Thanh nhập hạ xuống sát đáy */
+/* =========================
+   Keyboard
+========================= */
+
+body.keyboard-open .chat-input{
+    bottom:0;
+}
+
+
+/* =========================
+   Header + Bottom animation
+========================= */
+
+/* =========================
+   ANIMATION SYSTEM
+========================= */
+
+.header,
+.bottom-nav,
+.chat-header,
+.chat-input{
+    transition:
+        transform .35s cubic-bezier(.4,0,.2,1),
+        opacity .35s ease;
+}
+
+
+/* =========================
+   HEADER TRANG CHÍNH
+========================= */
+
+.header.hidden{
+    transform:translateY(-120%);
+    opacity:0;
+    pointer-events:none;
+}
+
+
+/* =========================
+   BOTTOM NAV
+========================= */
+
+.bottom-nav{
+    transform:translateX(-50%) translateY(0);
+    opacity:1;
+}
+
+.bottom-nav.hidden{
+    transform:translateX(-50%) translateY(120%);
+    opacity:0;
+    pointer-events:none;
+}
+
+
+/* Chat header */
+.chat-header{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+
+    transform:translateY(-150px);
+    opacity:0;
+
+    transition:
+        transform .35s cubic-bezier(.4,0,.2,1),
+        opacity .35s ease;
+
+    z-index:1000;
+}
+
+.chat-header.chat-show{
+    transform:translateY(0);
+    opacity:1;
+}
+
+
+/* Chat input */
+.chat-input{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+
+    transform:translateY(150px);
+    opacity:0;
+
+    transition:
+        transform .35s cubic-bezier(.4,0,.2,1),
+        opacity .35s ease;
+
+    z-index:1000;
+}
+
+
+.chat-input.chat-show{
+    transform:translateY(0);
+    opacity:1;
+}
+
+#page-country-chat{
+    transform:none!important;
+}
+
+
+/* =========================
+   KEYBOARD
+========================= */
+
+body.keyboard-open .chat-input{
+
+    bottom:0;
+
 }

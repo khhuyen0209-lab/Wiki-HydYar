@@ -193,6 +193,8 @@ import {
       home: {
         path: "/",
         async handler() {
+          document.querySelector(".header")?.classList.remove("hidden");
+document.querySelector(".bottom-nav")?.classList.remove("hidden");
           document.querySelectorAll(".nav-item,.page").forEach(el => el.classList.remove("active"));
           document.querySelector('[data-page="home"]')?.classList.add("active");
           document.getElementById("page-home")?.classList.add("active");
@@ -207,6 +209,8 @@ import {
       categories: {
         path: "/danh-muc",
         async handler() {
+          document.querySelector(".header")?.classList.remove("hidden");
+document.querySelector(".bottom-nav")?.classList.remove("hidden");
           document.querySelectorAll(".nav-item,.page").forEach(el => el.classList.remove("active"));
           document.querySelector('[data-page="categories"]')?.classList.add("active");
           document.getElementById("page-categories")?.classList.add("active");
@@ -220,6 +224,8 @@ import {
       search: {
     path: "/tim-kiem",
     async handler() {
+      document.querySelector(".header")?.classList.remove("hidden");
+document.querySelector(".bottom-nav")?.classList.remove("hidden");
         document.querySelectorAll(".nav-item,.page").forEach(el => el.classList.remove("active"));
         document.querySelector('[data-page="search"]')?.classList.add("active");
         document.getElementById("page-search")?.classList.add("active");
@@ -230,6 +236,8 @@ import {
 community: {
     path: "/cong-dong",
     async handler() {
+      document.querySelector(".header")?.classList.remove("hidden");
+document.querySelector(".bottom-nav")?.classList.remove("hidden");
         document.querySelectorAll(".nav-item,.page").forEach(el => el.classList.remove("active"));
         document.querySelector('[data-page="community"]')?.classList.add("active");
         document.getElementById("page-community")?.classList.add("active");
@@ -237,9 +245,80 @@ community: {
     }
 },
 
-profile: {
+      countryChat: {
+
+    path:"/cong-dong/chat",
+
+    async handler(){
+
+        const header = document.querySelector(".header");
+        const bottomNav = document.querySelector(".bottom-nav");
+
+        const chatPage = document.getElementById("page-country-chat");
+
+
+        // Tắt animation trước
+        chatPage?.classList.remove("active");
+
+        document
+        .querySelector(".chat-header")
+        ?.classList.remove("chat-show");
+
+        document
+        .querySelector(".chat-input")
+        ?.classList.remove("chat-show");
+
+
+        // Ẩn toàn bộ app cũ
+        document
+        .querySelectorAll(".nav-item,.page")
+        .forEach(el=>{
+            el.classList.remove("active");
+        });
+
+
+        // Ẩn header + bottom ngay lập tức
+        header?.classList.add("hidden");
+        bottomNav?.classList.add("hidden");
+
+
+        // Force browser tính lại layout
+        void document.body.offsetHeight;
+
+
+        // Hiện chat
+        chatPage?.classList.add("active");
+
+
+        window.scrollTo(0,0);
+
+
+        // Cho CSS transition chạy sau khi DOM ổn
+        requestAnimationFrame(()=>{
+
+            requestAnimationFrame(()=>{
+
+                document
+                .querySelector(".chat-header")
+                ?.classList.add("chat-show");
+
+                document
+                .querySelector(".chat-input")
+                ?.classList.add("chat-show");
+
+            });
+
+        });
+
+    }
+
+},
+
+      profile: {
     path: "/tai-khoan",
     async handler() {
+      document.querySelector(".header")?.classList.remove("hidden");
+document.querySelector(".bottom-nav")?.classList.remove("hidden");
         document.querySelectorAll(".nav-item,.page")
             .forEach(el => el.classList.remove("active"));
 
@@ -264,26 +343,35 @@ profile: {
         window.scrollTo(0, 0);
     }
 },
+      
       "category-detail": {
         path: "/danh-muc/:id",
         async handler({ id }) {
+          document.querySelector(".header")?.classList.remove("hidden");
+document.querySelector(".bottom-nav")?.classList.remove("hidden");
           document.querySelectorAll(".nav-item,.page").forEach(el => el.classList.remove("active"));
           document.querySelector('[data-page="categories"]')?.classList.add("active");
           document.getElementById("page-categories")?.classList.add("active");
           await appStatus.category.openCategoryDetail(id);
         }
       },
+      
       article: {
         path: "/:category/:id",
         async handler({ id }) {
+          document.querySelector(".header")?.classList.remove("hidden");
+document.querySelector(".bottom-nav")?.classList.remove("hidden");
           document.querySelectorAll(".page").forEach(el => el.classList.remove("active"));
           document.getElementById("page-article")?.classList.add("active");
           await appStatus.article.openArticleDetail(id);
         }
       },
+      
       policy: {
         path: "/chinh-sach",
         async handler() {
+          document.querySelector(".header")?.classList.remove("hidden");
+document.querySelector(".bottom-nav")?.classList.remove("hidden");
           document.querySelectorAll(".nav-item,.page").forEach(el => el.classList.remove("active"));
           document.querySelector('[data-page="profile"]')?.classList.add("active");
           document.getElementById("page-profile")?.classList.add("active");
@@ -293,6 +381,8 @@ profile: {
       "policy-detail": {
         path: "/chinh-sach/:id",
         async handler({ id }) {
+          document.querySelector(".header")?.classList.remove("hidden");
+document.querySelector(".bottom-nav")?.classList.remove("hidden");
           document.querySelectorAll(".nav-item,.page").forEach(el => el.classList.remove("active"));
           document.querySelector('[data-page="profile"]')?.classList.add("active");
           document.getElementById("page-profile")?.classList.add("active");
@@ -300,6 +390,7 @@ profile: {
         }
       }
     },
+    
 
     init() {
       window.addEventListener("popstate", e => this.handlePopState(e));
@@ -332,9 +423,12 @@ profile: {
 },
 
     goBack() {
-      appStatus.article.closeFullscreen();
-      history.back();
-    },
+    if (appStatus.state.isFullscreenMode) {
+        appStatus.article.closeFullscreen();
+    }
+
+    history.back();
+},
 
     async handlePopState(e) {
       const state = e.state || { route: "home" };
@@ -357,7 +451,9 @@ profile: {
             return this.routes.search.handler();
 
         case "cong-dong":
-            return this.routes.community.handler();
+    return p[1] === "chat"
+        ? this.routes.countryChat.handler()
+        : this.routes.community.handler();
 
         case "tai-khoan":
             return this.routes.profile.handler();
@@ -581,7 +677,7 @@ ${body}
 }
     },
 
-        auth: {
+    auth: {
     user: null,
 
     // Hàm phụ trợ check WebView (Acode Preview)
@@ -815,6 +911,7 @@ ${body}
         menuList.append(loginBtn);
     }
 },
+    
     search:{
     historyKey:"wiki_search_history",
 
@@ -974,6 +1071,157 @@ if (header && searchInput) {
     });
 
 }
+    }
+
+}, 
+
+    chat: {
+
+    ws:null,
+
+    messages: [],
+
+
+    init(){
+
+        this.connect();
+
+        this.bind();
+
+    },
+
+
+    connect(){
+
+        this.ws = new WebSocket(
+            location.origin.replace(
+                "http",
+                "ws"
+            ) + "/ws/chat"
+        );
+
+
+        this.ws.onopen = ()=>{
+
+            this.ws.send(JSON.stringify({
+
+                type:"auth",
+
+                user:window.currentUser
+
+            }));
+
+        };
+
+
+        this.ws.onmessage = e=>{
+
+            const data =
+            JSON.parse(e.data);
+
+
+            if(data.type==="history"){
+
+                this.messages =
+                data.data;
+
+                this.render();
+
+            }
+
+
+            if(data.type==="message"){
+
+                this.messages.push(
+                    data.data
+                );
+
+                this.render();
+
+            }
+
+        };
+
+
+        this.ws.onerror = e=>{
+
+            console.error(
+                "WS lỗi",
+                e
+            );
+
+        };
+
+    },
+
+
+    render(){
+
+        const box =
+        document.getElementById(
+            "countryChatMessages"
+        );
+
+
+        if(!box) return;
+
+
+        box.innerHTML =
+        this.messages.map(m=>`
+
+        <div class="chat-message">
+
+            <b>${m.name}</b>
+
+            <p>${m.text}</p>
+
+        </div>
+
+        `).join("");
+
+    },
+
+
+    send(){
+
+        const input =
+        document.getElementById(
+            "countryChatInput"
+        );
+
+
+        const text =
+        input.value.trim();
+
+
+        if(!text) return;
+
+
+        this.ws.send(JSON.stringify({
+
+            type:"message",
+
+            text
+
+        }));
+
+
+        input.value="";
+
+    },
+
+
+    bind(){
+
+        document
+        .getElementById(
+            "countryChatSend"
+        )
+        ?.addEventListener(
+            "click",
+            ()=>this.send()
+        );
+
     }
 
 },
@@ -1136,16 +1384,17 @@ if (header && searchInput) {
       }
     },
     close() {
-      const { $dom: d } = appStatus.state;
-      appStatus.state.isFullscreenMode = false;
-      d.bookWrapper.classList.remove("book-fullscreen");
-      d.fullscreenBtn.style.display = "flex";
-      d.normalBookNav.style.display = "flex";
-      d.wikiFooter.style.display = "flex";
-      d.fsControls.style.display = "none";
-      d.bottomNav.classList.remove("bottom-nav-hidden");
-      d.bottomNav.style.pointerEvents = "auto";
-    }
+    const { $dom: d } = appStatus.state;
+
+    d.bookWrapper?.classList.remove("book-fullscreen");
+    d.fullscreenBtn && (d.fullscreenBtn.style.display = "flex");
+    d.normalBookNav && (d.normalBookNav.style.display = "flex");
+    d.wikiFooter && (d.wikiFooter.style.display = "flex");
+    d.fsControls && (d.fsControls.style.display = "none");
+    d.bottomNav?.classList.remove("bottom-nav-hidden");
+
+    appStatus.state.isFullscreenMode = false;
+}
   },
 
   // ==========================================
@@ -1491,8 +1740,6 @@ document.querySelectorAll(".wiki-link").forEach(link => {
   initArticleClick() { this.event.initCardClick(); }
 },
 
-
-
     category:{
       categoryCardSkeleton(n=6){return Array(n).fill(0).map(()=>`<div class="category-card skeleton-cate"><div class="skeleton skeleton-cate-icon"></div><div class="skeleton-cate-text"><div class="skeleton skeleton-cate-name"></div><div class="skeleton skeleton-cate-count"></div></div></div>`).join("");},
       categoryCard(l){return!l?.length?`<p style="padding:16px;">Chưa có danh mục</p>`:l.map(c=>`<div class="category-card" data-id="${c.id}"><div class="category-icon">${appStatus.ui.icon(c.icon||"solar:library-bold")}</div><div class="category-name">${appStatus.markdown.escapeHTML(c.name||"Không tên")}</div><div class="category-count">${appStatus.ui.icon("solar:document-bold")} ${c.count||0} bài viết</div></div>`).join("");},
@@ -1648,8 +1895,9 @@ document.querySelectorAll(".wiki-link").forEach(link => {
         );
     };
 },
-      initDomCache(){
-    Object.assign(appStatus.state.$dom,{
+      initDomCache() {
+
+    Object.assign(appStatus.state.$dom, {
         pageArticle: document.getElementById("page-article"),
 
         featuredArticles: document.getElementById("featuredArticles"),
@@ -1662,13 +1910,12 @@ document.querySelectorAll(".wiki-link").forEach(link => {
         searchInput: document.getElementById("searchInput"),
         searchResults: document.getElementById("searchResults"),
         searchHistory: document.getElementById("searchHistory"),
+        searchHistoryWrapper: document.getElementById("searchHistoryWrapper"),
         headerSearch: document.querySelector(".header-search input"),
         homeSearch: document.querySelector(".search-box input"),
-searchHistory: document.getElementById("searchHistory"),
-searchHistoryWrapper: document.getElementById("searchHistoryWrapper"),
-header: document.getElementById("header"),
-searchClose: document.getElementById("searchClose"),
-      
+        header: document.getElementById("header"),
+        searchClose: document.getElementById("searchClose"),
+
         // Cài đặt
         darkModeToggle: document.getElementById("darkModeToggle"),
         optimizeToggle: document.getElementById("optimizeToggle"),
@@ -1676,7 +1923,133 @@ searchClose: document.getElementById("searchClose"),
         // Khác
         bottomNav: document.querySelector(".bottom-nav")
     });
-      }
+
+    // ===== Sự kiện =====
+
+    document
+        .getElementById("openCountryChat")
+        ?.addEventListener("click", () => {
+            HydYarWiki.navigate("countryChat");
+        });
+
+    document
+        .getElementById("countryChatBack")
+        ?.addEventListener("click", () => {
+
+            document
+                .querySelector(".header")
+                ?.classList.remove("hidden");
+
+            document
+                .querySelector(".bottom-nav")
+                ?.classList.remove("hidden");
+
+            HydYarWiki.back();
+        });
+},
+
+      initKeyboard() {
+    const vh = window.visualViewport;
+
+    if (!vh) return;
+
+    const fullHeight = vh.height;
+
+    const check = () => {
+    const open =
+        window.visualViewport &&
+        visualViewport.height < window.innerHeight * 0.8;
+
+    console.log({
+        open,
+        vv: visualViewport.height,
+        inner: window.innerHeight
+    });
+
+    document.body.classList.toggle("keyboard-open", open);
+};
+
+    vh.addEventListener("resize", check);
+},
+
+      initChatAnimation(){
+
+    const header = document.querySelector(".chat-header");
+    const input = document.querySelector(".chat-input");
+    const bottom = document.querySelector(".bottom-nav");
+
+    if(!header || !input) return;
+
+
+    // Chuẩn bị animation
+    header.classList.add("chat-animate");
+    input.classList.add("chat-animate");
+
+
+    const openChat = ()=>{
+
+        requestAnimationFrame(()=>{
+
+            requestAnimationFrame(()=>{
+
+                header.classList.add("chat-show");
+                input.classList.add("chat-show");
+
+                bottom?.classList.add("chat-hide");
+
+            });
+
+        });
+
+    };
+
+
+    const closeChat = ()=>{
+
+        header.classList.remove("chat-show");
+        input.classList.remove("chat-show");
+
+        bottom?.classList.remove("chat-hide");
+
+    };
+
+
+    // Chỉ theo dõi khi back/forward trình duyệt
+    window.addEventListener("popstate",()=>{
+
+        if(location.pathname === "/cong-dong/chat"){
+
+            openChat();
+
+        }else{
+
+            closeChat();
+
+        }
+
+    });
+
+
+    // Xử lý bàn phím ảo
+    if(window.visualViewport){
+
+        visualViewport.addEventListener("resize",()=>{
+
+            const keyboard =
+                visualViewport.height <
+                window.innerHeight * 0.8;
+
+
+            document.body.classList.toggle(
+                "keyboard-open",
+                keyboard
+            );
+
+        });
+
+    }
+
+}
     },
 
     async init(){
@@ -1701,6 +2074,10 @@ if(result !== true){
 
         this.ui.initPerformance();
 
+        this.ui.initKeyboard();
+
+        this.ui.initChatAnimation();
+
         this.ui.initNavigation();
 
         this.category.initCategoryClick();
@@ -1708,6 +2085,8 @@ if(result !== true){
         this.article.initArticleClick();
 
         this.search.init();
+
+        this.chat.init();
 
         document
             .getElementById("wikiPolicy")

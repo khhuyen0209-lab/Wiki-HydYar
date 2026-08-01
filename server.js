@@ -1,4 +1,6 @@
 const express = require("express");
+const { WebSocketServer } = require("ws");
+const http = require("http");
 const path = require("path");
 const fs = require("fs");
 const admin = require("firebase-admin");
@@ -6,6 +8,8 @@ const cors = require("cors");
 const session = require("express-session");
 
 const app = express();
+
+const server = http.createServer(app);
 
 // ==============================
 // 🔧 CẤU HÌNH CÙNG DOMAIN
@@ -1014,7 +1018,7 @@ app.get("/api/search", async (req, res) => {
         // Tìm trong Preview Cache
         // ==============================
 
-        for (const [, item] of HydYarCache.articlePreview) {
+        for (const [, item] of HydYarCache.articlePreview.entries()) {
 
             if (item.expire <= Date.now()) continue;
 
@@ -1115,6 +1119,584 @@ app.post("/api/article/:id/view", async (req, res) => {
   }
 });
 
+// ==============================================
+// HYDYAR WEBSOCKET CHAT SYSTEM
+// ==============================================
+
+const wss = new WebSocketServer({
+    server,
+    path:"/ws/chat"
+});
+
+
+// RAM CHAT
+let chatMemory = [];
+
+
+// giới hạn
+const MAX_CHAT = 200;
+
+// ==============================
+// CHAT RATE LIMIT
+// ==============================
+
+const chatCooldown = new Map();
+
+const CHAT_DELAY = 1000; // 1 giây / tin
+
+
+function canSendChat(uid){
+
+    const now = Date.now();
+
+    const last = chatCooldown.get(uid) || 0;
+
+
+    if(now - last < CHAT_DELAY){
+
+        return false;
+
+    }
+
+
+    chatCooldown.set(uid, now);
+
+
+    return true;
+
+}
+
+
+// từ cấm đơn giản
+const bannedWords = [
+    "đm",
+    "dm",
+    "cl",
+    "cc",
+    "fuck",
+    "shit"
+];
+
+
+// ==============================
+// LOAD CHAT FIREBASE
+// ==============================
+
+async function loadChat(){
+
+    try{
+
+        const snap = await db
+        .collection("community")
+        .doc("chat")
+        .collection("messages")
+        .orderBy("time","desc")
+        .limit(MAX_CHAT)
+        .get();
+
+
+        chatMemory = snap.docs
+        .reverse()
+        .map(d=>d.data());
+
+
+        console.log(
+            `💬 Load ${chatMemory.length} chat`
+        );
+
+
+    }catch(err){
+
+        console.error(
+            "❌ Load chat lỗi",
+            err
+        );
+
+    }
+
+}
+
+
+loadChat();
+
+
+
+// ==============================
+// SAVE CHAT FIREBASE
+// ==============================
+
+async function saveChat(){
+
+
+    if(chatMemory.length===0)
+        return;
+
+
+    try{
+
+
+        const ref =
+        db.collection("community")
+        .doc("chat")
+        .collection("messages");
+
+
+        const batch = db.batch();
+
+
+
+        const old =
+        await ref
+        .orderBy("time")
+        .get();
+
+
+
+        if(old.size > MAX_CHAT){
+
+            old.docs
+            .slice(0,old.size-MAX_CHAT)
+            .forEach(doc=>{
+
+                batch.delete(doc.ref);
+
+            });
+
+        }
+
+
+
+        chatMemory.forEach(msg=>{
+
+            batch.set(
+                ref.doc(String(msg.time)),
+                msg
+            );
+
+        });
+
+
+
+        await batch.commit();
+
+
+
+        console.log(
+            "💾 Đã backup chat"
+        );
+
+
+    }catch(err){
+
+        console.error(
+            "❌ Save chat lỗi",
+            err
+        );
+
+    }
+
+}
+
+
+
+// backup 15 phút
+
+setInterval(()=>{
+
+    saveChat();
+
+},15*60*1000);
+
+
+
+
+
+// ==============================
+// FILTER
+// ==============================
+
+function cleanMessage(text){
+
+    let msg =
+    text
+    .slice(0,800);
+
+
+
+    for(const word of bannedWords){
+
+        const reg =
+        new RegExp(word,"gi");
+
+
+        msg =
+        msg.replace(
+            reg,
+            "***"
+        );
+
+    }
+
+
+    return msg.trim();
+
+}
+
+
+
+
+
+// ==============================
+// WS CONNECT
+// ==============================
+
+wss.on("connection",async(ws,req)=>{
+
+
+    let user = null;
+
+
+
+    ws.send(JSON.stringify({
+
+        type:"history",
+        data:chatMemory
+
+    }));
+
+
+
+
+
+    ws.on("message",(raw)=>{
+
+
+        try{
+
+
+            const data =
+            JSON.parse(raw);
+
+
+
+            // AUTH
+
+            if(data.type==="auth"){
+
+
+                user =
+                data.user || null;
+
+
+                return;
+
+            }
+
+
+
+
+            // MESSAGE
+
+            if(data.type==="message"){
+
+
+
+                if(!user){
+
+                    ws.send(JSON.stringify({
+
+                        type:"error",
+                        message:
+                        "Bạn cần đăng nhập để chat"
+
+                    }));
+
+                    return;
+
+                }
+
+              // chống spam
+
+if(!canSendChat(user.uid)){
+
+    ws.send(JSON.stringify({
+
+        type:"error",
+
+        message:
+        "Bạn gửi quá nhanh, hãy chờ 1 giây"
+
+    }));
+
+    return;
+
+}
+
+
+
+                const text =
+                cleanMessage(
+                    data.text || ""
+                );
+
+
+
+                if(!text)
+                    return;
+
+
+
+                const msg={
+
+
+                    id:
+                    Date.now(),
+
+
+                    uid:
+                    user.uid,
+
+
+                    name:
+                    user.name ||
+                    "Người dùng",
+
+
+                    avatar:
+                    user.avatar ||
+                    "",
+
+
+                    text,
+
+
+                    time:
+                    Date.now()
+
+                };
+
+
+
+                chatMemory.push(msg);
+
+
+
+                if(chatMemory.length > MAX_CHAT){
+
+                    chatMemory.shift();
+
+                }
+
+
+
+                wss.clients.forEach(client=>{
+
+
+                    if(client.readyState===1){
+
+
+                        client.send(JSON.stringify({
+
+                            type:"message",
+                            data:msg
+
+                        }));
+
+                    }
+
+
+                });
+
+
+
+                if(chatMemory.length>=100){
+
+                    saveChat();
+
+                }
+
+
+            }
+
+
+
+        }catch(e){
+
+            console.log(
+                "WS error",
+                e
+            );
+
+        }
+
+
+    });
+
+
+});
+
+
+
+
+// ==============================================
+// CHAT API
+// ==============================================
+
+
+// lấy lịch sử chat
+
+app.get("/api/chat/history",requireAuth,async(req,res)=>{
+
+    res.json({
+
+        success:true,
+
+        data:chatMemory
+
+    });
+
+});
+
+
+
+
+
+// gửi chat fallback HTTP
+
+app.post("/api/chat/send",requireAuth,async(req,res)=>{
+
+    try{
+
+
+        const text =
+        cleanMessage(
+            req.body.text || ""
+        );
+
+
+
+        if(!text){
+
+            return res.status(400).json({
+
+                success:false,
+
+                message:"Nội dung rỗng"
+
+            });
+
+        }
+
+
+
+        const user =
+        req.session.user;
+
+if(!canSendChat(user.uid)){
+
+    return res.status(429).json({
+
+        success:false,
+
+        message:"Bạn gửi quá nhanh"
+
+    });
+
+}
+
+        const msg={
+
+
+            id:
+            Date.now(),
+
+
+            uid:
+            user.uid,
+
+
+            name:
+            user.name ||
+            "Người dùng",
+
+
+            avatar:
+            user.avatar ||
+            "",
+
+
+            text,
+
+
+            time:
+            Date.now()
+
+        };
+
+
+
+        chatMemory.push(msg);
+
+
+
+        if(chatMemory.length > MAX_CHAT){
+
+            chatMemory.shift();
+
+        }
+
+
+
+        wss.clients.forEach(client=>{
+
+
+            if(client.readyState===1){
+
+
+                client.send(JSON.stringify({
+
+                    type:"message",
+
+                    data:msg
+
+                }));
+
+            }
+
+
+        });
+
+
+
+        res.json({
+
+            success:true,
+
+            data:msg
+
+        });
+
+
+
+    }catch(err){
+
+
+        console.error(
+            "Chat API lỗi:",
+            err
+        );
+
+
+        res.status(500).json({
+
+            success:false
+
+        });
+
+
+    }
+
+});
 // ==============================
 // SEO + ROUTER SPA
 // ==============================
@@ -1147,4 +1729,11 @@ app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.ht
 // KHỞI ĐỘNG
 // ==============================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Wiki HydYar chạy tại cổng ${PORT}`));
+
+server.listen(PORT,()=>{
+
+    console.log(
+        `✅ Wiki HydYar chạy tại cổng ${PORT}`
+    );
+
+});

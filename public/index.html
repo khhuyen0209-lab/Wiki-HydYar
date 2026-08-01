@@ -16,6 +16,8 @@
 </head>
 <body>
 
+  
+
   <div id="bootScreen" class="boot-screen">
     <div class="boot-box">
         <h2>HydYar Wiki</h2>
@@ -119,15 +121,84 @@
 
         <!-- Cộng đồng -->
         <section class="page" id="page-community">
-            <div class="page-header">
-                <div class="tab-group">
-                    <button class="tab-btn active">Việt Nam</button>
-                    <button class="tab-btn">Toàn cầu</button>
-                </div>
-                <button class="create-btn">+ Tạo bài viết</button>
+
+    <div class="page-header">
+        <h1>Cộng đồng</h1>
+        <p>Tham gia trò chuyện cùng mọi người.</p>
+    </div>
+
+    <div class="card-grid">
+
+        <div class="community-card" 
+             id="openCountryChat"
+             data-chat="country">
+
+            <div class="community-card-icon">
+                <iconify-icon icon="solar:chat-round-dots-bold"></iconify-icon>
             </div>
-            <div class="community-feed" id="communityFeed"></div>
-        </section>
+
+            <div class="community-card-content">
+                <h3>Chat khu vực</h3>
+                <p>Trò chuyện cùng mọi người trong khu vực của bạn.</p>
+            </div>
+
+            <iconify-icon
+                class="community-card-arrow"
+                icon="solar:arrow-right-bold">
+            </iconify-icon>
+
+        </div>
+
+    </div>
+
+</section>
+
+      <!-- Chat khu vực -->
+<section class="page" id="page-country-chat">
+
+    <div class="chat-header">
+
+        <button id="countryChatBack" class="icon-btn">
+            <iconify-icon icon="solar:arrow-left-bold"></iconify-icon>
+        </button>
+
+        <div class="chat-title">
+            <strong>Chat khu vực</strong>
+            <span> > Việt Nam</span>
+        </div>
+
+    </div>
+
+    <div id="countryPinned" class="chat-pinned" style="display:none;"></div>
+
+    <div id="countryChatMessages"></div>
+    <span class="chat-name">HydYar</span>
+    <div class="chat-text">Xin chào mọi người 👋</div>
+    <span class="chat-time">13:24</span>
+</div>
+
+<div class="chat-message self">
+    <div class="chat-text">Hello!</div>
+    <span class="chat-time">13:25</span>
+</div>
+
+    <div class="chat-input">
+
+    <textarea
+        id="countryChatInput"
+        maxlength="800"
+        rows="1"
+        placeholder="Nhập tin nhắn..."
+    ></textarea>
+
+    <button id="countryChatSend" class="send-btn">
+        <iconify-icon icon="solar:paper-plane-bold"></iconify-icon>
+        <span>Gửi</span>
+    </button>
+
+</div>
+
+</section>
 
         <!-- Tài khoản -->
         <section class="page" id="page-profile">
