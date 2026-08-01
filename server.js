@@ -653,9 +653,10 @@ app.get("/api/featured", async (req, res) => {
         const data = snap.docs.map(doc => {
 
             const d = {
-                id: doc.id,
-                ...doc.data()
-            };
+    type: "article",
+    id: doc.id,
+    ...doc.data()
+};
 
             if (d.createdAt?.toDate) {
                 d.createdAt = d.createdAt.toDate().toISOString();
@@ -731,9 +732,10 @@ app.get("/api/latest", async (req, res) => {
         const data = snap.docs.map(doc => {
 
             const d = {
-                id: doc.id,
-                ...doc.data()
-            };
+    type: "article",
+    id: doc.id,
+    ...doc.data()
+};
 
             if (d.createdAt?.toDate) {
                 d.createdAt = d.createdAt.toDate().toISOString();
@@ -848,10 +850,11 @@ app.get("/api/article/:id", async (req, res) => {
 
         // Dữ liệu bài viết
         const article = {
-            id: articleSnap.id,
-            ...articleSnap.data(),
-            pages
-        };
+    type: "article",
+    id: articleSnap.id,
+    ...articleSnap.data(),
+    pages
+};
 
         if (article.createdAt?.toDate) {
             article.createdAt = article.createdAt.toDate().toISOString();
@@ -1052,9 +1055,10 @@ app.get("/api/search", async (req, res) => {
         result = snap.docs.map(doc => {
 
             const data = {
-                id: doc.id,
-                ...doc.data()
-            };
+    type: "article",
+    id: doc.id,
+    ...doc.data()
+};
 
             if (data.createdAt?.toDate) {
                 data.createdAt = data.createdAt.toDate().toISOString();
