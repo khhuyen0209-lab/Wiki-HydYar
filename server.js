@@ -220,14 +220,13 @@ async function splitWikiPages() {
 // ==============================
 
 const HydYarCache = {
-
+    articlePreview: new Map(),
     wikiArticles: new Map(),
     featuredArticles: new Map(),
     latestArticles: new Map(),
     categories: new Map(),
     users: new Map(),
     seo: new Map()
-
 };
 
 // ==============================
@@ -236,6 +235,7 @@ const HydYarCache = {
 
 const CACHE_TIME = {
 
+    PREVIEW: 2 * 60 * 60 * 1000,
     ARTICLE: 2 * 60 * 60 * 1000,
     FEATURED: 30 * 60 * 1000,
     LATEST: 10 * 60 * 1000,
@@ -250,15 +250,14 @@ const CACHE_TIME = {
 // ==============================
 
 const CACHE_LIMIT = {
-
     ARTICLE: 250,
+    PREVIEW: 250,
     FEATURED: 20,
     LATEST: 20,
     CATEGORY: 100,
     USER: 1000,
     SEO: 500
-
-};
+}
 
 // ==============================
 // CACHE GET
@@ -481,7 +480,6 @@ setInterval(() => {
 
 }, 30 * 60 * 1000);
 
-
 // ==============================
 // FIRESTORE REALTIME CACHE UPDATE
 // ==============================
@@ -493,21 +491,37 @@ db.collection("wikiArticles")
 
         const id = change.doc.id;
 
-        // Bài bị xóa
-        if (change.type === "removed") {
-
-            cacheDelete(HydYarCache.wikiArticles, id);
-
-            console.log(`🗑 Xóa cache: ${id}`);
-
-            return;
-        }
-
-        // Khi bài được thêm hoặc sửa:
-        // Chỉ xóa cache để lần truy cập sau tải lại đầy đủ (bao gồm pages)
+        // Xóa cache bài viết
         cacheDelete(HydYarCache.wikiArticles, id);
 
-        console.log(`♻️ Cache hết hạn: ${id}`);
+        // Xóa cache preview
+        cacheDelete(HydYarCache.articlePreview, id);
+
+        // Danh sách nổi bật và mới nhất có thể thay đổi
+        cacheDelete(HydYarCache.featuredArticles, "featured");
+        cacheDelete(HydYarCache.latestArticles, "latest");
+
+        if (change.type === "removed") {
+
+            console.log(`🗑 Đã xóa cache bài viết: ${id}`);
+
+            return;
+
+        }
+
+        if (change.type === "added") {
+
+            console.log(`➕ Làm mới cache: ${id}`);
+
+            return;
+
+        }
+
+        if (change.type === "modified") {
+
+            console.log(`♻️ Làm mới cache: ${id}`);
+
+        }
 
     });
 
@@ -615,7 +629,10 @@ app.get("/api/auth/status", (req, res) => {
 // ==============================
 app.get("/api/featured", async (req, res) => {
 
-    const cache = cacheGet(HydYarCache.featuredArticles, "featured");
+    const cache = cacheGet(
+        HydYarCache.featuredArticles,
+        "featured"
+    );
 
     if (cache) {
         return res.json({
@@ -634,27 +651,43 @@ app.get("/api/featured", async (req, res) => {
             .get();
 
         const data = snap.docs.map(doc => {
-    const d = {
-        id: doc.id,
-        ...doc.data()
-    };
 
-    if (d.updatedAt?.toDate) {
-        d.updatedAt = d.updatedAt.toDate().toISOString();
-    }
+            const d = {
+                id: doc.id,
+                ...doc.data()
+            };
 
-    return d;
-});
+            if (d.createdAt?.toDate) {
+                d.createdAt = d.createdAt.toDate().toISOString();
+            }
 
+            if (d.updatedAt?.toDate) {
+                d.updatedAt = d.updatedAt.toDate().toISOString();
+            }
+
+            // Lưu Preview Cache
+            cacheSet(
+                HydYarCache.articlePreview,
+                d.id,
+                d,
+                CACHE_TIME.ARTICLE,
+                CACHE_LIMIT.ARTICLE
+            );
+
+            return d;
+
+        });
+
+        // Lưu danh sách Featured
         cacheSet(
-    HydYarCache.featuredArticles,
-    "featured",
-    data,
-    CACHE_TIME.FEATURED,
-    CACHE_LIMIT.FEATURED
-);
+            HydYarCache.featuredArticles,
+            "featured",
+            data,
+            CACHE_TIME.FEATURED,
+            CACHE_LIMIT.FEATURED
+        );
 
-        res.json({
+        return res.json({
             success: true,
             cached: false,
             data
@@ -662,9 +695,9 @@ app.get("/api/featured", async (req, res) => {
 
     } catch (err) {
 
-        console.error(err);
+        console.error("❌ Featured Error:", err);
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: "Không thể tải bài nổi bật"
         });
@@ -675,10 +708,10 @@ app.get("/api/featured", async (req, res) => {
 
 app.get("/api/latest", async (req, res) => {
 
-   const cache = cacheGet(
-    HydYarCache.latestArticles,
-    "latest"
-);
+    const cache = cacheGet(
+        HydYarCache.latestArticles,
+        "latest"
+    );
 
     if (cache) {
         return res.json({
@@ -696,27 +729,43 @@ app.get("/api/latest", async (req, res) => {
             .get();
 
         const data = snap.docs.map(doc => {
-    const d = {
-        id: doc.id,
-        ...doc.data()
-    };
 
-    if (d.updatedAt?.toDate) {
-        d.updatedAt = d.updatedAt.toDate().toISOString();
-    }
+            const d = {
+                id: doc.id,
+                ...doc.data()
+            };
 
-    return d;
-});
+            if (d.createdAt?.toDate) {
+                d.createdAt = d.createdAt.toDate().toISOString();
+            }
 
+            if (d.updatedAt?.toDate) {
+                d.updatedAt = d.updatedAt.toDate().toISOString();
+            }
+
+            // Lưu Preview Cache
+            cacheSet(
+                HydYarCache.articlePreview,
+                d.id,
+                d,
+                CACHE_TIME.ARTICLE,
+                CACHE_LIMIT.ARTICLE // hoặc CACHE_LIMIT.PREVIEW nếu bạn tách riêng
+            );
+
+            return d;
+
+        });
+
+        // Lưu danh sách Latest
         cacheSet(
-    HydYarCache.latestArticles,
-    "latest",
-    data,
-    CACHE_TIME.LATEST,
-    CACHE_LIMIT.LATEST
-);
+            HydYarCache.latestArticles,
+            "latest",
+            data,
+            CACHE_TIME.LATEST,
+            CACHE_LIMIT.LATEST
+        );
 
-        res.json({
+        return res.json({
             success: true,
             cached: false,
             data
@@ -724,9 +773,9 @@ app.get("/api/latest", async (req, res) => {
 
     } catch (err) {
 
-        console.error(err);
+        console.error("❌ Latest Error:", err);
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: "Không thể tải bài mới"
         });
@@ -735,131 +784,126 @@ app.get("/api/latest", async (req, res) => {
 
 });
 
-app.get("/api/article/:id", async (req,res)=>{
+app.get("/api/article/:id", async (req, res) => {
 
     const id = req.params.id;
 
-
-    const cache =
-      cacheGet(
+    // Kiểm tra Full Cache
+    const cache = cacheGet(
         HydYarCache.wikiArticles,
         id
-      );
+    );
 
-
-    if(cache){
-
-      return res.json({
-        success:true,
-        cached:true,
-        data:cache
-      });
-
+    if (cache) {
+        return res.json({
+            success: true,
+            cached: true,
+            data: cache
+        });
     }
-
-
 
     try {
 
+        const articleRef = db
+            .collection("wikiArticles")
+            .doc(id);
 
-      const articleSnap =
-        await db.collection("wikiArticles")
-        .doc(id)
-        .get();
+        // Lấy bài viết và pages song song
+        const [articleSnap, pagesSnap] = await Promise.all([
+            articleRef.get(),
+            articleRef
+                .collection("pages")
+                .orderBy("order")
+                .get()
+        ]);
 
+        if (!articleSnap.exists) {
 
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy bài viết"
+            });
 
-      if(!articleSnap.exists){
+        }
 
-        return res.status(404).json({
-          success:false,
-          message:"Không tìm thấy bài viết"
+        // Xử lý pages
+        const pages = pagesSnap.docs.map(doc => {
+
+            const page = {
+                id: Number(doc.id),
+                ...doc.data()
+            };
+
+            if (page.createdAt?.toDate) {
+                page.createdAt = page.createdAt.toDate().toISOString();
+            }
+
+            if (page.updatedAt?.toDate) {
+                page.updatedAt = page.updatedAt.toDate().toISOString();
+            }
+
+            return page;
+
         });
 
-      }
+        // Dữ liệu bài viết
+        const article = {
+            id: articleSnap.id,
+            ...articleSnap.data(),
+            pages
+        };
 
+        if (article.createdAt?.toDate) {
+            article.createdAt = article.createdAt.toDate().toISOString();
+        }
 
+        if (article.updatedAt?.toDate) {
+            article.updatedAt = article.updatedAt.toDate().toISOString();
+        }
 
-      const pagesSnap =
-  await db.collection("wikiArticles")
-  .doc(id)
-  .collection("pages")
-  .get();
+        // Lưu Full Cache
+        cacheSet(
+            HydYarCache.wikiArticles,
+            id,
+            article,
+            CACHE_TIME.ARTICLE,
+            CACHE_LIMIT.ARTICLE
+        );
 
+        // Lưu Preview Cache
+        cacheSet(
+            HydYarCache.articlePreview,
+            id,
+            {
+                id: article.id,
+                title: article.title,
+                desc: article.desc,
+                image: article.image,
+                categoryId: article.categoryId,
+                featured: article.featured,
+                views: article.views,
+                keywords: article.keywords,
+                createdAt: article.createdAt,
+                updatedAt: article.updatedAt
+            },
+            CACHE_TIME.ARTICLE,
+            CACHE_LIMIT.ARTICLE // hoặc CACHE_LIMIT.PREVIEW nếu có
+        );
 
-const pages = pagesSnap.docs
-  .map(doc => {
-    const p = {
-      id: Number(doc.id),
-      ...doc.data()
-    };
+        return res.json({
+            success: true,
+            cached: false,
+            data: article
+        });
 
-    if (p.createdAt?.toDate) {
-      p.createdAt = p.createdAt.toDate().toISOString();
-    }
+    } catch (err) {
 
-    if (p.updatedAt?.toDate) {
-      p.updatedAt = p.updatedAt.toDate().toISOString();
-    }
+        console.error("❌ Lỗi tải bài viết:", err);
 
-    return p;
-  })
-  .sort((a, b) => a.id - b.id);
-
-
-
-      const data = {
-    id: articleSnap.id,
-    ...articleSnap.data(),
-    pages
-};
-
-// Chuyển Timestamp -> ISO String
-if (data.updatedAt?.toDate) {
-    data.updatedAt = data.updatedAt.toDate().toISOString();
-}
-
-if (data.createdAt?.toDate) {
-    data.createdAt = data.createdAt.toDate().toISOString();
-}
-
-
-
-      cacheSet(
-    HydYarCache.wikiArticles,
-    id,
-    data,
-    CACHE_TIME.ARTICLE,
-    CACHE_LIMIT.ARTICLE
-);
-
-
-
-      res.json({
-
-        success:true,
-
-        cached:false,
-
-        data
-
-      });
-
-
-
-    }
-    catch(err){
-
-      console.error(err);
-
-
-      res.status(500).json({
-
-        success:false,
-
-        message:"Lỗi tải bài viết"
-
-      });
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi tải bài viết"
+        });
 
     }
 
@@ -956,83 +1000,100 @@ app.get("/api/search", async (req, res) => {
         if (!keyword) {
             return res.json({
                 success: true,
+                cached: true,
                 data: []
             });
         }
 
         let result = [];
 
-        // Tìm trước trong cache
-        for (const [, item] of HydYarCache.wikiArticles) {
+        // ==============================
+        // Tìm trong Preview Cache
+        // ==============================
+
+        for (const [, item] of HydYarCache.articlePreview) {
 
             if (item.expire <= Date.now()) continue;
 
             const article = item.data;
 
-            if (!article || Array.isArray(article)) continue;
+            if (!article) continue;
 
             if (
                 article.title?.toLowerCase().includes(keyword) ||
                 article.desc?.toLowerCase().includes(keyword) ||
                 article.keywords?.toLowerCase().includes(keyword)
             ) {
+
                 result.push(article);
+
+                if (result.length >= 20) break;
+
             }
 
         }
 
-        // Nếu cache chưa có kết quả thì đọc Firestore
-        if (result.length === 0) {
+        if (result.length > 0) {
 
-            const snap = await db.collection("wikiArticles").get();
-
-            result = snap.docs
-                .map(doc => {
-
-                    const data = {
-                        id: doc.id,
-                        ...doc.data()
-                    };
-
-                    if (data.updatedAt?.toDate) {
-                        data.updatedAt = data.updatedAt.toDate().toISOString();
-                    }
-
-                    if (data.createdAt?.toDate) {
-                        data.createdAt = data.createdAt.toDate().toISOString();
-                    }
-
-                    // Lưu luôn vào cache bài viết
-                    cacheSet(
-    HydYarCache.wikiArticles,
-    data.id,
-    data,
-    CACHE_TIME.ARTICLE,
-    CACHE_LIMIT.ARTICLE
-);
-
-                    return data;
-
-                })
-                .filter(article =>
-                    article.title?.toLowerCase().includes(keyword) ||
-                    article.desc?.toLowerCase().includes(keyword) ||
-                    article.keywords?.toLowerCase().includes(keyword)
-                );
+            return res.json({
+                success: true,
+                cached: true,
+                data: result
+            });
 
         }
 
-        res.json({
+        // ==============================
+        // Không có trong cache -> Firestore
+        // ==============================
+
+        const snap = await db.collection("wikiArticles").get();
+
+        result = snap.docs.map(doc => {
+
+            const data = {
+                id: doc.id,
+                ...doc.data()
+            };
+
+            if (data.createdAt?.toDate) {
+                data.createdAt = data.createdAt.toDate().toISOString();
+            }
+
+            if (data.updatedAt?.toDate) {
+                data.updatedAt = data.updatedAt.toDate().toISOString();
+            }
+
+            // Lưu Preview Cache
+            cacheSet(
+                HydYarCache.articlePreview,
+                data.id,
+                data,
+                CACHE_TIME.ARTICLE,
+                CACHE_LIMIT.ARTICLE
+            );
+
+            return data;
+
+        }).filter(article =>
+
+            article.title?.toLowerCase().includes(keyword) ||
+            article.desc?.toLowerCase().includes(keyword) ||
+            article.keywords?.toLowerCase().includes(keyword)
+
+        ).slice(0, 20);
+
+        return res.json({
             success: true,
-            cached: result.length > 0,
+            cached: false,
             data: result
         });
 
     } catch (err) {
 
-        console.error(err);
+        console.error("❌ Search Error:", err);
 
-        res.status(500).json({
+        return res.status(500).json({
             success: false,
             message: "Lỗi tìm kiếm"
         });
