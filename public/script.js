@@ -1093,12 +1093,25 @@ if (header && searchInput) {
 
     connect(){
 
-        this.ws = new WebSocket(
-            location.origin.replace(
-                "http",
-                "ws"
-            ) + "/ws/chat"
+    const url =
+"wss://wiki-hydyar.onrender.com/ws/chat";
+
+
+    console.log("WS URL:", url);
+
+
+    this.ws = new WebSocket(url);
+
+
+    this.ws.onerror = e=>{
+        console.error(
+            "WS lỗi:",
+            url,
+            e
         );
+    };
+
+ // ❌ đóng connect ở đây
 
 
         this.ws.onopen = ()=>{

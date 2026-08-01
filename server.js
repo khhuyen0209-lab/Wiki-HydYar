@@ -1352,6 +1352,12 @@ function cleanMessage(text){
 
 wss.on("connection",async(ws,req)=>{
 
+  console.log(
+        "🔌 WS CONNECT:",
+        req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+        req.url
+    );
+
 
     let user = null;
 
@@ -1387,6 +1393,11 @@ wss.on("connection",async(ws,req)=>{
                 user =
                 data.user || null;
 
+              console.log(
+        "👤 WS AUTH:",
+        user?.uid,
+        user?.name
+    );
 
                 return;
 
@@ -1728,6 +1739,16 @@ app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.ht
 // ==============================
 // KHỞI ĐỘNG
 // ==============================
+
+server.on("upgrade",(request,socket,head)=>{
+
+    console.log(
+        "⬆️ WS UPGRADE:",
+        request.url
+    );
+
+});
+
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT,()=>{
