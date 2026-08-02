@@ -46,15 +46,17 @@ export async function syncLoginToServer(user) {
             throw new Error("Chưa đăng nhập");
         }
 
+
         const token = await user.getIdToken(true);
 
+
         const res = await fetch(`${API_URL}/api/login`, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
+            method:"POST",
+            credentials:"include",
+            headers:{
+                "Content-Type":"application/json"
             },
-            body: JSON.stringify({ token })
+            body:JSON.stringify({ token })
         });
 
 
@@ -67,20 +69,44 @@ export async function syncLoginToServer(user) {
 
 
         if(!json.success){
-            throw new Error(json.message || "Đồng bộ thất bại");
+            throw new Error(
+                json.message || "Đồng bộ thất bại"
+            );
         }
 
 
-        console.log("✅ Đã đồng bộ với Server");
+        // ⭐ THÊM ĐOẠN NÀY
+        window.currentUser = {
+
+            uid:user.uid,
+
+            name:user.displayName || 
+                 user.email?.split("@")[0] ||
+                 "Người dùng",
+
+            avatar:user.photoURL || "",
+
+            email:user.email || ""
+
+        };
+
+
+        console.log(
+            "✅ Đã đồng bộ với Server",
+            window.currentUser
+        );
+
 
         return true;
 
 
     } catch(err){
 
-        console.error("❌ Không thể đồng bộ Server:", err);
+        console.error(
+            "❌ Không thể đồng bộ Server:",
+            err
+        );
 
-        // Quan trọng: đẩy lỗi ra ngoài
         throw err;
 
     }

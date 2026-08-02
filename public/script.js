@@ -246,74 +246,56 @@ document.querySelector(".bottom-nav")?.classList.remove("hidden");
 },
 
       countryChat: {
-
     path:"/cong-dong/chat",
-
     async handler(){
-
         const header = document.querySelector(".header");
         const bottomNav = document.querySelector(".bottom-nav");
-
         const chatPage = document.getElementById("page-country-chat");
 
-
-        // Tắt animation trước
+        // Tắt animation/trạng thái cũ
         chatPage?.classList.remove("active");
+        document.querySelector(".chat-header")?.classList.remove("chat-show");
+        document.querySelector(".chat-input")?.classList.remove("chat-show");
 
-        document
-        .querySelector(".chat-header")
-        ?.classList.remove("chat-show");
-
-        document
-        .querySelector(".chat-input")
-        ?.classList.remove("chat-show");
-
-
-        // Ẩn toàn bộ app cũ
-        document
-        .querySelectorAll(".nav-item,.page")
-        .forEach(el=>{
+        // Xóa active các trang khác
+        document.querySelectorAll(".nav-item,.page").forEach(el=>{
             el.classList.remove("active");
         });
 
-
-        // Ẩn header + bottom ngay lập tức
+        // Ẩn thanh điều hướng
         header?.classList.add("hidden");
         bottomNav?.classList.add("hidden");
 
-
-        // Force browser tính lại layout
+        // Bắt trình duyệt tính lại layout
         void document.body.offsetHeight;
 
-
-        // Hiện chat
+        // Hiện trang chat
         chatPage?.classList.add("active");
-
-
         window.scrollTo(0,0);
 
+      if (!appStatus.chat.ws) {
+    appStatus.chat.connect();
+}
 
-        // Cho CSS transition chạy sau khi DOM ổn
+        // ✅ ĐỢI ANIMATION + LAYOUT XONG RỒI MỚI CUỘN
         requestAnimationFrame(()=>{
-
             requestAnimationFrame(()=>{
+                document.querySelector(".chat-header")?.classList.add("chat-show");
+                document.querySelector(".chat-input")?.classList.add("chat-show");
 
-                document
-                .querySelector(".chat-header")
-                ?.classList.add("chat-show");
-
-                document
-                .querySelector(".chat-input")
-                ?.classList.add("chat-show");
-
+                // 👉 Đợi thêm 1 lần nữa để chắc chắn khung chat có kích thước
+                requestAnimationFrame(() => {
+                    // Đặt lại cờ và cuộn lần đầu
+                    appStatus.chat.isScrolledInit = false;
+                    const box = document.getElementById("countryChatMessages");
+                    if (box && appStatus.chat.messages.length > 0) {
+                        appStatus.chat.scrollToBottom(true);
+                    }
+                });
             });
-
         });
-
     }
-
 },
-
       profile: {
     path: "/tai-khoan",
     async handler() {
@@ -1076,168 +1058,172 @@ if (header && searchInput) {
 }, 
 
     chat: {
-
-    ws:null,
-
+    ws: null,
     messages: [],
+    isScrolledInit: false,
 
-
-    init(){
-
-        this.connect();
-
+    init() {
         this.bind();
-
     },
 
+    connect() {
 
-    connect(){
+        // ✅ Đã kết nối rồi thì thôi
+        if (this.ws) return;
 
-    const url =
-"wss://wiki-hydyar.onrender.com/ws/chat";
+        const url = "wss://wiki-hydyar.onrender.com/ws/chat";
+        console.log("WS URL:", url);
 
+        this.ws = new WebSocket(url);
 
-    console.log("WS URL:", url);
-
-
-    this.ws = new WebSocket(url);
-
-
-    this.ws.onerror = e=>{
-        console.error(
-            "WS lỗi:",
-            url,
-            e
-        );
-    };
-
- // ❌ đóng connect ở đây
-
-
-        this.ws.onopen = ()=>{
+        this.ws.onopen = () => {
+            console.log("✅ WebSocket Connected");
 
             this.ws.send(JSON.stringify({
-
-                type:"auth",
-
-                user:window.currentUser
-
+                type: "auth",
+                user: window.currentUser
             }));
 
+            this.isScrolledInit = false;
         };
 
+        this.ws.onmessage = e => {
+            const data = JSON.parse(e.data);
 
-        this.ws.onmessage = e=>{
-
-            const data =
-            JSON.parse(e.data);
-
-
-            if(data.type==="history"){
-
-                this.messages =
-                data.data;
-
-                this.render();
-
+            if (data.type === "history") {
+                this.messages = data.data;
+                this.render(true);
             }
 
-
-            if(data.type==="message"){
-
-                this.messages.push(
-                    data.data
-                );
-
-                this.render();
-
+            if (data.type === "message") {
+                this.messages.push(data.data);
+                this.appendMessage(data.data);
             }
-
         };
 
-
-        this.ws.onerror = e=>{
-
-            console.error(
-                "WS lỗi",
-                e
-            );
-
+        this.ws.onerror = e => {
+            console.error("WS lỗi:", e);
         };
 
+        this.ws.onclose = () => {
+            console.log("❌ WebSocket Closed");
+            this.ws = null;
+        };
     },
 
+    scrollToBottom(isFirstLoad = false) {
+        const box = document.getElementById("countryChatMessages");
+        if (!box) return;
 
-    render(){
+        if (isFirstLoad) {
+            let checkCount = 0;
 
-        const box =
-        document.getElementById(
-            "countryChatMessages"
-        );
+            const waitBox = setInterval(() => {
+                checkCount++;
 
+                if (box.scrollHeight > 0 || checkCount > 40) {
+                    clearInterval(waitBox);
 
-        if(!box) return;
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            box.scrollTop = box.scrollHeight - 12;
+                            this.isScrolledInit = true;
+                        });
+                    });
+                }
+            }, 10);
 
+            return;
+        }
 
-        box.innerHTML =
-        this.messages.map(m=>`
-
-        <div class="chat-message">
-
-            <b>${m.name}</b>
-
-            <p>${m.text}</p>
-
-        </div>
-
-        `).join("");
-
+        requestAnimationFrame(() => {
+            box.scrollTop = box.scrollHeight - 12;
+        });
     },
 
+    render(isFirstLoad = false) {
+        const box = document.getElementById("countryChatMessages");
+        if (!box) return;
 
-    send(){
+        box.innerHTML = this.messages.map(m => {
+            const self = m.uid === appStatus.auth.user?.uid;
+            const time = new Date(m.time).toLocaleTimeString("vi-VN", {
+                hour: "2-digit",
+                minute: "2-digit"
+            });
 
-        const input =
-        document.getElementById(
-            "countryChatInput"
-        );
+            return `
+                <div class="chat-message ${self ? "self" : "other"}">
+                    <b>${m.name}</b>
+                    <p>${m.text}</p>
+                    <span class="chat-time">${time}</span>
+                </div>
+            `;
+        }).join("");
 
+        if (isFirstLoad) {
+            this.scrollToBottom(true);
+        }
+    },
 
-        const text =
-        input.value.trim();
+    appendMessage(msg) {
+        const box = document.getElementById("countryChatMessages");
+        if (!box) return;
 
+        const self = msg.uid === appStatus.auth.user?.uid;
+        const time = new Date(msg.time).toLocaleTimeString("vi-VN", {
+            hour: "2-digit",
+            minute: "2-digit"
+        });
 
-        if(!text) return;
+        const newMsgEl = document.createElement("div");
+        newMsgEl.className = `chat-message ${self ? "self" : "other"}`;
+        newMsgEl.innerHTML = `
+            <b>${msg.name}</b>
+            <p>${msg.text}</p>
+            <span class="chat-time">${time}</span>
+        `;
 
+        box.appendChild(newMsgEl);
+
+        this.scrollToBottom(false);
+    },
+
+    send() {
+        const input = document.getElementById("countryChatInput");
+        const text = input.value.trim();
+
+        if (!text) return;
+
+        // ✅ Chưa kết nối thì kết nối
+        if (!this.ws) {
+            this.connect();
+            return;
+        }
+
+        // ✅ Chưa mở kết nối xong
+        if (this.ws.readyState !== WebSocket.OPEN) {
+            console.warn("WebSocket chưa sẵn sàng");
+            return;
+        }
 
         this.ws.send(JSON.stringify({
-
-            type:"message",
-
+            type: "message",
             text
-
         }));
 
-
-        input.value="";
-
+        input.value = "";
     },
 
-
-    bind(){
-
+    bind() {
         document
-        .getElementById(
-            "countryChatSend"
-        )
-        ?.addEventListener(
-            "click",
-            ()=>this.send()
-        );
-
+            .getElementById("countryChatSend")
+            ?.addEventListener("click", () => this.send());
     }
-
 },
+
+
+
 
     article: {
   // ==========================================
@@ -2098,9 +2084,7 @@ if(result !== true){
         this.article.initArticleClick();
 
         this.search.init();
-
-        this.chat.init();
-
+  
         document
             .getElementById("wikiPolicy")
             ?.addEventListener(
