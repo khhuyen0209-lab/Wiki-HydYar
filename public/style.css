@@ -1610,44 +1610,156 @@ textarea::-webkit-scrollbar-corner{
     align-items:center;
 }
 
+/* =============================================
+   HỆ THỐNG ẢNH THÔNG MINH - NHẤT QUÁN 2 CỘT
+============================================= */
 
-/* ✅ Định dạng ảnh trong nội dung */
+/* Khung chứa nhóm ảnh */
+.img-group {
+    width: 100% !important;
+    margin: 16px 0 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+    justify-content: flex-start !important; /* ✅ Căn trái toàn bộ nhóm */
+    align-items: flex-start !important;
+}
+
+/* ===============================
+   ✅ CHUẨN MỚI: LUÔN THEO LƯỚI 2 CỘT
+   Ảnh đơn cũng có tỉ lệ như trong nhóm row
+=============================== */
 .img-wrapper {
-    width: 100% !important;
-    margin: 12px 0 !important;
+    flex: 0 1 calc(50% - 6px) !important; /* ✅ Luôn chiếm 1 cột trong lưới 2 cột */
+    max-width: calc(50% - 6px) !important;
+    min-width: 0 !important;
+    align-self: flex-start !important;
+    margin: 0 !important;
     text-align: center !important;
-    border-radius: 12px !important;
+    border-radius: 16px !important;
     overflow: hidden !important;
-    background: rgba(0,0,0,0.05) !important;
+    background: rgba(0,0,0,0.08) !important;
+    border: var(--border-light) !important;
+    box-shadow: var(--shadow) !important;
+    backdrop-filter: blur(8px);
 }
-.dark .img-wrapper { background: rgba(255,255,255,0.05) !important; }
 
+/* Ảnh bên trong */
 .img-wrapper img {
-    width: 100% !important;
+    width: auto !important;
+    max-width: 100% !important;
     height: auto !important;
-    max-height: 450px !important; /* Giới hạn chiều cao không quá lớn */
+    max-height: 75vh !important;
     object-fit: contain !important;
+    object-position: top center !important;
     display: block !important;
+    margin: 0 auto !important;
+    transition: transform 0.25s ease;
 }
 
+[data-theme="dark"] .img-wrapper {
+    background: rgba(255,255,255,0.05) !important;
+}
+
+.img-wrapper:hover img {
+    transform: scale(1.015);
+}
+
+/* Chú thích ảnh */
 .img-caption {
     display: block !important;
-    padding: 8px 12px !important;
+    padding: 10px 14px !important;
     font-size: 14px !important;
-    color: var(--text-muted, #666) !important;
-    background: rgba(0,0,0,0.03) !important;
+    color: var(--text-secondary) !important;
+    background: rgba(255,255,255,0.03) !important;
+    margin-top: 4px !important;
 }
-.dark .img-caption { background: rgba(255,255,255,0.03) !important; }
 
+/* Lỗi ảnh */
 .img-error {
-    padding: 20px !important;
-    color: #ef4444 !important;
+    padding: 24px !important;
+    color: #FF6B6B !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 6px !important;
+    gap: 8px !important;
     margin: 0 !important;
 }
+
+/* ===============================
+   🧩 TỰ ĐỘNG THEO SỐ LƯỢNG - LUÔN LƯỠI 2 CỘT
+=============================== */
+
+/* 2 ảnh: đủ 2 cột */
+.img-group:has(.img-wrapper:nth-child(2)) .img-wrapper {
+    flex: 0 1 calc(50% - 6px) !important;
+    max-width: calc(50% - 6px) !important;
+}
+
+/* 3 ảnh: ảnh đầu full 2 cột, 2 sau mỗi cột 1 */
+.img-group:has(.img-wrapper:nth-child(3)) .img-wrapper:nth-child(1) {
+    flex: 0 1 100% !important;
+    max-width: 100% !important;
+}
+.img-group:has(.img-wrapper:nth-child(3)) .img-wrapper:nth-child(2),
+.img-group:has(.img-wrapper:nth-child(3)) .img-wrapper:nth-child(3) {
+    flex: 0 1 calc(50% - 6px) !important;
+    max-width: calc(50% - 6px) !important;
+}
+
+/* 4 ảnh: lưới 2x2 hoàn hảo */
+.img-group:has(.img-wrapper:nth-child(4)) .img-wrapper {
+    flex: 0 1 calc(50% - 6px) !important;
+    max-width: calc(50% - 6px) !important;
+}
+
+/* ≥5 ảnh: giữ lưới 2 cột, xuống dòng tự động */
+.img-group:has(.img-wrapper:nth-child(n+5)) .img-wrapper {
+    flex: 0 1 calc(50% - 6px) !important;
+    max-width: calc(50% - 6px) !important;
+}
+
+/* ===============================
+   ⚡ CHỈ KHI DÙNG ÉP MỚI ĐỔI
+=============================== */
+
+/* Ép <<row>>: giữ nguyên 2 cột, không xuống dòng */
+.img-group.force-row {
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+}
+.img-group.force-row .img-wrapper {
+    flex: 1 1 calc(50% - 6px) !important;
+    max-width: calc(50% - 6px) !important;
+}
+
+/* Ép <<col>>: xếp dọc full rộng */
+.img-group.two-landscape .img-wrapper {
+    flex: 0 1 100% !important;
+    max-width: min(100%, 520px) !important;
+    margin: 0 auto !important;
+}
+
+/* ===============================
+   📱 TỐI ƯU DI ĐỘNG
+=============================== */
+@media (max-width: 580px) {
+    /* Bình thường: mỗi ảnh 1 dòng */
+    .img-group:not(.force-row) .img-wrapper {
+        flex: 0 1 100% !important;
+        max-width: min(100%, 420px) !important;
+        margin: 0 auto !important;
+    }
+
+    /* Ép row: vẫn 2 cột thu nhỏ */
+    .img-group.force-row .img-wrapper {
+        flex: 1 1 0 !important;
+        width: 0 !important;
+    }
+}
+
+
+
 
 .logo-text{
     font-size:30px;
@@ -2697,7 +2809,7 @@ font-size:22px;
             transparent 35%),
         #050816;
 
-    z-index:2147483647;
+    z-index:500;
     overflow:hidden;
 
     opacity:1;
@@ -3375,4 +3487,39 @@ body.keyboard-open .chat-input{
 
 #page-country-chat.active{
     display:flex;
+}
+
+.md-email {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.md-email:hover {
+    text-decoration: underline;
+}
+
+.markdown-body .md-link,
+.policy-content-render .md-link{
+    color: transparent;
+    background: var(--gradient);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    text-decoration: none;
+    font-weight: 600;
+
+    border-bottom: 1px dashed rgba(143,124,255,.35);
+    transition: var(--transition);
+}
+
+.markdown-body .md-link:hover,
+.policy-content-render .md-link:hover{
+    filter: brightness(1.2);
+    border-bottom-color: rgba(143,124,255,.8);
+}
+
+.md-link[href^="mailto:"]:active{
+    color: var(--gradient) !important;
 }

@@ -16,8 +16,6 @@
 </head>
 <body>
 
-  
-
   <div id="bootScreen" class="boot-screen">
     <div class="boot-box">
         <h2>HydYar Wiki</h2>
@@ -227,42 +225,49 @@
                 </div>
             </div>
             <div class="menu-list">
-                <div class="menu-item">
-                    <iconify-icon icon="solar:bookmark-bold"></iconify-icon>
-                    <span>Bài viết đã lưu</span>
-                    <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
-                </div>
-                <div class="menu-item">
-                    <iconify-icon icon="solar:clock-circle-bold"></iconify-icon>
-                    <span>Lịch sử đọc</span>
-                    <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
-                </div>
-                <div class="menu-item" id="darkModeToggle">
-                    <iconify-icon icon="solar:moon-bold"></iconify-icon>
-                    <span>Chế độ tối</span>
-                    <div class="toggle-switch"></div>
-                </div>
-                <div class="menu-item" id="optimizeToggle">
-                    <iconify-icon icon="solar:bolt-bold"></iconify-icon>
-                    <span>Tối ưu hiệu năng</span>
-                    <div class="toggle-switch"></div>
-                </div>
-                <div class="menu-item">
-                    <iconify-icon icon="solar:settings-bold"></iconify-icon>
-                    <span>Cài đặt</span>
-                    <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
-                </div>
-                <!-- ✅ ĐÃ THÊM SỰ KIỆN MỞ CHÍNH SÁCH -->
-                <div class="menu-item" id="wikiPolicy" onclick="HydYarWiki.navigate('policy')">
-                    <iconify-icon icon="solar:shield-check-bold"></iconify-icon>
-                    <span>Chính sách của HydYar Wiki</span>
-                    <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
-                </div>
-                <div class="menu-item text-danger" id="loginLogoutBtn">
-                    <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
-                    <span>Đăng xuất</span>
-                </div>
-            </div>
+
+    <div class="menu-item" id="wikiBookmark">
+        <iconify-icon icon="solar:bookmark-bold"></iconify-icon>
+        <span>Bài viết đã lưu</span>
+        <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
+    </div>
+
+    <div class="menu-item" id="wikiHistory">
+        <iconify-icon icon="solar:clock-circle-bold"></iconify-icon>
+        <span>Lịch sử đọc</span>
+        <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
+    </div>
+
+    <div class="menu-item" id="darkModeToggle">
+        <iconify-icon icon="solar:moon-bold"></iconify-icon>
+        <span>Chế độ tối</span>
+        <div class="toggle-switch"></div>
+    </div>
+
+    <div class="menu-item" id="optimizeToggle">
+        <iconify-icon icon="solar:bolt-bold"></iconify-icon>
+        <span>Tối ưu hiệu năng</span>
+        <div class="toggle-switch"></div>
+    </div>
+
+    <div class="menu-item" id="wikiSetting">
+        <iconify-icon icon="solar:settings-bold"></iconify-icon>
+        <span>Cài đặt</span>
+        <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
+    </div>
+
+    <div class="menu-item" id="wikiPolicy">
+        <iconify-icon icon="solar:shield-check-bold"></iconify-icon>
+        <span>Chính sách của HydYar Wiki</span>
+        <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
+    </div>
+
+    <div class="menu-item text-danger" id="loginLogoutBtn">
+        <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
+        <span>Đăng xuất</span>
+    </div>
+
+</div>
         </section>
 
         <!-- Trang bài viết chi tiết -->

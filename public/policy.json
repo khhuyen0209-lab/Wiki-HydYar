@@ -19,16 +19,6 @@
     "file": "policies/standards.md"
   },
 
-  "report": {
-    "title": "Báo cáo vi phạm",
-    "file": "policies/report.md"
-  },
-
-  "contact": {
-    "title": "Liên hệ & Hỗ trợ",
-    "file": "policies/contact.md"
-  },
-
   "about": {
     "title": "Giới thiệu HydYar Wiki",
     "file": "policies/about.md"
@@ -37,6 +27,16 @@
   "license": {
     "title": "Giấy phép & Mã nguồn mở",
     "file": "policies/license.md"
+  },
+
+    "report": {
+    "title": "Báo cáo vi phạm",
+    "file": "policies/report.md"
+  },
+
+  "contact": {
+    "title": "Liên hệ & Hỗ trợ",
+    "file": "policies/contact.md"
   },
 
   "version": {
