@@ -24,6 +24,11 @@
     "file": "policies/about.md"
   },
 
+  "ai": {
+  "title": "Giới thiệu AI HydYar",
+  "file": "policies/ai.md"
+  }
+
   "license": {
     "title": "Giấy phép & Mã nguồn mở",
     "file": "policies/license.md"

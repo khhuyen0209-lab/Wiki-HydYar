@@ -488,6 +488,7 @@ setInterval(() => {
 // FIRESTORE REALTIME CACHE UPDATE
 // ==============================
 
+// Theo dõi bài viết
 db.collection("wikiArticles")
 .onSnapshot(snapshot => {
 
@@ -497,41 +498,49 @@ db.collection("wikiArticles")
 
         // Xóa cache bài viết
         cacheDelete(HydYarCache.wikiArticles, id);
-
-        // Xóa cache preview
         cacheDelete(HydYarCache.articlePreview, id);
 
-        // Danh sách nổi bật và mới nhất có thể thay đổi
+        // Danh sách có thể thay đổi
         cacheDelete(HydYarCache.featuredArticles, "featured");
         cacheDelete(HydYarCache.latestArticles, "latest");
 
-        if (change.type === "removed") {
-
-            console.log(`🗑 Đã xóa cache bài viết: ${id}`);
-
-            return;
-
-        }
-
-        if (change.type === "added") {
-
-            console.log(`➕ Làm mới cache: ${id}`);
-
-            return;
-
-        }
-
-        if (change.type === "modified") {
-
-            console.log(`♻️ Làm mới cache: ${id}`);
-
-        }
+        console.log(`♻️ Article ${change.type}: ${id}`);
 
     });
 
 }, err => {
 
-    console.error("❌ Firestore Watch Error:", err);
+    console.error("❌ Firestore Article Watch Error:", err);
+
+});
+
+
+// Theo dõi tất cả subcollection pages
+db.collectionGroup("pages")
+.onSnapshot(snapshot => {
+
+    snapshot.docChanges().forEach(change => {
+
+        // Document cha của pages chính là bài viết
+        const articleRef = change.doc.ref.parent.parent;
+
+        if (!articleRef) return;
+
+        const articleId = articleRef.id;
+
+        // Xóa cache bài viết
+        cacheDelete(HydYarCache.wikiArticles, articleId);
+        cacheDelete(HydYarCache.articlePreview, articleId);
+
+        console.log(
+            `📄 Page ${change.type}: ${articleId}/${change.doc.id}`
+        );
+
+    });
+
+}, err => {
+
+    console.error("❌ Firestore Pages Watch Error:", err);
 
 });
 

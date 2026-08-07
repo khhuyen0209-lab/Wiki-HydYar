@@ -1463,6 +1463,7 @@ textarea::-webkit-scrollbar-corner{
     overflow: hidden;
     margin: 12px 0 28px;
     position: relative;
+    max-width:none;
 }
 
 
@@ -2090,6 +2091,7 @@ font-size:22px;
 .policy-item:nth-child(7){animation-delay:.20s;}
 .policy-item:nth-child(8){animation-delay:.23s;}
 .policy-item:nth-child(9){animation-delay:.26s;}
+.policy-item:nth-child(10){animation-delay:.29s;}
 
 /* Hover / Active */
 .policy-item{
