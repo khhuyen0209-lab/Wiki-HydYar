@@ -151,6 +151,33 @@ export default class Router {
                     await appStatus.category.openCategoryDetail(id);
                 }
             },
+
+            settings: {
+    path: "/cai-dat",
+
+    async handler() {
+
+        document
+            .querySelector(".header")
+            ?.classList.remove("hidden");
+
+        document
+            .querySelector(".bottom-nav")
+            ?.classList.remove("hidden");
+
+        document
+            .querySelectorAll(".nav-item,.page")
+            .forEach(el => el.classList.remove("active"));
+
+        document
+            .getElementById("page-settings")
+            ?.classList.add("active");
+
+        appStatus.ui.initSettings();
+
+        window.scrollTo(0, 0);
+    }
+},
                 
             article: {
                 path: "/:category/:id",
@@ -257,6 +284,8 @@ export default class Router {
             return this.routes.home.handler();
 
         switch (p[0]) {
+            case "cai-dat":
+    return this.routes.settings.handler();
             case "danh-muc":
                 return p.length === 1
                     ? this.routes.categories.handler()

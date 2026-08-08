@@ -3525,3 +3525,264 @@ body.keyboard-open .chat-input{
 .md-link[href^="mailto:"]:active{
     color: var(--gradient) !important;
 }
+
+/* =========================================
+   HYDYAR WIKI — SETTINGS
+   ========================================= */
+
+.settings-page {
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px 18px 100px;
+    box-sizing: border-box;
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.settings-header h1 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.settings-header p {
+    margin: 4px 0 0;
+    opacity: .6;
+    font-size: 14px;
+}
+
+.settings-back {
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 13px;
+    background: var(--card-bg, rgba(127,127,127,.1));
+    color: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 21px;
+}
+
+.settings-section {
+    margin-bottom: 26px;
+}
+
+.settings-section h2 {
+    margin: 0 0 9px 5px;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: .55;
+}
+
+.settings-item {
+    min-height: 68px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    box-sizing: border-box;
+
+    background: var(--card-bg, rgba(127,127,127,.08));
+    border-bottom: 1px solid var(--border-color, rgba(127,127,127,.12));
+
+    cursor: pointer;
+    transition:
+        background .18s ease,
+        transform .12s ease;
+}
+
+.settings-item:first-of-type {
+    border-radius: 15px 15px 0 0;
+}
+
+.settings-item:last-of-type {
+    border-radius: 0 0 15px 15px;
+    border-bottom: 0;
+}
+
+.settings-item:only-of-type {
+    border-radius: 15px;
+}
+
+.settings-item:active {
+    transform: scale(.985);
+}
+
+.settings-item-icon {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+    background: rgba(127,127,127,.12);
+
+    font-size: 20px;
+}
+
+.settings-item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.settings-item-content strong {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.settings-item-content span {
+    display: block;
+    margin-top: 3px;
+
+    font-size: 12px;
+    line-height: 1.4;
+
+    opacity: .55;
+}
+
+/* Toggle */
+
+.settings-item .toggle-switch {
+    position: relative;
+
+    width: 43px;
+    height: 25px;
+
+    flex-shrink: 0;
+
+    border-radius: 999px;
+    background: rgba(127,127,127,.28);
+
+    transition: background .2s ease;
+}
+
+.settings-item .toggle-switch::after {
+    content: "";
+
+    position: absolute;
+    top: 3px;
+    left: 3px;
+
+    width: 19px;
+    height: 19px;
+
+    border-radius: 50%;
+    background: white;
+
+    box-shadow: 0 1px 4px rgba(0,0,0,.2);
+
+    transition: transform .2s ease;
+}
+
+.settings-item .toggle-switch.active {
+    background: var(--accent-color, #6c63ff);
+}
+
+.settings-item .toggle-switch.active::after {
+    transform: translateX(18px);
+}
+
+/* About */
+
+.settings-about-card {
+    padding: 18px;
+
+    border-radius: 16px;
+    background: var(--card-bg, rgba(127,127,127,.08));
+
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-about-card strong {
+    font-size: 18px;
+}
+
+.settings-about-card span {
+    margin-top: 3px;
+    opacity: .6;
+    font-size: 13px;
+}
+
+.settings-about-card small {
+    margin-top: 18px;
+    opacity: .45;
+    font-size: 11px;
+}
+
+.settings-about-card b {
+    margin-top: 2px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Không có animation */
+
+html.no-animations *,
+html.no-animations *::before,
+html.no-animations *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+}
+
+.settings-item.settings-disabled {
+    opacity: 0.5;
+}
+
+/* Mobile */
+
+@media (max-width: 480px) {
+
+    .settings-page {
+        padding: 18px 13px 90px;
+    }
+
+    .settings-header {
+        margin-bottom: 22px;
+    }
+
+    .settings-header h1 {
+        font-size: 23px;
+    }
+
+    .settings-item {
+        min-height: 65px;
+        padding: 11px 12px;
+        gap: 11px;
+    }
+
+    .settings-item-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .settings-item-content strong {
+        font-size: 14px;
+    }
+
+    .settings-item-content span {
+        font-size: 11px;
+    }
+}
+
+.settings-item.danger {
+    color: var(--error);
+}
+
+.settings-item-arrow {
+    margin-left: auto;
+    opacity: .45;
+}

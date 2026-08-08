@@ -50,7 +50,7 @@ const db = admin.firestore();
 // TOOL: TÁCH WIKI PAGES
 // ==============================
 
-async function splitWikiPages() {
+/* async function splitWikiPages() {
 
   const articleRef = db
     .collection("wikiArticles")
@@ -217,7 +217,7 @@ async function splitWikiPages() {
     `🎉 Hoàn tất tách ${count} page`
   );
 
-}
+} */ 
 
 // ==============================
 // HYDYAR RAM CACHE SYSTEM
@@ -492,27 +492,76 @@ setInterval(() => {
 db.collection("wikiArticles")
 .onSnapshot(snapshot => {
 
+    let hasArticleChange = false;
+
     snapshot.docChanges().forEach(change => {
 
         const id = change.doc.id;
 
-        // Xóa cache bài viết
-        cacheDelete(HydYarCache.wikiArticles, id);
-        cacheDelete(HydYarCache.articlePreview, id);
+        // ==============================
+        // 🧹 XÓA CACHE BÀI VIẾT
+        // ==============================
 
-        // Danh sách có thể thay đổi
-        cacheDelete(HydYarCache.featuredArticles, "featured");
-        cacheDelete(HydYarCache.latestArticles, "latest");
+        cacheDelete(
+            HydYarCache.wikiArticles,
+            id
+        );
 
-        console.log(`♻️ Article ${change.type}: ${id}`);
+        cacheDelete(
+            HydYarCache.articlePreview,
+            id
+        );
+
+        // ==============================
+        // 🧹 XÓA CACHE DANH SÁCH
+        // ==============================
+
+        cacheDelete(
+            HydYarCache.featuredArticles,
+            "featured"
+        );
+
+        cacheDelete(
+            HydYarCache.latestArticles,
+            "latest"
+        );
+
+        hasArticleChange = true;
+
+        console.log(
+            `♻️ Article ${change.type}: ${id}`
+        );
 
     });
 
+    // ==============================
+    // 📊 CẬP NHẬT COUNT DANH MỤC
+    // ==============================
+
+    if (hasArticleChange) {
+
+        scheduleCategoryCountSync();
+
+    }
+
 }, err => {
 
-    console.error("❌ Firestore Article Watch Error:", err);
+    console.error(
+        "❌ Firestore Article Watch Error:",
+        err
+    );
 
 });
+
+// ==============================
+// 🚀 INITIAL CATEGORY COUNT SYNC
+// ==============================
+
+setTimeout(() => {
+
+    syncCategoryCounts();
+
+}, 2000);
 
 
 // Theo dõi tất cả subcollection pages
@@ -555,6 +604,156 @@ const requireAdmin = (req, res, next) => {
   if (req.session?.user?.role !== "admin") return res.status(403).json({ success: false, message: "Không có quyền" });
   next();
 };
+
+// ==============================
+// 📊 CATEGORY ARTICLE COUNTER
+// ==============================
+
+let categoryCountSyncTimer = null;
+let categoryCountSyncRunning = false;
+
+async function syncCategoryCounts() {
+
+    if (categoryCountSyncRunning) return;
+
+    categoryCountSyncRunning = true;
+
+    try {
+
+        console.log("📊 Đang đồng bộ số bài theo danh mục...");
+
+        // ==============================
+        // LẤY TẤT CẢ BÀI VIẾT
+        // ==============================
+
+        const articlesSnap = await db
+            .collection("wikiArticles")
+            .get();
+
+        const counts = new Map();
+
+        articlesSnap.forEach(doc => {
+
+            const data = doc.data();
+
+            const categoryId = data.categoryId;
+
+            // Bài không có danh mục
+            if (!categoryId) return;
+
+            counts.set(
+                categoryId,
+                (counts.get(categoryId) || 0) + 1
+            );
+
+        });
+
+        // ==============================
+        // LẤY TẤT CẢ DANH MỤC
+        // ==============================
+
+        const categoriesSnap = await db
+            .collection("categories")
+            .get();
+
+        const batch = db.batch();
+
+        let updated = 0;
+
+        categoriesSnap.forEach(doc => {
+
+            const data = doc.data();
+
+            const categoryId =
+                data.id || doc.id;
+
+            const count =
+                counts.get(categoryId) || 0;
+
+            if ((data.count || 0) !== count) {
+
+                batch.update(
+                    doc.ref,
+                    {
+                        count,
+
+                        countUpdatedAt:
+                            admin.firestore.FieldValue.serverTimestamp()
+                    }
+                );
+
+                updated++;
+
+            }
+
+        });
+
+        // ==============================
+        // CẬP NHẬT FIRESTORE
+        // ==============================
+
+        if (updated > 0) {
+
+            await batch.commit();
+
+            console.log(
+                `✅ Đã cập nhật ${updated} danh mục`
+            );
+
+        }
+
+        // ==============================
+        // 🧹 INVALIDATE CATEGORY CACHE
+        // ==============================
+
+        if (updated > 0) {
+
+            cacheDelete(
+                HydYarCache.categories,
+                "categories"
+            );
+
+            console.log(
+                "🧹 Đã xóa cache categories"
+            );
+
+        }
+
+        console.log(
+            `📊 Category Counter hoàn tất: ${updated} danh mục thay đổi`
+        );
+
+    } catch (err) {
+
+        console.error(
+            "❌ Lỗi đồng bộ Category Counter:",
+            err
+        );
+
+    } finally {
+
+        categoryCountSyncRunning = false;
+
+    }
+
+}
+
+
+// ==============================
+// ⏱️ DEBOUNCE CATEGORY SYNC
+// ==============================
+
+function scheduleCategoryCountSync() {
+
+    clearTimeout(categoryCountSyncTimer);
+
+    categoryCountSyncTimer = setTimeout(() => {
+
+        syncCategoryCounts();
+
+    }, 1500);
+
+}
 
 // ==============================
 // FILE TĨNH

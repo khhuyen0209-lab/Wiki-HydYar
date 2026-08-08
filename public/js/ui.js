@@ -7,7 +7,8 @@ export default class Ui {
       slugify(s){return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");}
       initNavigation(){document.querySelectorAll(".nav-item").forEach(b=>{b.replaceWith(b.cloneNode(true));});document.querySelectorAll(".nav-item").forEach(b=>{b.addEventListener("click",()=>HydYarWiki.navigate(b.dataset.page));});}
       initDarkMode(){const{$dom:s}=this.app.state;s.darkModeToggle=document.getElementById("darkModeToggle");if(!s.darkModeToggle)return;const t=localStorage.getItem("wiki-theme")||"light";document.documentElement.setAttribute("data-theme",t);s.darkModeToggle.querySelector(".toggle-switch")?.classList.toggle("active",t==="dark");s.darkModeToggle.addEventListener("click",()=>{const n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);localStorage.setItem("wiki-theme",n);s.darkModeToggle.querySelector(".toggle-switch")?.classList.toggle("active",n==="dark");});}
-      initPerformance(){
+initPerformance() {
+
     const state = this.app.state;
 
     const isLowEnd =
@@ -15,26 +16,22 @@ export default class Ui {
         navigator.deviceMemory <= 4 ||
         innerWidth <= 360;
 
-    if(isLowEnd){
+    if (isLowEnd) {
         document.documentElement.classList.add("low-end");
     }
 
     const btn = document.getElementById("optimizeToggle");
-    if(!btn) {
+
+    if (!btn) {
         console.warn("Không tìm thấy optimizeToggle");
         return;
     }
 
     const toggle = btn.querySelector(".toggle-switch");
 
-    if(state.optimizeEnabled){
-        document.documentElement.classList.add("low-end");
-        toggle?.classList.add("active");
-    }
+    const applyPerformance = () => {
 
-    btn.onclick = () => {
-        state.optimizeEnabled = !state.optimizeEnabled;
-
+        // ⚡ Chế độ tối ưu hiệu năng
         document.documentElement.classList.toggle(
             "low-end",
             state.optimizeEnabled
@@ -45,10 +42,48 @@ export default class Ui {
             state.optimizeEnabled
         );
 
+        // 🎨 Kiểm tra setting hiệu ứng
+        const animationSetting =
+            localStorage.getItem("wiki-animations");
+
+        const animationEnabled =
+            animationSetting === null
+                ? true
+                : animationSetting === "true";
+
+        // Optimize luôn có quyền ưu tiên
+        const shouldAnimate =
+            animationEnabled &&
+            !state.optimizeEnabled;
+
+        document.documentElement.classList.toggle(
+            "no-animations",
+            !shouldAnimate
+        );
+
+        // Khóa mục hiệu ứng khi optimize
+        document
+            .getElementById("settingsAnimations")
+            ?.classList.toggle(
+                "settings-disabled",
+                state.optimizeEnabled
+            );
+    };
+
+    // Áp dụng ngay khi khởi tạo
+    applyPerformance();
+
+    btn.onclick = () => {
+
+        state.optimizeEnabled =
+            !state.optimizeEnabled;
+
         localStorage.setItem(
             "optimizeMode",
             String(state.optimizeEnabled)
         );
+
+        applyPerformance();
     };
 }
       initDomCache() {
@@ -85,25 +120,30 @@ categoryList: document.getElementById("categoryList"),
     // ===== Sự kiện =====
 
     document
-        .getElementById("openCountryChat")
-        ?.addEventListener("click", () => {
-            HydYarWiki.navigate("countryChat");
-        });
+    .getElementById("openCountryChat")
+    ?.addEventListener("click", () => {
+        HydYarWiki.navigate("countryChat");
+    });
 
-    document
-        .getElementById("countryChatBack")
-        ?.addEventListener("click", () => {
+document
+    .getElementById("wikiSetting")
+    ?.addEventListener("click", () => {
+        HydYarWiki.navigate("settings");
+    });
 
-            document
-                .querySelector(".header")
-                ?.classList.remove("hidden");
+document
+    .getElementById("countryChatBack")
+    ?.addEventListener("click", () => {
+        document
+            .querySelector(".header")
+            ?.classList.remove("hidden");
 
-            document
-                .querySelector(".bottom-nav")
-                ?.classList.remove("hidden");
+        document
+            .querySelector(".bottom-nav")
+            ?.classList.remove("hidden");
 
-            HydYarWiki.back();
-        });
+        HydYarWiki.back();
+    });
 }
 
       initKeyboard() {
@@ -207,5 +247,234 @@ categoryList: document.getElementById("categoryList"),
 
     }
 
+}
+
+initSettings() {
+
+    const settings = [
+        ["settingsAnimations", "wiki-animations", true],
+        ["settingsReadingPosition", "wiki-reading-position", true],
+        ["settingsToc", "wiki-toc", true],
+        ["settingsNotifications", "wiki-notifications", true],
+        ["settingsExperimental", "wiki-experimental", false]
+    ];
+
+    settings.forEach(([id, key, defaultValue]) => {
+
+        const element = document.getElementById(id);
+        if (!element) return;
+
+        const toggle = element.querySelector(".toggle-switch");
+
+        const stored = localStorage.getItem(key);
+
+        let enabled =
+            stored === null
+                ? defaultValue
+                : stored === "true";
+
+        const render = () => {
+
+            toggle?.classList.toggle(
+                "active",
+                enabled
+            );
+
+            // 🎨 Chỉ setting hiệu ứng mới xử lý animation
+            if (key === "wiki-animations") {
+
+                const optimize =
+                    this.app.state.optimizeEnabled;
+
+                const shouldAnimate =
+                    enabled &&
+                    !optimize;
+
+                document.documentElement.classList.toggle(
+                    "no-animations",
+                    !shouldAnimate
+                );
+
+                element.classList.toggle(
+                    "settings-disabled",
+                    optimize
+                );
+            }
+        };
+
+        render();
+
+        element.onclick = () => {
+
+            // ⚡ Optimize đang bật → không cho đổi
+            // setting hiệu ứng
+            if (
+                key === "wiki-animations" &&
+                this.app.state.optimizeEnabled
+            ) {
+                return;
+            }
+
+            enabled = !enabled;
+
+            localStorage.setItem(
+                key,
+                String(enabled)
+            );
+
+            render();
+        };
+    });
+
+
+    // ==============================
+    // 🔙 QUAY LẠI
+    // ==============================
+
+    document
+        .getElementById("settingsBack")
+        ?.addEventListener(
+            "click",
+            () => HydYarWiki.navigate("profile")
+        );
+
+
+    // ==============================
+    // 🧹 XÓA DỮ LIỆU TẠM
+    // ==============================
+
+    document
+        .getElementById("clearTempData")
+        ?.addEventListener("click", async () => {
+
+            const ok = confirm(
+                "Xóa dữ liệu tạm?\n\n" +
+                "Dữ liệu đăng nhập và các cài đặt sẽ được giữ lại."
+            );
+
+            if (!ok) return;
+
+            try {
+
+                sessionStorage.clear();
+
+                if ("caches" in window) {
+
+                    const cacheNames =
+                        await caches.keys();
+
+                    await Promise.all(
+                        cacheNames.map(name =>
+                            caches.delete(name)
+                        )
+                    );
+                }
+
+                [
+                    "searchHistory",
+                    "wikiSearchHistory",
+                    "temporaryData",
+                    "optimizeCache"
+                ].forEach(key => {
+                    localStorage.removeItem(key);
+                });
+
+                alert("Đã xóa dữ liệu tạm.");
+
+            } catch (error) {
+
+                console.error(
+                    "Lỗi xóa dữ liệu tạm:",
+                    error
+                );
+
+                alert(
+                    "Không thể xóa hoàn toàn dữ liệu tạm."
+                );
+            }
+        });
+
+
+    // ==============================
+    // 🗑️ XÓA TOÀN BỘ DỮ LIỆU
+    // ==============================
+
+    document
+        .getElementById("clearAllData")
+        ?.addEventListener("click", async () => {
+
+            const ok = confirm(
+                "⚠️ XÓA TOÀN BỘ DỮ LIỆU WIKI?\n\n" +
+                "Thao tác này sẽ xóa dữ liệu được Wiki " +
+                "lưu trên thiết bị, bao gồm cài đặt, " +
+                "lịch sử, dữ liệu tạm và trạng thái đăng nhập.\n\n" +
+                "Bạn có chắc chắn muốn tiếp tục?"
+            );
+
+            if (!ok) return;
+
+            try {
+
+                localStorage.clear();
+                sessionStorage.clear();
+
+                if ("caches" in window) {
+
+                    const cacheNames =
+                        await caches.keys();
+
+                    await Promise.all(
+                        cacheNames.map(name =>
+                            caches.delete(name)
+                        )
+                    );
+                }
+
+                if (
+                    "indexedDB" in window &&
+                    indexedDB.databases
+                ) {
+
+                    const databases =
+                        await indexedDB.databases();
+
+                    await Promise.all(
+                        databases
+                            .filter(database => database.name)
+                            .map(database =>
+                                new Promise(resolve => {
+
+                                    const request =
+                                        indexedDB.deleteDatabase(
+                                            database.name
+                                        );
+
+                                    request.onsuccess = resolve;
+                                    request.onerror = resolve;
+                                    request.onblocked = resolve;
+
+                                })
+                            )
+                    );
+                }
+
+                alert(
+                    "Đã xóa toàn bộ dữ liệu Wiki."
+                );
+
+                location.reload();
+
+            } catch (error) {
+
+                console.error(
+                    "Lỗi xóa toàn bộ dữ liệu:",
+                    error
+                );
+
+                alert(
+                    "Không thể xóa toàn bộ dữ liệu."
+                );
+            }
+        });
 }
 }
