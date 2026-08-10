@@ -172,7 +172,6 @@ h = this.parseInline(h);
 // 👇 Để parseImage xuống cuối
 h = this.parseImage(h);
 h = this.parseLink(h);
-console.log(h);
 h = this.parseParagraph(h);
 
     return h;

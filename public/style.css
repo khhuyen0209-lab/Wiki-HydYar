@@ -3786,3 +3786,1055 @@ html.no-animations *::after {
     margin-left: auto;
     opacity: .45;
 }
+
+.book-pages {
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: grab;
+}
+
+.book-pages.swiping {
+    cursor: grabbing;
+}
+
+.book-pages.swipe-next {
+    animation: bookSwipeNext 0.22s ease;
+}
+
+.book-pages.swipe-prev {
+    animation: bookSwipePrev 0.22s ease;
+}
+
+@keyframes bookSwipeNext {
+    0%   { transform: translateX(0); }
+    50%  { transform: translateX(-18px); }
+    100% { transform: translateX(0); }
+}
+
+@keyframes bookSwipePrev {
+    0%   { transform: translateX(0); }
+    50%  { transform: translateX(18px); }
+    100% { transform: translateX(0); }
+}
+
+/* =====================================================
+   REPORT PAGE
+   ===================================================== */
+
+.report-page {
+    width: 100%;
+    max-width: 900px;
+
+    margin: 0 auto;
+    padding: 20px 0 45px;
+
+    box-sizing: border-box;
+}
+
+
+/* ==============================
+   HEADER
+   ============================== */
+
+.report-page-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.report-page-icon {
+    width: 58px;
+    height: 58px;
+
+    margin: 0 auto 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 18px;
+
+    background:
+        rgba(255, 255, 255, .07);
+
+    border:
+        1px solid rgba(255, 255, 255, .08);
+
+    color:
+        var(--accent);
+
+    font-size: 29px;
+
+    box-shadow:
+        0 8px 25px
+        rgba(0, 0, 0, .12);
+}
+
+.report-page-header h1 {
+    margin: 0;
+
+    font-size: 30px;
+    line-height: 1.2;
+
+    font-weight: 800;
+
+    background:
+        linear-gradient(
+            90deg,
+            #78a9ff,
+            #9a7cff
+        );
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    color: transparent;
+}
+
+.report-page-header p {
+    max-width: 600px;
+
+    margin: 12px auto 0;
+
+    font-size: 15px;
+    line-height: 1.6;
+
+    opacity: .62;
+}
+
+
+/* =====================================================
+   REPORT CHOICES
+   ===================================================== */
+
+.report-choice-list {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 14px;
+}
+
+.report-choice {
+    position: relative;
+
+    min-width: 0;
+    width: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+    align-items: flex-start;
+
+    padding: 20px;
+
+    box-sizing: border-box;
+
+    border:
+        1px solid rgba(255, 255, 255, .08);
+
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, .065),
+            rgba(255, 255, 255, .025)
+        );
+
+    color: inherit;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    overflow: hidden;
+
+    transition:
+        transform .2s ease,
+        border-color .2s ease,
+        background .2s ease,
+        box-shadow .2s ease;
+}
+
+.report-choice::before {
+    content: "";
+
+    position: absolute;
+
+    width: 110px;
+    height: 110px;
+
+    top: -55px;
+    right: -45px;
+
+    border-radius: 50%;
+
+    background:
+        var(--accent);
+
+    opacity: .06;
+
+    filter:
+        blur(18px);
+
+    pointer-events: none;
+}
+
+.report-choice:hover {
+    transform:
+        translateY(-3px);
+
+    border-color:
+        rgba(120, 169, 255, .35);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(120, 169, 255, .10),
+            rgba(255, 255, 255, .035)
+        );
+
+    box-shadow:
+        0 12px 30px
+        rgba(0, 0, 0, .16);
+}
+
+.report-choice:active {
+    transform:
+        scale(.98);
+}
+
+
+/* ==============================
+   CHOICE ICON
+   ============================== */
+
+.report-choice-icon {
+    width: 46px;
+    height: 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 17px;
+
+    border-radius: 14px;
+
+    background:
+        rgba(255, 255, 255, .07);
+
+    color:
+        var(--accent);
+
+    font-size: 23px;
+
+    flex-shrink: 0;
+}
+
+
+/* ==============================
+   CHOICE CONTENT
+   ============================== */
+
+.report-choice-body {
+    width: 100%;
+    min-width: 0;
+
+    flex: 1;
+}
+
+.report-choice-body h2 {
+    margin: 0 0 7px;
+
+    font-size: 18px;
+    line-height: 1.3;
+
+    font-weight: 750;
+}
+
+.report-choice-body p {
+    margin: 0;
+
+    font-size: 13px;
+    line-height: 1.55;
+
+    opacity: .58;
+}
+
+
+/* ==============================
+   CHOICE ARROW
+   ============================== */
+
+.report-choice-arrow {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 30px;
+    height: 30px;
+
+    margin-top: 18px;
+    padding: 0;
+
+    box-sizing: border-box;
+
+    border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, .055);
+
+    font-size: 15px;
+
+    opacity: .5;
+
+    flex-shrink: 0;
+
+    transition:
+        transform .2s ease,
+        opacity .2s ease,
+        background .2s ease;
+}
+
+.report-choice:hover .report-choice-arrow {
+    transform:
+        translateX(4px);
+
+    opacity: 1;
+
+    background:
+        rgba(255, 255, 255, .1);
+}
+
+
+/* ==============================
+   NOTICE
+   ============================== */
+
+.report-page-notice {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 10px;
+
+    margin-top: 16px;
+    padding: 14px 16px;
+
+    box-sizing: border-box;
+
+    border-radius: 15px;
+
+    background:
+        rgba(255, 255, 255, .035);
+
+    border:
+        1px solid rgba(255, 255, 255, .05);
+
+    font-size: 13px;
+    line-height: 1.5;
+
+    opacity: .68;
+}
+
+.report-page-notice iconify-icon {
+    flex-shrink: 0;
+
+    margin-top: 1px;
+
+    font-size: 17px;
+}
+
+.report-page-notice span {
+    flex: 1;
+}
+
+
+/* =====================================================
+   REPORT FORM
+   ===================================================== */
+
+.report-form-page {
+    width: 100%;
+    max-width: 720px;
+
+    margin: 0 auto;
+    padding: 24px 0 45px;
+
+    box-sizing: border-box;
+}
+
+
+/* ==============================
+   FORM HEADER
+   ============================== */
+
+.report-form-header {
+    margin-bottom: 28px;
+}
+
+.report-form-icon {
+    width: 52px;
+    height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 16px;
+
+    border-radius: 15px;
+
+    background:
+        rgba(120, 150, 255, .12);
+
+    border:
+        1px solid rgba(140, 160, 255, .16);
+
+    color:
+        #8daeff;
+
+    font-size: 25px;
+}
+
+.report-form-header h1 {
+    margin: 0;
+
+    font-size: 28px;
+    line-height: 1.25;
+
+    font-weight: 800;
+
+    background:
+        linear-gradient(
+            90deg,
+            #78a9ff,
+            #9a7cff
+        );
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    color: transparent;
+}
+
+.report-form-header p {
+    margin: 9px 0 0;
+
+    font-size: 15px;
+    line-height: 1.6;
+
+    color:
+        rgba(235, 238, 255, .62);
+}
+
+
+/* ==============================
+   FORM
+   ============================== */
+
+#report-form {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 9px;
+
+    width: 100%;
+}
+
+
+/* ==============================
+   LABEL
+   ============================== */
+
+#report-form label {
+    display: block;
+
+    margin-top: 12px;
+
+    font-size: 14px;
+    line-height: 1.4;
+
+    font-weight: 650;
+
+    color:
+        rgba(235, 238, 255, .86);
+}
+
+
+/* ==============================
+   INPUT / SELECT / TEXTAREA
+   ============================== */
+
+#report-form input,
+#report-form select,
+#report-form textarea {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    border:
+        1px solid rgba(255, 255, 255, .09);
+
+    border-radius: 14px;
+
+    outline: none;
+
+    background:
+        rgba(255, 255, 255, .055);
+
+    color:
+        rgba(245, 247, 255, .95);
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    transition:
+        border-color .18s ease,
+        background .18s ease,
+        box-shadow .18s ease;
+}
+
+
+/* INPUT */
+
+#report-form input {
+    height: 48px;
+
+    padding:
+        0 15px;
+}
+
+
+/* SELECT */
+
+#report-form select {
+    height: 48px;
+
+    padding:
+        0 42px 0 15px;
+
+    appearance: auto;
+
+    cursor: pointer;
+}
+
+
+/* TEXTAREA */
+
+#report-form textarea {
+    min-height: 145px;
+
+    padding:
+        13px 15px;
+
+    resize: vertical;
+
+    line-height: 1.55;
+}
+
+
+/* ==============================
+   PLACEHOLDER
+   ============================== */
+
+#report-form input::placeholder,
+#report-form textarea::placeholder {
+    color:
+        rgba(235, 238, 255, .38);
+}
+
+
+/* ==============================
+   FOCUS
+   ============================== */
+
+#report-form input:focus,
+#report-form select:focus,
+#report-form textarea:focus {
+    border-color:
+        rgba(120, 169, 255, .65);
+
+    background:
+        rgba(120, 169, 255, .055);
+
+    box-shadow:
+        0 0 0 3px
+        rgba(120, 169, 255, .10);
+}
+
+
+/* ==============================
+   SELECT OPTIONS
+   ============================== */
+
+#report-form select option {
+    background:
+        #17182b;
+
+    color:
+        #ffffff;
+}
+
+
+/* ==============================
+   FORM NOTICE
+   ============================== */
+
+.report-form-notice {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 10px;
+
+    margin-top: 12px;
+
+    padding: 13px 15px;
+
+    box-sizing: border-box;
+
+    border-radius: 14px;
+
+    background:
+        rgba(120, 169, 255, .055);
+
+    border:
+        1px solid rgba(120, 169, 255, .08);
+
+    color:
+        rgba(235, 238, 255, .68);
+
+    font-size: 13px;
+
+    line-height: 1.55;
+}
+
+.report-form-notice iconify-icon {
+    flex-shrink: 0;
+
+    margin-top: 2px;
+
+    color:
+        #8daeff;
+
+    font-size: 18px;
+}
+
+.report-form-notice span {
+    flex: 1;
+}
+
+
+/* ==============================
+   SUBMIT BUTTON
+   ============================== */
+
+.report-submit {
+    width: 100%;
+
+    min-height: 48px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    margin-top: 7px;
+
+    padding:
+        12px 18px;
+
+    border: none;
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #78a9ff,
+            #8c72ff
+        );
+
+    color:
+        #ffffff;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 22px
+        rgba(100, 120, 255, .18);
+
+    transition:
+        transform .18s ease,
+        filter .18s ease,
+        opacity .18s ease;
+}
+
+.report-submit:hover {
+    filter:
+        brightness(1.08);
+
+    transform:
+        translateY(-2px);
+}
+
+.report-submit:active {
+    transform:
+        scale(.98);
+}
+
+.report-submit:disabled {
+    opacity: .55;
+
+    cursor:
+        not-allowed;
+
+    transform:
+        none;
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 600px) {
+
+    /* ==============================
+       REPORT PAGE
+       ============================== */
+
+    .report-page {
+        padding:
+            16px 0 35px;
+    }
+
+    .report-page-header {
+        margin-bottom:
+            24px;
+    }
+
+    .report-page-icon {
+        width: 52px;
+        height: 52px;
+
+        margin-bottom:
+            13px;
+
+        border-radius:
+            16px;
+
+        font-size:
+            26px;
+    }
+
+    .report-page-header h1 {
+        font-size:
+            25px;
+    }
+
+    .report-page-header p {
+        margin-top:
+            9px;
+
+        padding:
+            0 8px;
+
+        font-size:
+            13px;
+
+        line-height:
+            1.55;
+    }
+
+
+    /* ==============================
+       REPORT CHOICES
+       ============================== */
+
+    .report-choice-list {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap:
+            10px;
+    }
+
+    .report-choice {
+        padding:
+            15px;
+
+        border-radius:
+            17px;
+    }
+
+    .report-choice-icon {
+        width: 42px;
+        height: 42px;
+
+        margin-bottom:
+            13px;
+
+        border-radius:
+            12px;
+
+        font-size:
+            21px;
+    }
+
+    .report-choice-body h2 {
+        font-size:
+            15px;
+
+        line-height:
+            1.35;
+    }
+
+    .report-choice-body p {
+        font-size:
+            12px;
+
+        line-height:
+            1.5;
+    }
+
+    .report-choice-arrow {
+        width: 27px;
+        height: 27px;
+
+        margin-top:
+            14px;
+
+        font-size:
+            14px;
+    }
+
+    .report-page-notice {
+        margin-top:
+            12px;
+
+        padding:
+            12px 13px;
+
+        font-size:
+            12px;
+    }
+
+
+    /* ==============================
+       REPORT FORM
+       ============================== */
+
+    .report-form-page {
+        padding:
+            20px 0 38px;
+    }
+
+    .report-form-header {
+        margin-bottom:
+            22px;
+    }
+
+    .report-form-icon {
+        width: 48px;
+        height: 48px;
+
+        margin-bottom:
+            13px;
+
+        border-radius:
+            14px;
+
+        font-size:
+            23px;
+    }
+
+    .report-form-header h1 {
+        font-size:
+            25px;
+    }
+
+    .report-form-header p {
+        font-size:
+            13px;
+
+        line-height:
+            1.55;
+    }
+
+    #report-form {
+        gap:
+            7px;
+    }
+
+    #report-form label {
+        margin-top:
+            10px;
+
+        font-size:
+            13px;
+    }
+
+    #report-form input,
+    #report-form select {
+        height:
+            46px;
+
+        font-size:
+            14px;
+    }
+
+    #report-form textarea {
+        min-height:
+            135px;
+
+        font-size:
+            14px;
+    }
+
+    .report-form-notice {
+        font-size:
+            12px;
+
+        padding:
+            12px 13px;
+    }
+
+    .report-submit {
+        min-height:
+            46px;
+
+        font-size:
+            14px;
+    }
+}
+
+/* =====================================================
+   REPORT FORM TITLE
+   Icon + tiêu đề nằm ngang
+   ===================================================== */
+
+.report-form-title {
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    width: 100%;
+}
+
+
+/* Icon */
+
+.report-form-title .report-form-icon {
+    width: 52px;
+    height: 52px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0;
+
+    flex-shrink: 0;
+
+    border-radius: 15px;
+
+    background:
+        rgba(120, 150, 255, .12);
+
+    border:
+        1px solid rgba(140, 160, 255, .16);
+
+    color:
+        #8daeff;
+
+    font-size: 25px;
+}
+
+
+/* Tiêu đề */
+
+.report-form-title h1 {
+    margin: 0;
+
+    font-size: 28px;
+    line-height: 1.25;
+
+    font-weight: 800;
+
+    background:
+        linear-gradient(
+            90deg,
+            #78a9ff,
+            #9a7cff
+        );
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    color: transparent;
+}
+
+
+/* Mô tả nằm dưới hàng icon + title */
+
+.report-form-header > p {
+    margin: 12px 0 0;
+
+    font-size: 15px;
+
+    line-height: 1.6;
+
+    color:
+        rgba(235, 238, 255, .62);
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 600px) {
+
+    .report-form-title {
+        gap: 12px;
+    }
+
+    .report-form-title .report-form-icon {
+        width: 48px;
+        height: 48px;
+
+        border-radius: 14px;
+
+        font-size: 23px;
+    }
+
+    .report-form-title h1 {
+        font-size: 25px;
+    }
+
+    .report-form-header > p {
+        margin-top: 10px;
+
+        font-size: 13px;
+
+        line-height: 1.55;
+    }
+}

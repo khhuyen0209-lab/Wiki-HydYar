@@ -190,7 +190,9 @@ import History from "/js/history.js";
     updateView() {
       const { bookState: b, $dom: d } = appStatus.state;
       if (!d.bookPages) return;
-      d.bookPages.style.transform = `translateX(-${(b.current - 1) * 100}%)`;
+      d.bookPages.style.transition = "transform 0.25s ease";
+d.bookPages.style.transform =
+    `translateX(-${(b.current - 1) * 100}%)`;
       d.currentPageNum.textContent = b.current;
       d.fsCurrentPage.textContent = b.current;
       const isLast = b.current >= b.total;
@@ -449,6 +451,269 @@ d.fullscreenBtn.addEventListener("click", () => appStatus.article.fullscreen.tog
     appStatus.article.reader.bindEvents();
     appStatus.article.book.updateView();
 
+const bookPages = document.getElementById("bookPages");
+
+if (bookPages) {
+
+    let startX = 0;
+    let startY = 0;
+    let currentX = 0;
+
+    let tracking = false;
+    let horizontalGesture = false;
+    let ignoreSwipe = false;
+
+    const SWIPE_DISTANCE = 55;
+    const DIRECTION_THRESHOLD = 10;
+
+    // ==========================================
+    // TOUCH START
+    // ==========================================
+    bookPages.addEventListener("touchstart", e => {
+
+        if (!e.touches || e.touches.length !== 1) return;
+
+        const target = e.target;
+
+        // Không bắt swipe khi đang tương tác
+        // với nội dung có thể kéo/bấm
+        ignoreSwipe = !!target.closest(
+            ".table-wrapper, .img-wrapper, input, textarea, select, button, a"
+        );
+
+        if (ignoreSwipe) {
+            tracking = false;
+            horizontalGesture = false;
+            return;
+        }
+
+        const touch = e.touches[0];
+
+        startX = touch.clientX;
+        startY = touch.clientY;
+        currentX = startX;
+
+        tracking = true;
+        horizontalGesture = false;
+
+    }, { passive: true });
+
+
+    // ==========================================
+    // TOUCH MOVE
+    // ==========================================
+    bookPages.addEventListener("touchmove", e => {
+
+        if (ignoreSwipe) return;
+
+        if (
+            !tracking ||
+            !e.touches ||
+            e.touches.length !== 1
+        ) return;
+
+        const touch = e.touches[0];
+
+        currentX = touch.clientX;
+
+        const deltaX = currentX - startX;
+        const deltaY = touch.clientY - startY;
+
+
+        // Chưa đủ dữ liệu để xác định hướng
+        if (
+            Math.abs(deltaX) < DIRECTION_THRESHOLD &&
+            Math.abs(deltaY) < DIRECTION_THRESHOLD
+        ) {
+            return;
+        }
+
+
+        // ==========================================
+        // VUỐT DỌC → CHO TRÌNH DUYỆT SCROLL
+        // ==========================================
+        if (Math.abs(deltaY) > Math.abs(deltaX)) {
+
+            horizontalGesture = false;
+
+            return;
+        }
+
+
+        // ==========================================
+        // VUỐT NGANG
+        // ==========================================
+        horizontalGesture = true;
+
+        const b = appStatus.state.bookState;
+
+
+        // ==========================================
+        // GIỚI HẠN KÉO Ở ĐẦU / CUỐI SÁCH
+        // ==========================================
+        let dragX = deltaX;
+
+        if (b.current <= 1 && dragX > 0) {
+            dragX *= 0.25;
+        }
+
+        if (b.current >= b.total && dragX < 0) {
+            dragX *= 0.25;
+        }
+
+
+        // ==========================================
+        // KÉO TRANG THEO NGÓN TAY
+        // ==========================================
+        bookPages.style.transition = "none";
+
+        bookPages.style.transform =
+            `translateX(calc(-${(b.current - 1) * 100}% + ${dragX}px))`;
+
+        bookPages.classList.add("swiping");
+
+    }, { passive: true });
+
+
+    // ==========================================
+    // TOUCH END
+    // ==========================================
+    bookPages.addEventListener("touchend", () => {
+
+        // Gesture bị bỏ qua
+        if (ignoreSwipe) {
+
+            ignoreSwipe = false;
+
+            return;
+        }
+
+        if (!tracking) return;
+
+        const deltaX = currentX - startX;
+
+        tracking = false;
+
+        bookPages.classList.remove("swiping");
+
+
+        // ==========================================
+        // KHÔNG PHẢI SWIPE NGANG
+        // ==========================================
+        if (!horizontalGesture) {
+
+            bookPages.style.transition =
+                "transform 0.2s ease";
+
+            appStatus.article.book.updateView();
+
+            horizontalGesture = false;
+
+            return;
+        }
+
+
+        const b = appStatus.state.bookState;
+
+
+        // ==========================================
+        // ĐỦ DISTANCE → CHUYỂN TRANG
+        // ==========================================
+        if (Math.abs(deltaX) >= SWIPE_DISTANCE) {
+
+            bookPages.style.transition =
+                "transform 0.25s ease";
+
+
+            // 👈 Vuốt trái → trang sau
+            if (
+                deltaX < 0 &&
+                b.current < b.total
+            ) {
+
+                appStatus.article.book.changePage(1);
+
+            }
+
+
+            // 👉 Vuốt phải → trang trước
+            else if (
+                deltaX > 0 &&
+                b.current > 1
+            ) {
+
+                appStatus.article.book.changePage(-1);
+
+            }
+
+
+            // Đang ở đầu/cuối
+            else {
+
+                appStatus.article.book.updateView();
+
+            }
+
+        }
+
+        // ==========================================
+        // CHƯA ĐỦ DISTANCE → QUAY LẠI
+        // ==========================================
+        else {
+
+            bookPages.style.transition =
+                "transform 0.2s ease";
+
+            appStatus.article.book.updateView();
+
+        }
+
+
+        horizontalGesture = false;
+
+    }, { passive: true });
+
+
+    // ==========================================
+    // TOUCH CANCEL
+    // ==========================================
+    bookPages.addEventListener("touchcancel", () => {
+
+        tracking = false;
+        horizontalGesture = false;
+        ignoreSwipe = false;
+
+        bookPages.classList.remove("swiping");
+
+        bookPages.style.transition =
+            "transform 0.2s ease";
+
+        appStatus.article.book.updateView();
+
+    }, { passive: true });
+
+
+    // ==========================================
+    // XÓA ANIMATION CLASS
+    // ==========================================
+    bookPages.addEventListener("animationend", e => {
+
+        if (
+            e.animationName === "bookSwipeNext" ||
+            e.animationName === "bookSwipePrev"
+        ) {
+
+            bookPages.classList.remove(
+                "swipe-next",
+                "swipe-prev"
+            );
+
+        }
+
+    });
+
+}
+    
 document.querySelectorAll(".wiki-link").forEach(link => {
 
     link.onclick = async e => {
@@ -526,7 +791,7 @@ document.querySelectorAll(".wiki-link").forEach(link => {
   appStatus.history.add(a);
   appStatus.article.reader.renderArticle(a);
       } catch (err) {
-        console.error("Lỗi mở bài viết:", err);
+  d.featuredArticles.innerHTML = d.latestArticles.innerHTML = `<p>Lỗi tải bài viết</p>`;
         appStatus.article.reader.renderError(err);
       }
     }
@@ -571,8 +836,7 @@ document.querySelectorAll(".wiki-link").forEach(link => {
       d.featuredArticles.innerHTML = this.render.articleCard(f);
       d.latestArticles.innerHTML = this.render.articleCard(l);
     } catch (err) {
-      console.error("Lỗi tải bài viết:", err);
-      d.featuredArticles.innerHTML = d.latestArticles.innerHTML = `<p>Lỗi tải bài viết</p>`;
+  d.featuredArticles.innerHTML = d.latestArticles.innerHTML = `<p>Lỗi tải bài viết</p>`;
     }
   },
 

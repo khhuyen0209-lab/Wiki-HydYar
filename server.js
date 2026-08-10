@@ -756,6 +756,56 @@ function scheduleCategoryCountSync() {
 }
 
 // ==============================
+// 🆔 HYDYAR USER ID GENERATOR
+// ==============================
+
+async function generateHydYarUserId() {
+
+    let digits = 6;
+
+    while (true) {
+
+        const min =
+            Math.pow(10, digits - 1);
+
+        const max =
+            Math.pow(10, digits) - 1;
+
+        // 🎲 Sinh số ngẫu nhiên
+        const number =
+            Math.floor(
+                Math.random() *
+                (max - min + 1)
+            ) + min;
+
+        // Định dạng: HY | số
+        const id =
+            `HY | ${number}`;
+
+        // 🔎 Kiểm tra trùng ID
+        const snap =
+            await db
+                .collection("users")
+                .where("id", "==", id)
+                .limit(1)
+                .get();
+
+        // Không trùng
+        if (snap.empty) {
+
+            return id;
+
+        }
+
+        console.log(
+            `⚠️ ID ${id} đã tồn tại → sinh lại`
+        );
+
+    }
+
+}
+
+// ==============================
 // FILE TĨNH
 // ==============================
 app.use(express.static(path.join(__dirname, "public")));
@@ -770,46 +820,291 @@ app.get("/__/auth/handler", (req, res) => {
 // ==============================
 // API XÁC THỰC
 // ==============================
+
 app.post("/api/login", async (req, res) => {
+
   try {
+
+    // ==============================
+    // 🔑 NHẬN FIREBASE TOKEN
+    // ==============================
+
     const { token } = req.body;
-    if (!token) return res.status(400).json({ success: false, message: "Thiếu token" });
 
-    const decoded = await admin.auth().verifyIdToken(token);
-    const uid = decoded.uid;
-    const userRef = db.collection("users").doc(uid);
-    const userSnap = await userRef.get();
+    if (!token) {
 
-    const userData = {
-      uid,
-      email: decoded.email || "",
-      name: decoded.name || decoded.email?.split("@")[0] || "Người dùng",
-      avatar: decoded.picture || "",
-      lastLogin: admin.firestore.FieldValue.serverTimestamp()
-    };
+      return res.status(400).json({
 
-    if (!userSnap.exists) {
-      await userRef.set({ ...userData, createdAt: admin.firestore.FieldValue.serverTimestamp(), role: "user", status: "active" });
-      console.log("👤 Tạo người dùng mới:", uid);
-    } else {
-      await userRef.update(userData);
-      console.log("🔄 Đăng nhập:", uid);
+        success: false,
+
+        message: "Thiếu token"
+
+      });
+
     }
 
-    req.session.user = { uid, email: userData.email, name: userData.name, role: userSnap.exists ? userSnap.data().role : "user" };
-    
-    // 4. Lưu session rõ ràng trước khi trả về
+
+    // ==============================
+    // 🔐 XÁC THỰC FIREBASE TOKEN
+    // ==============================
+
+    const decoded =
+      await admin.auth().verifyIdToken(token);
+
+
+    const uid =
+      decoded.uid;
+
+
+    // ==============================
+    // 👤 USER FIRESTORE
+    // ==============================
+
+    const userRef =
+      db
+        .collection("users")
+        .doc(uid);
+
+
+    const userSnap =
+      await userRef.get();
+
+
+    // ==============================
+    // 📦 DỮ LIỆU USER
+    // ==============================
+
+    const userData = {
+
+      uid,
+
+      email:
+        decoded.email || "",
+
+      name:
+        decoded.name ||
+        decoded.email?.split("@")[0] ||
+        "Người dùng",
+
+      avatar:
+        decoded.picture || "",
+
+      lastLogin:
+        admin.firestore.FieldValue
+          .serverTimestamp()
+
+    };
+
+
+    // ==============================
+    // 🆔 HYDYAR USER ID
+    // ==============================
+
+    let hydyarId = null;
+
+
+    // ==============================
+    // 🆕 TẠO USER MỚI
+    // ==============================
+
+    if (!userSnap.exists) {
+
+      // 🎲 Sinh ID ngẫu nhiên
+      hydyarId =
+        await generateHydYarUserId();
+
+
+      await userRef.set({
+
+        ...userData,
+
+
+        // ==============================
+        // 🆔 ID CÔNG KHAI HYDYAR
+        // ==============================
+
+        id:
+          hydyarId,
+
+
+        // ==============================
+        // 📅 THỜI GIAN TẠO
+        // ==============================
+
+        createdAt:
+          admin.firestore.FieldValue
+            .serverTimestamp(),
+
+
+        // ==============================
+        // 🔐 QUYỀN
+        // ==============================
+
+        role:
+          "user",
+
+
+        // ==============================
+        // 🟢 TRẠNG THÁI
+        // ==============================
+
+        status:
+          "active"
+
+      });
+
+
+      console.log(
+
+        "👤 Tạo người dùng mới:",
+        uid,
+        "| ID:",
+        hydyarId
+
+      );
+
+    }
+
+
+    // ==============================
+    // 🔄 USER ĐÃ TỒN TẠI
+    // ==============================
+
+    else {
+
+      // Lấy ID HydYar hiện tại
+      hydyarId =
+        userSnap.data().id || null;
+
+
+      // Cập nhật thông tin đăng nhập
+      await userRef.update(
+        userData
+      );
+
+
+      console.log(
+
+        "🔄 Đăng nhập:",
+        uid,
+        "| ID:",
+        hydyarId || "Không có"
+
+      );
+
+    }
+
+
+    // ==============================
+    // 🔐 TẠO SESSION USER
+    // ==============================
+
+    req.session.user = {
+
+      // Firebase UID
+      uid,
+
+
+      // HydYar ID
+      id:
+        hydyarId,
+
+
+      // Email
+      email:
+        userData.email,
+
+
+      // Tên
+      name:
+        userData.name,
+
+
+      // Avatar
+      avatar:
+        userData.avatar,
+
+
+      // Quyền
+      role:
+        userSnap.exists
+          ? userSnap.data().role
+          : "user",
+
+
+      // Trạng thái
+      status:
+        userSnap.exists
+          ? userSnap.data().status
+          : "active"
+
+    };
+
+
+    // ==============================
+    // 💾 LƯU SESSION
+    // ==============================
+
     req.session.save((err) => {
+
       if (err) {
-        console.error("❌ Lỗi lưu session:", err);
-        return res.status(500).json({ success: false, message: "Không thể lưu phiên đăng nhập" });
+
+        console.error(
+          "❌ Lỗi lưu session:",
+          err
+        );
+
+
+        return res.status(500).json({
+
+          success: false,
+
+          message:
+            "Không thể lưu phiên đăng nhập"
+
+        });
+
       }
-      res.json({ success: true, user: req.session.user });
+
+
+      // ==============================
+      // ✅ LOGIN THÀNH CÔNG
+      // ==============================
+
+      res.json({
+
+        success: true,
+
+        user:
+          req.session.user
+
+      });
+
     });
+
   } catch (err) {
-    console.error("❌ Lỗi đăng nhập:", err);
-    res.status(401).json({ success: false, message: "Token không hợp lệ" });
+
+    // ==============================
+    // ❌ LOGIN ERROR
+    // ==============================
+
+    console.error(
+      "❌ Lỗi đăng nhập:",
+      err
+    );
+
+
+    res.status(401).json({
+
+      success: false,
+
+      message:
+        "Token không hợp lệ"
+
+    });
+
   }
+
 });
 
 app.post("/api/logout", (req, res) => {

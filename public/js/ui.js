@@ -29,9 +29,13 @@ initPerformance() {
 
     const toggle = btn.querySelector(".toggle-switch");
 
+    // ==============================
+    // ⚡ ÁP DỤNG HIỆU NĂNG
+    // ==============================
+
     const applyPerformance = () => {
 
-        // ⚡ Chế độ tối ưu hiệu năng
+        // Optimize
         document.documentElement.classList.toggle(
             "low-end",
             state.optimizeEnabled
@@ -42,7 +46,10 @@ initPerformance() {
             state.optimizeEnabled
         );
 
-        // 🎨 Kiểm tra setting hiệu ứng
+        // ==============================
+        // 🎨 SETTING HIỆU ỨNG
+        // ==============================
+
         const animationSetting =
             localStorage.getItem("wiki-animations");
 
@@ -51,17 +58,21 @@ initPerformance() {
                 ? true
                 : animationSetting === "true";
 
-        // Optimize luôn có quyền ưu tiên
+        // Optimize có quyền ưu tiên cao nhất
         const shouldAnimate =
-            animationEnabled &&
-            !state.optimizeEnabled;
+            !state.optimizeEnabled &&
+            animationEnabled;
 
+        // 🔥 Optimize bật = TẮT HIỆU ỨNG NGAY
         document.documentElement.classList.toggle(
             "no-animations",
             !shouldAnimate
         );
 
-        // Khóa mục hiệu ứng khi optimize
+        // ==============================
+        // 🔒 KHÓA SETTING HIỆU ỨNG
+        // ==============================
+
         document
             .getElementById("settingsAnimations")
             ?.classList.toggle(
@@ -70,8 +81,15 @@ initPerformance() {
             );
     };
 
-    // Áp dụng ngay khi khởi tạo
+    // ==============================
+    // 🚀 KHỞI TẠO
+    // ==============================
+
     applyPerformance();
+
+    // ==============================
+    // ⚡ TOGGLE OPTIMIZE
+    // ==============================
 
     btn.onclick = () => {
 
@@ -83,6 +101,7 @@ initPerformance() {
             String(state.optimizeEnabled)
         );
 
+        // Áp dụng ngay
         applyPerformance();
     };
 }
@@ -275,32 +294,49 @@ initSettings() {
 
         const render = () => {
 
-            toggle?.classList.toggle(
-                "active",
-                enabled
-            );
+    const optimize =
+        this.app.state.optimizeEnabled;
 
-            // 🎨 Chỉ setting hiệu ứng mới xử lý animation
-            if (key === "wiki-animations") {
+    // ==============================
+    // 🎨 SETTING HIỆU ỨNG
+    // ==============================
 
-                const optimize =
-                    this.app.state.optimizeEnabled;
+    if (key === "wiki-animations") {
 
-                const shouldAnimate =
-                    enabled &&
-                    !optimize;
+        // Khi Optimize bật → ép hiển thị OFF
+        const visualEnabled =
+            optimize ? false : enabled;
 
-                document.documentElement.classList.toggle(
-                    "no-animations",
-                    !shouldAnimate
-                );
+        toggle?.classList.toggle(
+            "active",
+            visualEnabled
+        );
 
-                element.classList.toggle(
-                    "settings-disabled",
-                    optimize
-                );
-            }
-        };
+        // Optimize có quyền ưu tiên
+        const shouldAnimate =
+            enabled &&
+            !optimize;
+
+        document.documentElement.classList.toggle(
+            "no-animations",
+            !shouldAnimate
+        );
+
+        // Khóa setting
+        element.classList.toggle(
+            "settings-disabled",
+            optimize
+        );
+
+    } else {
+
+        toggle?.classList.toggle(
+            "active",
+            enabled
+        );
+
+    }
+};
 
         render();
 
