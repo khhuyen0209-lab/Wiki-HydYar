@@ -9,6 +9,7 @@
     "cors": "^2.8.5",
     "firebase-admin": "^12.3.0",
     "express-session": "^1.18.0",
-    "ws": "^8.18.0"
+    "ws": "^8.18.0",
+    "sepay-pg-node": "latest"
   }
 }

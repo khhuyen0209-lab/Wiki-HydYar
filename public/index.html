@@ -1,463 +1,2009 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Wiki - Tri thức mở rộng</title>
+
+    <!-- =========================================================
+         🌐 EXTERNAL RESOURCES
+         ========================================================= -->
+
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
     <!-- Iconify -->
-    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js"></script>
-    <!-- CSS -->
-    <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="/responsive.css">
+    <script
+        src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js">
+    </script>
+
+    <!-- =========================================================
+         🎨 STYLES
+         ========================================================= -->
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/DravNavigation.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/premium.css">
 </head>
+
+
 <body>
 
-  <div id="bootScreen" class="boot-screen">
-    <div class="boot-box">
-        <h2>HydYar Wiki</h2>
-        <p id="bootText">Đang kết nối tới máy chủ...</p>
+    <!-- =========================================================
+         🚀 BOOT SCREEN
+         ========================================================= -->
 
-        <div class="boot-progress">
-            <div id="bootBar"></div>
+    <div
+        id="bootScreen"
+        class="boot-screen"
+        aria-label="Đang khởi động HydYar Wiki"
+    >
+
+        <div class="boot-box">
+
+            <h2>HydYar Wiki</h2>
+
+            <p id="bootText">
+                Đang kết nối tới máy chủ...
+            </p>
+
+            <div class="boot-progress">
+                <div id="bootBar"></div>
+            </div>
+
+            <button
+                id="bootContinue"
+                type="button"
+            >
+                Tiếp tục ngoại tuyến
+            </button>
+
         </div>
 
-        <button id="bootContinue">
-            Tiếp tục ngoại tuyến
-        </button>
     </div>
-  </div>
-    <!-- Header -->
-    <header class="header" id="header">
+
+
+    <!-- =========================================================
+         🧭 HEADER
+         ========================================================= -->
+
+    <header
+        class="header"
+        id="header"
+    >
+
         <div class="header-inner">
+
+            <!-- Menu -->
+            <button
+                id="menuBtn"
+                class="menu-btn"
+                type="button"
+                aria-label="Mở menu"
+                aria-expanded="false"
+            >
+
+                <span
+                    class="menu-icon"
+                    aria-hidden="true"
+                >
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+
+            </button>
+
+
+            <!-- Logo -->
             <div class="logo">
-                <span class="logo-text">Wiki</span>
+                <span class="logo-text">
+                    Wiki
+                </span>
             </div>
+
+
+            <!-- Search -->
             <div class="header-search">
-    <iconify-icon icon="solar:magnifer-bold"></iconify-icon>
 
-    <input id="searchInput" type="text" placeholder="Tìm kiếm...">
+                <iconify-icon
+                    icon="solar:magnifer-bold">
+                </iconify-icon>
 
-    <button class="search-close" id="searchClose">
-        <iconify-icon icon="solar:close-circle-bold"></iconify-icon>
-    </button>
-</div>
-            <div class="header-actions">
-                <button class="icon-btn">
-                    <iconify-icon icon="solar:bell-bold"></iconify-icon>
+                <input
+                    id="searchInput"
+                    type="text"
+                    placeholder="Tìm kiếm..."
+                    autocomplete="off"
+                >
+
+                <button
+                    class="search-close"
+                    id="searchClose"
+                    type="button"
+                    aria-label="Đóng tìm kiếm"
+                >
+
+                    <iconify-icon
+                        icon="solar:close-circle-bold">
+                    </iconify-icon>
+
                 </button>
-                <div class="user-avatar" id="userAvatar"></div>
+
             </div>
+
+
+            <!-- Actions -->
+            <div class="header-actions">
+
+                <button
+                    class="icon-btn"
+                    type="button"
+                    aria-label="Thông báo"
+                >
+
+                    <iconify-icon
+                        icon="solar:bell-bold">
+                    </iconify-icon>
+
+                </button>
+
+
+                <div class="avatar-frame">
+
+                    <div
+                        class="user-avatar"
+                        id="userAvatar">
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
+
     </header>
 
-    <!-- Nội dung chính-->
-    <main class="main-content" id="mainContent">
-        <!-- Trang Chủ -->
-        <section class="page active" id="page-home">
-            <div class="banner">
-                <h1>Khám phá tri thức vô tận</h1>
-                <p>Bách khoa toàn thư của thế giới</p>
-                <div class="search-box">
-                    <iconify-icon icon="solar:magnifer-bold"></iconify-icon>
-                    <input type="text" placeholder="Tìm kiếm bất kỳ điều gì...">
-                </div>
+
+    <!-- =========================================================
+         📱 NAVIGATION DRAWER
+         ========================================================= -->
+
+    <div
+        class="nav-overlay"
+        id="navOverlay">
+    </div>
+
+
+    <aside
+        class="navigation-drawer"
+        id="navigationDrawer"
+        aria-label="Điều hướng chính"
+    >
+
+        <!-- Drawer Header -->
+        <div class="drawer-header">
+
+            <div class="drawer-logo">
+
+                <span>HydYar</span>
+                <small>Wiki</small>
+
             </div>
 
-            <div class="section">
-                <div class="section-header">
-                    <h2>Bài viết nổi bật</h2>
-                    <button class="see-all">Xem tất cả</button>
-                </div>
-                <div class="card-grid" id="featuredArticles"></div>
-            </div>
+            <button
+                class="drawer-close"
+                id="drawerClose"
+                type="button"
+                aria-label="Đóng menu"
+            >
 
-            <div class="section">
-                <div class="section-header">
-                    <h2>Mới cập nhật</h2>
-                    <button class="see-all">Xem tất cả</button>
-                </div>
-                <div class="card-grid" id="latestArticles"></div>
-            </div>
+                <iconify-icon
+                    icon="solar:close-circle-bold">
+                </iconify-icon>
 
-            <div class="section">
-                <div class="section-header">
-                    <h2>Danh mục nổi bật</h2>
-                </div>
-                <div class="category-grid" id="featuredCategories"></div>
-            </div>
-        </section>
+            </button>
 
-        <!-- Danh mục -->
-        <section class="page" id="page-categories">
-            <div class="page-header">
-                <h1>Tất cả danh mục</h1>
-            </div>
-            <div class="category-grid" id="allCategories"></div>
-        </section>
-
-        <!-- Tìm kiếm -->
-        <section class="page" id="page-search">
-    <div class="page-header">
-
-        <div class="search-filters">
-            <button class="filter-btn active">Tất cả</button>
-            <button class="filter-btn">Mới nhất</button>
-            <button class="filter-btn">Xem nhiều</button>
-            <button class="filter-btn">Độ tin cậy cao</button>
         </div>
 
-        <div class="search-history" id="searchHistory"></div>
 
-        <div class="search-results" id="searchResults"></div>
+        <!-- Drawer Content -->
+        <div class="drawer-content">
 
-    </div>
-</section>
 
-        <!-- Cộng đồng -->
-        <section class="page" id="page-community">
+            <!-- =========================
+                 Điều hướng
+                 ========================= -->
 
-    <div class="page-header">
-        <h1>Cộng đồng</h1>
-        <p>Tham gia trò chuyện cùng mọi người.</p>
-    </div>
+            <nav class="drawer-section">
 
-    <div class="card-grid">
+                <span class="drawer-section-title">
+                    Điều hướng
+                </span>
 
-        <div class="community-card" 
-             id="openCountryChat"
-             data-chat="country">
 
-            <div class="community-card-icon">
-                <iconify-icon icon="solar:chat-round-dots-bold"></iconify-icon>
+                <button
+                    class="drawer-nav-item active"
+                    data-page="home"
+                    type="button"
+                >
+
+                    <iconify-icon
+                        icon="solar:home-2-bold">
+                    </iconify-icon>
+
+                    <span>Trang chủ</span>
+
+                </button>
+
+
+                <button
+                    class="drawer-nav-item"
+                    data-page="categories"
+                    type="button"
+                >
+
+                    <iconify-icon
+                        icon="solar:library-bold">
+                    </iconify-icon>
+
+                    <span>Danh mục</span>
+
+                </button>
+
+
+                <button
+                    class="drawer-nav-item"
+                    data-page="search"
+                    type="button"
+                >
+
+                    <iconify-icon
+                        icon="solar:magnifer-bold">
+                    </iconify-icon>
+
+                    <span>Tìm kiếm</span>
+
+                </button>
+
+
+                <button
+                    class="drawer-nav-item"
+                    data-page="community"
+                    type="button"
+                >
+
+                    <iconify-icon
+                        icon="solar:chat-round-dots-bold">
+                    </iconify-icon>
+
+                    <span>Cộng đồng</span>
+
+                </button>
+
+
+                <button
+                    class="drawer-nav-item"
+                    data-page="profile"
+                    type="button"
+                >
+
+                    <iconify-icon
+                        icon="solar:user-circle-bold">
+                    </iconify-icon>
+
+                    <span>Tài khoản</span>
+
+                </button>
+
+            </nav>
+
+
+            <!-- =========================
+                 Tiện ích
+                 ========================= -->
+
+            <div class="drawer-section">
+
+                <span class="drawer-section-title">
+                    Tiện ích
+                </span>
+
+
+                <button
+                    class="drawer-action-item"
+                    id="drawerHistory"
+                    type="button"
+                >
+
+                    <iconify-icon
+                        icon="solar:clock-circle-bold">
+                    </iconify-icon>
+
+                    <span>Lịch sử đọc</span>
+
+                </button>
+
+
+                <button
+                    class="drawer-action-item"
+                    id="drawerBookmark"
+                    type="button"
+                >
+
+                    <iconify-icon
+                        icon="solar:bookmark-bold">
+                    </iconify-icon>
+
+                    <span>Bài viết đã lưu</span>
+
+                </button>
+
             </div>
 
-            <div class="community-card-content">
-                <h3>Chat khu vực</h3>
-                <p>Trò chuyện cùng mọi người trong khu vực của bạn.</p>
+
+            <!-- =========================
+                 Hệ thống
+                 ========================= -->
+
+            <div class="drawer-section">
+
+                <span class="drawer-section-title">
+                    Hệ thống
+                </span>
+
+
+                <button
+                    class="drawer-action-item"
+                    id="drawerSettings"
+                    type="button"
+                >
+
+                    <iconify-icon
+                        icon="solar:settings-bold">
+                    </iconify-icon>
+
+                    <span>Cài đặt</span>
+
+                </button>
+
             </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- =========================================================
+         🧠 MAIN APPLICATION
+         ========================================================= -->
+
+    <main
+        class="main-content"
+        id="mainContent"
+    >
+
+
+        <!-- =====================================================
+             🏠 HOME
+             ===================================================== -->
+
+        <section
+            class="page active"
+            id="page-home"
+        >
+
+            <!-- Hero -->
+            <div class="banner">
+
+                <h1>
+                    Khám phá tri thức vô tận
+                </h1>
+
+                <p>
+                    Bách khoa toàn thư của thế giới
+                </p>
+
+
+                <div class="search-box">
+
+                    <iconify-icon
+                        icon="solar:magnifer-bold">
+                    </iconify-icon>
+
+                    <input
+                        type="text"
+                        placeholder="Tìm kiếm bất kỳ điều gì..."
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- Featured -->
+            <section class="section">
+
+                <div class="section-header">
+
+                    <h2>
+                        Bài viết nổi bật
+                    </h2>
+
+                    <button
+                        class="see-all"
+                        type="button"
+                    >
+                        Xem tất cả
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="card-grid"
+                    id="featuredArticles">
+                </div>
+
+            </section>
+
+
+            <!-- Latest -->
+            <section class="section">
+
+                <div class="section-header">
+
+                    <h2>
+                        Mới cập nhật
+                    </h2>
+
+                    <button
+                        class="see-all"
+                        type="button"
+                    >
+                        Xem tất cả
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="card-grid"
+                    id="latestArticles">
+                </div>
+
+            </section>
+
+
+            <!-- Categories -->
+            <section class="section">
+
+                <div class="section-header">
+
+                    <h2>
+                        Danh mục nổi bật
+                    </h2>
+
+                </div>
+
+
+                <div
+                    class="category-grid"
+                    id="featuredCategories">
+                </div>
+
+            </section>
+
+        </section>
+
+
+        <!-- =====================================================
+             📚 CATEGORIES
+             ===================================================== -->
+
+        <section
+            class="page"
+            id="page-categories"
+        >
+
+            <div class="banner">
+
+                <h1>
+                    Tất cả danh mục
+                </h1>
+
+                <p>
+                    Hãy tìm kiếm chủ đề mà bạn yêu thích
+                </p>
+
+            </div>
+
+
+            <hr class="divider">
+
+
+            <div class="page-header"></div>
+
+
+            <div
+                class="category-grid"
+                id="allCategories">
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             🔎 SEARCH
+             ===================================================== -->
+
+        <section
+            class="page"
+            id="page-search"
+        >
+
+            <div class="page-header">
+
+                <!-- Filters -->
+                <div class="search-filters">
+
+                    <button
+                        class="filter-btn active"
+                        type="button"
+                    >
+                        Tất cả
+                    </button>
+
+                    <button
+                        class="filter-btn"
+                        type="button"
+                    >
+                        Mới nhất
+                    </button>
+
+                    <button
+                        class="filter-btn"
+                        type="button"
+                    >
+                        Xem nhiều
+                    </button>
+
+                    <button
+                        class="filter-btn"
+                        type="button"
+                    >
+                        Độ tin cậy cao
+                    </button>
+
+                </div>
+
+
+                <!-- History -->
+                <div
+                    class="search-history"
+                    id="searchHistory">
+                </div>
+
+
+                <!-- Results -->
+                <div
+                    class="search-results"
+                    id="searchResults">
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             💬 COMMUNITY
+             ===================================================== -->
+
+        <section
+            class="page"
+            id="page-community"
+        >
+
+            <div class="banner">
+
+                <h1>
+                    Trò chuyện cùng nhau
+                </h1>
+
+                <p>
+                    Hãy cùng làm quen với những người bạn mới
+                    trong khu vực
+                </p>
+
+            </div>
+
+
+            <hr class="divider">
+
+
+            <div class="card-grid">
+
+                <button
+                    class="community-card"
+                    id="openCountryChat"
+                    data-chat="country"
+                    type="button"
+                >
+
+                    <div class="community-card-icon">
+
+                        <iconify-icon
+                            icon="solar:chat-round-dots-bold">
+                        </iconify-icon>
+
+                    </div>
+
+
+                    <div class="community-card-content">
+
+                        <h3>
+                            Chat khu vực
+                        </h3>
+
+                        <p>
+                            Trò chuyện cùng mọi người
+                            trong khu vực của bạn.
+                        </p>
+
+                    </div>
+
+
+                    <iconify-icon
+                        class="community-card-arrow"
+                        icon="solar:arrow-right-bold">
+                    </iconify-icon>
+
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             🇻🇳 COUNTRY CHAT
+             ===================================================== -->
+
+        <section
+            class="page"
+            id="page-country-chat"
+        >
+
+            <!-- Chat Header -->
+            <div class="chat-header">
+
+                <button
+                    id="countryChatBack"
+                    class="icon-btn"
+                    type="button"
+                    aria-label="Quay lại"
+                >
+
+                    <iconify-icon
+                        icon="solar:arrow-left-bold">
+                    </iconify-icon>
+
+                </button>
+
+
+                <div class="chat-title">
+
+                    <strong>
+                        Chat khu vực
+                    </strong>
+
+                    <span>
+                        &gt; Việt Nam
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- Pinned -->
+            <div
+                id="countryPinned"
+                class="chat-pinned"
+                style="display:none;"
+            >
+            </div>
+
+
+            <!-- Messages -->
+            <div id="countryChatMessages">
+
+                <div class="chat-message other">
+
+                    <span class="chat-name">
+                        HydYar
+                    </span>
+
+                    <div class="chat-text">
+                        Xin chào mọi người 👋
+                    </div>
+
+                    <span class="chat-time">
+                        13:24
+                    </span>
+
+                </div>
+
+
+                <div class="chat-message self">
+
+                    <div class="chat-text">
+                        Hello!
+                    </div>
+
+                    <span class="chat-time">
+                        13:25
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- Input -->
+            <div class="chat-input">
+
+                <textarea
+                    id="countryChatInput"
+                    maxlength="800"
+                    rows="1"
+                    placeholder="Nhập tin nhắn..."
+                ></textarea>
+
+
+                <button
+                    id="countryChatSend"
+                    class="send-btn"
+                    type="button"
+                >
+
+                    <iconify-icon
+                        icon="solar:paper-plane-bold">
+                    </iconify-icon>
+
+                    <span>
+                        Gửi
+                    </span>
+
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             👤 PROFILE
+             ===================================================== -->
+
+        <section
+    class="page"
+    id="page-profile"
+>
+
+    <!-- =====================================================
+         👤 PROFILE HEADER
+         ===================================================== -->
+
+    <div class="profile-header">
+
+        <!-- Avatar -->
+        <div
+            class="profile-avatar"
+            id="profileAvatar">
+        </div>
+
+
+        <!-- Tên người dùng -->
+        <h2
+            class="profile-name"
+            id="profileName"
+        >
+            Người dùng
+        </h2>
+
+
+        <!-- UID -->
+        <p
+            class="profile-uid"
+            id="profileUID"
+        >
+            @users0000
+        </p>
+
+
+        <!-- =================================================
+             📊 PROFILE STATS
+             ================================================= -->
+
+        <div class="profile-stats">
+
+            <!-- Ví Inumi -->
+            <div
+                class="stat-item"
+                id="profileWallet"
+                role="button"
+                tabindex="0"
+                aria-label="Mở ví Inumi"
+            >
+
+                <span
+                    class="stat-value"
+                    id="inumiBalance"
+                >
+                    0
+                </span>
+
+                <span class="stat-label">
+                    Ví Inumi
+                </span>
+
+            </div>
+
+
+            <!-- Bài đã lưu -->
+            <div
+                class="stat-item"
+            >
+
+                <span
+                    class="stat-value"
+                    id="profileBookmarks"
+                >
+                    0
+                </span>
+
+                <span class="stat-label">
+                    Bài đã lưu
+                </span>
+
+            </div>
+
+
+            <!-- Điểm -->
+            <div
+                class="stat-item"
+            >
+
+                <span
+                    class="stat-value"
+                    id="profilePoints"
+                >
+                    0
+                </span>
+
+                <span class="stat-label">
+                    Điểm
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         📋 PROFILE MENU
+         ===================================================== -->
+
+    <div class="menu-list">
+
+
+        <!-- =================================================
+             👑 GÓI NÂNG CAO
+             ================================================= -->
+
+        <div
+            class="menu-item"
+            id="openPremium"
+        >
 
             <iconify-icon
-                class="community-card-arrow"
-                icon="solar:arrow-right-bold">
+                icon="solar:crown-star-bold">
+            </iconify-icon>
+
+            <span>
+                Gói nâng cao
+            </span>
+
+            <iconify-icon
+                icon="solar:arrow-right-2-bold">
             </iconify-icon>
 
         </div>
 
+
+
+        <!-- =================================================
+             🔖 BÀI VIẾT ĐÃ LƯU
+             ================================================= -->
+
+        <div
+            class="menu-item"
+            id="wikiBookmark"
+        >
+
+            <iconify-icon
+                icon="solar:bookmark-bold">
+            </iconify-icon>
+
+            <span>
+                Bài viết đã lưu
+            </span>
+
+            <iconify-icon
+                icon="solar:arrow-right-2-bold">
+            </iconify-icon>
+
+        </div>
+
+
+
+        <!-- =================================================
+             🕒 LỊCH SỬ ĐỌC
+             ================================================= -->
+
+        <div
+            class="menu-item"
+            id="wikiHistory"
+        >
+
+            <iconify-icon
+                icon="solar:clock-circle-bold">
+            </iconify-icon>
+
+            <span>
+                Lịch sử đọc
+            </span>
+
+            <iconify-icon
+                icon="solar:arrow-right-2-bold">
+            </iconify-icon>
+
+        </div>
+
+
+
+        <!-- =================================================
+             🌙 CHẾ ĐỘ TỐI
+             ================================================= -->
+
+        <div
+            class="menu-item"
+            id="darkModeToggle"
+        >
+
+            <iconify-icon
+                icon="solar:moon-bold">
+            </iconify-icon>
+
+            <span>
+                Chế độ tối
+            </span>
+
+            <div class="toggle-switch"></div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             ⚡ TỐI ƯU HIỆU NĂNG
+             ================================================= -->
+
+        <div
+            class="menu-item"
+            id="optimizeToggle"
+        >
+
+            <iconify-icon
+                icon="solar:bolt-bold">
+            </iconify-icon>
+
+            <span>
+                Tối ưu hiệu năng
+            </span>
+
+            <div class="toggle-switch"></div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             ⚙️ CÀI ĐẶT
+             ================================================= -->
+
+        <div
+            class="menu-item"
+            id="wikiSetting"
+        >
+
+            <iconify-icon
+                icon="solar:settings-bold">
+            </iconify-icon>
+
+            <span>
+                Cài đặt
+            </span>
+
+            <iconify-icon
+                icon="solar:arrow-right-2-bold">
+            </iconify-icon>
+
+        </div>
+
+
+
+        <!-- =================================================
+             🛡️ CHÍNH SÁCH
+             ================================================= -->
+
+        <div
+            class="menu-item"
+            id="wikiPolicy"
+        >
+
+            <iconify-icon
+                icon="solar:shield-check-bold">
+            </iconify-icon>
+
+            <span>
+                Chính sách của HydYar Wiki
+            </span>
+
+            <iconify-icon
+                icon="solar:arrow-right-2-bold">
+            </iconify-icon>
+
+        </div>
+
+
+
+        <!-- =================================================
+             🚪 ĐĂNG XUẤT
+             ================================================= -->
+
+        <div
+            class="menu-item text-danger"
+            id="loginLogoutBtn"
+        >
+
+            <iconify-icon
+                icon="solar:logout-2-bold">
+            </iconify-icon>
+
+            <span>
+                Đăng xuất
+            </span>
+
+        </div>
+
+
     </div>
 
 </section>
 
-      <!-- Chat khu vực -->
-<section class="page" id="page-country-chat">
 
-    <div class="chat-header">
+      <!-- =====================================================
+     👑 PREMIUM
+     ===================================================== -->
 
-        <button id="countryChatBack" class="icon-btn">
-            <iconify-icon icon="solar:arrow-left-bold"></iconify-icon>
+<section
+    class="page"
+    id="page-premium"
+>
+
+    <div class="premium-page">
+
+        <!-- =================================================
+             ← BACK
+             ================================================= -->
+
+        <button
+            class="premium-back"
+            id="premiumBack"
+            type="button"
+            aria-label="Quay lại"
+        >
+            <iconify-icon
+                icon="solar:arrow-left-bold">
+            </iconify-icon>
+
+            <span>Quay lại</span>
         </button>
 
-        <div class="chat-title">
-            <strong>Chat khu vực</strong>
-            <span> > Việt Nam</span>
-        </div>
+
+        <!-- =================================================
+             💳 CARD 1 — ACCOUNT
+             ================================================= -->
+
+        <section class="premium-account-card">
+
+            <!-- Account -->
+
+            <div class="premium-account-row">
+
+                <span class="premium-label">
+                    Tài khoản
+                </span>
+
+                <div class="premium-account-info">
+
+                    <strong id="premiumAccountName">
+                        Người dùng
+                    </strong>
+
+                    <span>
+                        ID:
+                        <b id="premiumAccountID">
+                            users0000
+                        </b>
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="premium-divider"></div>
+
+
+            <!-- Wallet -->
+
+            <div class="premium-account-row">
+
+                <span class="premium-label">
+                    Ví Inumi
+                </span>
+
+                <strong
+                    class="premium-balance"
+                    id="premiumInumiBalance"
+                >
+                    0 Inumi
+                </strong>
+
+            </div>
+
+
+            <div class="premium-divider"></div>
+
+
+            <!-- Current plan -->
+
+            <div class="premium-account-row">
+
+                <span class="premium-label">
+                    Gói đang sử dụng
+                </span>
+
+                <div class="premium-current-plan">
+
+                    <strong id="premiumCurrentName">
+                        Free
+                    </strong>
+
+                    <span
+                        class="premium-plan-status"
+                        id="premiumCurrentStatus"
+                    >
+                        Đang sử dụng
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             📦 CARD 2 — PACKAGES
+             ================================================= -->
+
+        <section class="premium-package-card">
+
+            <div class="premium-package-header">
+
+                <div>
+
+                    <h1>
+                        Các gói thành viên
+                    </h1>
+
+                    <p>
+                        Chọn gói phù hợp với bạn
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- HORIZONTAL SCROLL -->
+
+            <div
+                class="premium-package-scroll"
+                id="premiumPackages"
+            >
+
+
+                <!-- ===============================
+                     FREE
+                     =============================== -->
+
+                <article
+                    class="premium-plan free"
+                    data-package="free"
+                >
+
+                    <div class="premium-plan-icon">
+
+                        <iconify-icon
+                            icon="solar:shield-check-bold">
+                        </iconify-icon>
+
+                    </div>
+
+
+                    <h2>
+                        Free
+                    </h2>
+
+
+                    <p class="premium-plan-description">
+                        Trải nghiệm các tính năng cơ bản
+                        của HydYar Wiki.
+                    </p>
+
+
+                    <div class="premium-plan-price">
+
+                        <strong>
+                            0
+                        </strong>
+
+                        <span>
+                            Inumi
+                        </span>
+
+                    </div>
+
+
+                    <ul>
+
+                        <li>
+                            <iconify-icon
+                                icon="solar:check-circle-bold">
+                            </iconify-icon>
+
+                            Đọc Wiki
+                        </li>
+
+                        <li>
+                            <iconify-icon
+                                icon="solar:check-circle-bold">
+                            </iconify-icon>
+
+                            Tìm kiếm
+                        </li>
+
+                        <li>
+                            <iconify-icon
+                                icon="solar:check-circle-bold">
+                            </iconify-icon>
+
+                            Tài khoản cơ bản
+                        </li>
+
+                    </ul>
+
+
+                    <button
+                        class="premium-plan-button disabled"
+                        disabled
+                    >
+                        Gói hiện tại
+                    </button>
+
+                </article>
+
+
+
+                <!-- ===============================
+                     PREMIUM
+                     =============================== -->
+
+                <article
+                    class="premium-plan"
+                    data-package="premium"
+                >
+
+                    <div class="premium-plan-icon">
+
+                        <iconify-icon
+                            icon="solar:crown-star-bold">
+                        </iconify-icon>
+
+                    </div>
+
+
+                    <h2>
+                        Premium
+                    </h2>
+
+
+                    <p class="premium-plan-description">
+                        Mở khóa thêm các tính năng
+                        nâng cao.
+                    </p>
+
+
+                    <div class="premium-plan-price">
+
+                        <strong>
+                            30.000đ
+                        </strong>
+
+                        <span>
+                            / tháng
+                        </span>
+
+                    </div>
+
+
+                    <ul>
+
+                        <li>
+                            <iconify-icon
+                                icon="solar:check-circle-bold">
+                            </iconify-icon>
+
+                            Tất cả quyền lợi Free
+                        </li>
+
+                        <li>
+                            <iconify-icon
+                                icon="solar:check-circle-bold">
+                            </iconify-icon>
+
+                            Tính năng nâng cao
+                        </li>
+
+                        <li>
+                            <iconify-icon
+                                icon="solar:star-bold">
+                            </iconify-icon>
+
+                            Huy hiệu Premium
+                        </li>
+
+                    </ul>
+
+
+                    <button
+                        class="premium-plan-button"
+                        data-package="premium"
+                        type="button"
+                    >
+                        Nâng cấp
+                    </button>
+
+                </article>
+
+
+
+                <!-- ===============================
+                     PREMIUM+
+                     =============================== -->
+
+                <article
+                    class="premium-plan featured"
+                    data-package="premium-plus"
+                >
+
+                    <span class="premium-plan-badge">
+                        PHỔ BIẾN
+                    </span>
+
+
+                    <div class="premium-plan-icon">
+
+                        <iconify-icon
+                            icon="solar:cup-star-bold">
+                        </iconify-icon>
+
+                    </div>
+
+
+                    <h2>
+                        Premium+
+                    </h2>
+
+
+                    <p class="premium-plan-description">
+                        Nhiều quyền lợi hơn cùng
+                        những ưu tiên đặc biệt.
+                    </p>
+
+
+                    <div class="premium-plan-price">
+
+                        <strong>
+                            300.000đ
+                        </strong>
+
+                        <span>
+                            / năm
+                        </span>
+
+                    </div>
+
+
+                    <ul>
+
+                        <li>
+                            <iconify-icon
+                                icon="solar:check-circle-bold">
+                            </iconify-icon>
+
+                            Tất cả quyền lợi Premium
+                        </li>
+
+                        <li>
+                            <iconify-icon
+                                icon="solar:bolt-bold">
+                            </iconify-icon>
+
+                            Ưu tiên tính năng mới
+                        </li>
+
+                        <li>
+                            <iconify-icon
+                                icon="solar:star-bold">
+                            </iconify-icon>
+
+                            Huy hiệu Premium+
+                        </li>
+
+                    </ul>
+
+
+                    <button
+                        class="premium-plan-button"
+                        data-package="premium-plus"
+                        type="button"
+                    >
+                        Chọn gói
+                    </button>
+
+                </article>
+
+
+
+                <!-- ===============================
+                     ULTRA
+                     =============================== -->
+
+                <article
+                    class="premium-plan ultra"
+                    data-package="ultra"
+                >
+
+                    <div class="premium-plan-icon">
+
+                        <iconify-icon
+                            icon="solar:fire-bold">
+                        </iconify-icon>
+
+                    </div>
+
+
+                    <h2>
+                        Ultra
+                    </h2>
+
+
+                    <p class="premium-plan-description">
+                        Gói cao cấp nhất dành cho
+                        những người dùng đặc biệt.
+                    </p>
+
+
+                    <div class="premium-plan-price">
+
+                        <strong>
+                            —
+                        </strong>
+
+                        <span>
+                            / tháng
+                        </span>
+
+                    </div>
+
+
+                    <ul>
+
+                        <li>
+                            <iconify-icon
+                                icon="solar:check-circle-bold">
+                            </iconify-icon>
+
+                            Tất cả quyền lợi Premium+
+                        </li>
+
+                        <li>
+                            <iconify-icon
+                                icon="solar:bolt-bold">
+                            </iconify-icon>
+
+                            Ưu tiên tối đa
+                        </li>
+
+                        <li>
+                            <iconify-icon
+                                icon="solar:star-bold">
+                            </iconify-icon>
+
+                            Quyền lợi Ultra
+                        </li>
+
+                    </ul>
+
+
+                    <button
+                        class="premium-plan-button"
+                        data-package="ultra"
+                        type="button"
+                    >
+                        Xem gói
+                    </button>
+
+                </article>
+
+
+            </div>
+
+        </section>
 
     </div>
-
-    <div id="countryPinned" class="chat-pinned" style="display:none;"></div> 
-
-   <div id="countryChatMessages">
-
-    <div class="chat-message other">
-        <span class="chat-name">HydYar</span>
-        <div class="chat-text">Xin chào mọi người 👋</div>
-        <span class="chat-time">13:24</span>
-    </div>
-
-    <div class="chat-message self">
-        <div class="chat-text">Hello!</div>
-        <span class="chat-time">13:25</span>
-    </div>
-
-</div>
-
-
-    <div class="chat-input">
-
-    <textarea
-        id="countryChatInput"
-        maxlength="800"
-        rows="1"
-        placeholder="Nhập tin nhắn..."
-    ></textarea>
-
-    <button id="countryChatSend" class="send-btn">
-        <iconify-icon icon="solar:paper-plane-bold"></iconify-icon>
-        <span>Gửi</span>
-    </button>
-
-</div>
 
 </section>
 
-        <!-- Tài khoản -->
-        <section class="page" id="page-profile">
-            <div class="profile-header">
-                <div class="profile-avatar" id="profileAvatar"></div>
-                <h2 class="profile-name" id="profileName">Người dùng</h2>
-                <p class="profile-uid" id="profileUID">@user000000</p>
-                <div class="profile-stats">
-                    <div class="stat-item">
-                        <span class="stat-value">0</span>
-                        <span class="stat-label">Điểm</span>
+
+        <!-- =====================================================
+             ⚙️ SETTINGS
+             ===================================================== -->
+
+        <section
+            class="page"
+            id="page-settings"
+        >
+
+            <div class="settings-page">
+
+                <!-- Header -->
+                <div class="settings-header">
+
+                    <button
+                        class="settings-back"
+                        id="settingsBack"
+                        type="button"
+                        aria-label="Quay lại"
+                    >
+
+                        <iconify-icon
+                            icon="solar:arrow-left-bold">
+                        </iconify-icon>
+
+                    </button>
+
+
+                    <div>
+
+                        <h1>
+                            Cài đặt
+                        </h1>
+
+                        <p>
+                            Tùy chỉnh trải nghiệm HydYar Wiki
+                        </p>
+
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-value">0</span>
-                        <span class="stat-label">Bài đã lưu</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-value">0</span>
-                        <span class="stat-label">Đóng góp</span>
-                    </div>
+
                 </div>
+
+
+                <!-- Settings List -->
+                <div class="settings-list">
+
+
+                    <!-- Giao diện -->
+                    <div class="settings-section">
+
+                        <h2>
+                            Giao diện
+                        </h2>
+
+
+                        <div
+                            class="settings-item"
+                            id="settingsAnimations"
+                        >
+
+                            <div class="settings-item-icon">
+
+                                <iconify-icon
+                                    icon="solar:magic-stick-3-bold">
+                                </iconify-icon>
+
+                            </div>
+
+
+                            <div class="settings-item-content">
+
+                                <strong>
+                                    Hiệu ứng giao diện
+                                </strong>
+
+                                <span>
+                                    Bật các hiệu ứng chuyển động
+                                    của Wiki
+                                </span>
+
+                            </div>
+
+
+                            <div class="toggle-switch"></div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Đọc Wiki -->
+                    <div class="settings-section">
+
+                        <h2>
+                            Đọc Wiki
+                        </h2>
+
+
+                        <div
+                            class="settings-item"
+                            id="settingsReadingPosition"
+                        >
+
+                            <div class="settings-item-icon">
+
+                                <iconify-icon
+                                    icon="solar:book-bookmark-bold">
+                                </iconify-icon>
+
+                            </div>
+
+
+                            <div class="settings-item-content">
+
+                                <strong>
+                                    Ghi nhớ vị trí đọc
+                                </strong>
+
+                                <span>
+                                    Tiếp tục bài viết từ vị trí
+                                    lần trước
+                                </span>
+
+                            </div>
+
+
+                            <div class="toggle-switch"></div>
+
+                        </div>
+
+
+                        <div
+                            class="settings-item"
+                            id="settingsToc"
+                        >
+
+                            <div class="settings-item-icon">
+
+                                <iconify-icon
+                                    icon="solar:hamburger-menu-bold">
+                                </iconify-icon>
+
+                            </div>
+
+
+                            <div class="settings-item-content">
+
+                                <strong>
+                                    Hiển thị mục lục
+                                </strong>
+
+                                <span>
+                                    Hiển thị mục lục khi đọc bài viết
+                                </span>
+
+                            </div>
+
+
+                            <div class="toggle-switch"></div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Thông báo -->
+                    <div class="settings-section">
+
+                        <h2>
+                            Thông báo
+                        </h2>
+
+
+                        <div
+                            class="settings-item"
+                            id="settingsNotifications"
+                        >
+
+                            <div class="settings-item-icon">
+
+                                <iconify-icon
+                                    icon="solar:bell-bold">
+                                </iconify-icon>
+
+                            </div>
+
+
+                            <div class="settings-item-content">
+
+                                <strong>
+                                    Thông báo Wiki
+                                </strong>
+
+                                <span>
+                                    Nhận thông báo về các cập nhật
+                                    của Wiki
+                                </span>
+
+                            </div>
+
+
+                            <div class="toggle-switch"></div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Nâng cao -->
+                    <div class="settings-section">
+
+                        <h2>
+                            Nâng cao
+                        </h2>
+
+
+                        <div
+                            class="settings-item"
+                            id="settingsExperimental"
+                        >
+
+                            <div class="settings-item-icon">
+
+                                <iconify-icon
+                                    icon="solar:test-tube-bold">
+                                </iconify-icon>
+
+                            </div>
+
+
+                            <div class="settings-item-content">
+
+                                <strong>
+                                    Tính năng thử nghiệm
+                                </strong>
+
+                                <span>
+                                    Trải nghiệm các tính năng
+                                    đang được phát triển
+                                </span>
+
+                            </div>
+
+
+                            <div class="toggle-switch"></div>
+
+                        </div>
+
+
+                        <div
+                            class="settings-item"
+                            id="clearTempData"
+                        >
+
+                            <div class="settings-item-icon">
+
+                                <iconify-icon
+                                    icon="solar:trash-bin-minimalistic-bold">
+                                </iconify-icon>
+
+                            </div>
+
+
+                            <div class="settings-item-content">
+
+                                <strong>
+                                    Xóa dữ liệu tạm
+                                </strong>
+
+                                <span>
+                                    Xóa bộ nhớ đệm và dữ liệu tạm
+                                    của Wiki
+                                </span>
+
+                            </div>
+
+
+                            <iconify-icon
+                                class="settings-item-arrow"
+                                icon="solar:arrow-right-2-bold">
+                            </iconify-icon>
+
+                        </div>
+
+
+                        <div
+                            class="settings-item danger"
+                            id="clearAllData"
+                        >
+
+                            <div class="settings-item-icon">
+
+                                <iconify-icon
+                                    icon="solar:trash-bin-2-bold">
+                                </iconify-icon>
+
+                            </div>
+
+
+                            <div class="settings-item-content">
+
+                                <strong>
+                                    Xóa toàn bộ dữ liệu
+                                </strong>
+
+                                <span>
+                                    Xóa toàn bộ dữ liệu Wiki
+                                    được lưu trên thiết bị
+                                </span>
+
+                            </div>
+
+
+                            <iconify-icon
+                                class="settings-item-arrow"
+                                icon="solar:arrow-right-2-bold">
+                            </iconify-icon>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Về Wiki -->
+                    <div class="settings-section settings-about">
+
+                        <h2>
+                            Về Wiki
+                        </h2>
+
+
+                        <div class="settings-about-card">
+
+                            <strong>
+                                HydYar Wiki
+                            </strong>
+
+                            <span>
+                                Kho tri thức mở
+                            </span>
+
+                            <small>
+                                Phiên bản hiện tại
+                            </small>
+
+                            <b>
+                                v1.0
+                            </b>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
-            <div class="menu-list">
 
-    <div class="menu-item" id="wikiBookmark">
-        <iconify-icon icon="solar:bookmark-bold"></iconify-icon>
-        <span>Bài viết đã lưu</span>
-        <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
-    </div>
-
-    <div class="menu-item" id="wikiHistory">
-        <iconify-icon icon="solar:clock-circle-bold"></iconify-icon>
-        <span>Lịch sử đọc</span>
-        <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
-    </div>
-
-    <div class="menu-item" id="darkModeToggle">
-        <iconify-icon icon="solar:moon-bold"></iconify-icon>
-        <span>Chế độ tối</span>
-        <div class="toggle-switch"></div>
-    </div>
-
-    <div class="menu-item" id="optimizeToggle">
-        <iconify-icon icon="solar:bolt-bold"></iconify-icon>
-        <span>Tối ưu hiệu năng</span>
-        <div class="toggle-switch"></div>
-    </div>
-
-    <div class="menu-item" id="wikiSetting">
-        <iconify-icon icon="solar:settings-bold"></iconify-icon>
-        <span>Cài đặt</span>
-        <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
-    </div>
-
-    <div class="menu-item" id="wikiPolicy">
-        <iconify-icon icon="solar:shield-check-bold"></iconify-icon>
-        <span>Chính sách của HydYar Wiki</span>
-        <iconify-icon icon="solar:arrow-right-2-bold"></iconify-icon>
-    </div>
-
-    <div class="menu-item text-danger" id="loginLogoutBtn">
-        <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
-        <span>Đăng xuất</span>
-    </div>
-
-</div>
         </section>
 
-        <!-- Cài đặt -->
-<section class="page" id="page-settings">
 
-    <div class="settings-page">
+        <!-- =====================================================
+             📖 ARTICLE
+             ===================================================== -->
 
-        <div class="settings-header">
-            <button class="settings-back" id="settingsBack">
-                <iconify-icon icon="solar:arrow-left-bold"></iconify-icon>
-            </button>
+        <section
+            class="page"
+            id="page-article"
+        >
 
-            <div>
-                <h1>Cài đặt</h1>
-                <p>Tùy chỉnh trải nghiệm HydYar Wiki</p>
-            </div>
-        </div>
-
-        <div class="settings-list">
-
-            <!-- Giao diện -->
-            <div class="settings-section">
-                <h2>Giao diện</h2>
-
-                <div class="settings-item" id="settingsAnimations">
-                    <div class="settings-item-icon">
-                        <iconify-icon icon="solar:magic-stick-3-bold"></iconify-icon>
-                    </div>
-
-                    <div class="settings-item-content">
-                        <strong>Hiệu ứng giao diện</strong>
-                        <span>Bật các hiệu ứng chuyển động của Wiki</span>
-                    </div>
-
-                    <div class="toggle-switch"></div>
-                </div>
+            <div
+                class="article-container"
+                id="articleContent">
             </div>
 
-            <!-- Đọc Wiki -->
-            <div class="settings-section">
-                <h2>Đọc Wiki</h2>
-
-                <div class="settings-item" id="settingsReadingPosition">
-                    <div class="settings-item-icon">
-                        <iconify-icon icon="solar:book-bookmark-bold"></iconify-icon>
-                    </div>
-
-                    <div class="settings-item-content">
-                        <strong>Ghi nhớ vị trí đọc</strong>
-                        <span>Tiếp tục bài viết từ vị trí lần trước</span>
-                    </div>
-
-                    <div class="toggle-switch"></div>
-                </div>
-
-                <div class="settings-item" id="settingsToc">
-                    <div class="settings-item-icon">
-                        <iconify-icon icon="solar:hamburger-menu-bold"></iconify-icon>
-                    </div>
-
-                    <div class="settings-item-content">
-                        <strong>Hiển thị mục lục</strong>
-                        <span>Hiển thị mục lục khi đọc bài viết</span>
-                    </div>
-
-                    <div class="toggle-switch"></div>
-                </div>
-            </div>
-
-            <!-- Thông báo -->
-            <div class="settings-section">
-                <h2>Thông báo</h2>
-
-                <div class="settings-item" id="settingsNotifications">
-                    <div class="settings-item-icon">
-                        <iconify-icon icon="solar:bell-bold"></iconify-icon>
-                    </div>
-
-                    <div class="settings-item-content">
-                        <strong>Thông báo Wiki</strong>
-                        <span>Nhận thông báo về các cập nhật của Wiki</span>
-                    </div>
-
-                    <div class="toggle-switch"></div>
-                </div>
-            </div>
-
-            <!-- Nâng cao -->
-            <div class="settings-section">
-                <h2>Nâng cao</h2>
-
-                <div class="settings-item" id="settingsExperimental">
-                    <div class="settings-item-icon">
-                        <iconify-icon icon="solar:test-tube-bold"></iconify-icon>
-                    </div>
-
-                    <div class="settings-item-content">
-                        <strong>Tính năng thử nghiệm</strong>
-                        <span>Trải nghiệm các tính năng đang được phát triển</span>
-                    </div>
-
-                    <div class="toggle-switch"></div>
-                </div>
-            <div class="settings-item" id="clearTempData">
-    <div class="settings-item-icon">
-        <iconify-icon icon="solar:trash-bin-minimalistic-bold"></iconify-icon>
-    </div>
-
-    <div class="settings-item-content">
-        <strong>Xóa dữ liệu tạm</strong>
-        <span>Xóa bộ nhớ đệm và dữ liệu tạm của Wiki</span>
-    </div>
-
-    <iconify-icon
-        class="settings-item-arrow"
-        icon="solar:arrow-right-2-bold">
-    </iconify-icon>
-</div>
-
-<div class="settings-item danger" id="clearAllData">
-    <div class="settings-item-icon">
-        <iconify-icon icon="solar:trash-bin-2-bold"></iconify-icon>
-    </div>
-
-    <div class="settings-item-content">
-        <strong>Xóa toàn bộ dữ liệu</strong>
-        <span>Xóa toàn bộ dữ liệu Wiki được lưu trên thiết bị</span>
-    </div>
-
-    <iconify-icon
-        class="settings-item-arrow"
-        icon="solar:arrow-right-2-bold">
-    </iconify-icon>
-</div>
-            </div>
-
-            <!-- Về Wiki -->
-            <div class="settings-section settings-about">
-                <h2>Về Wiki</h2>
-
-                <div class="settings-about-card">
-                    <strong>HydYar Wiki</strong>
-                    <span>Kho tri thức mở</span>
-                    <small>Phiên bản hiện tại</small>
-                    <b>v1.0</b>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-</section>
-
-        <!-- Trang bài viết chi tiết -->
-        <section class="page" id="page-article">
-            <div class="article-container" id="articleContent"></div>
         </section>
+
     </main>
 
-    <!-- Thanh điều hướng dưới -->
-    <nav class="bottom-nav">
-        <button class="nav-item active" data-page="home">
-            <iconify-icon icon="solar:home-2-bold"></iconify-icon>
-            <span>Trang chủ</span>
-        </button>
-        <button class="nav-item" data-page="categories">
-            <iconify-icon icon="solar:library-bold"></iconify-icon>
-            <span>Danh mục</span>
-        </button>
-        <button class="nav-item" data-page="search">
-            <iconify-icon icon="solar:magnifer-bold"></iconify-icon>
-            <span>Tìm kiếm</span>
-        </button>
-        <button class="nav-item" data-page="community">
-            <iconify-icon icon="solar:chat-round-dots-bold"></iconify-icon>
-            <span>Cộng đồng</span>
-        </button>
-        <button class="nav-item" data-page="profile">
-            <iconify-icon icon="solar:user-circle-bold"></iconify-icon>
-            <span>Tài khoản</span>
-        </button>
-    </nav>
 
-    <!-- Skeleton Loading -->
-    <div class="skeleton" id="skeleton" style="display: none;"></div>
+    <!-- =========================================================
+         💀 SKELETON LOADING
+         ========================================================= -->
 
-    <!-- JavaScript -->
-    <script src="/firebase.js" type="module"></script>
+    <div
+        class="skeleton"
+        id="skeleton"
+        style="display:none;"
+    >
+    </div>
+
+
+    <!-- =========================================================
+         ⚙️ JAVASCRIPT
+         ========================================================= -->
+
+    <script
+        src="/firebase.js"
+        type="module">
+    </script>
+
     <script src="/seo.js"></script>
-    <script type="module" src="/script.js"></script>
+
+    <script
+        src="/script.js"
+        type="module">
+    </script>
+
     <script src="/testData.js"></script>
+
 </body>
+
 </html>

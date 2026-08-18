@@ -1,0 +1,1197 @@
+/* =========================================================
+   🌌 HYDYAR WIKI
+   DRAWER NAVIGATION
+   ========================================================= */
+
+
+/* =========================================================
+   🎨 VARIABLES
+   ========================================================= */
+
+:root {
+    --primary-blue: #6FA8FF;
+    --primary-purple: #8F7CFF;
+    --gradient: linear-gradient(135deg, #6FA8FF, #8F7CFF);
+
+    --bg: radial-gradient(circle at top right, rgba(111,168,255,.18), transparent 35%),
+          radial-gradient(circle at bottom left, rgba(143,124,255,.12), transparent 35%),
+          #050816;
+    --card: rgba(255, 255, 255, 0.05);
+    --card-soft: rgba(255, 255, 255, 0.08);
+
+    --text: #E0E7FF;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+    --radius: 22px;
+    --transition: all 0.25s ease;
+    --border-light: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+
+/* =========================================================
+   ☰ MENU BUTTON
+   📱 MOBILE ONLY
+   ========================================================= */
+
+.menu-btn {
+
+    display: none;
+
+    width: 40px;
+    height: 40px;
+
+    flex-shrink: 0;
+
+    border-radius: 14px;
+
+    border:
+        1px solid rgba(255,255,255,.08);
+
+    background:
+        var(--card);
+
+    color:
+        var(--text);
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    cursor: pointer;
+
+    transition: none;
+
+    transform: none;
+
+}
+
+
+.menu-btn:active {
+
+    transform: none;
+
+}
+
+
+/* =========================================================
+   ☰ THREE LINES
+   ========================================================= */
+
+.menu-btn .menu-icon {
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    gap: 4px;
+
+    width: 20px;
+    height: 20px;
+
+}
+
+
+.menu-btn .menu-icon span {
+
+    display: block;
+
+    width: 100%;
+    height: 2px;
+
+    border-radius: 2px;
+
+    background:
+        currentColor;
+
+}
+
+
+/* =========================================================
+   🧱 NAVIGATION DRAWER
+   📱 MOBILE DEFAULT
+   ========================================================= */
+
+.navigation-drawer {
+
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width:
+        min(82vw, 330px);
+
+    height: 100dvh;
+
+    background:
+        var(--card);
+
+    backdrop-filter:
+        blur(24px);
+
+    -webkit-backdrop-filter:
+        blur(24px);
+
+    border-right:
+        1px solid rgba(255,255,255,.08);
+
+    box-shadow:
+        20px 0 50px rgba(0,0,0,.35);
+
+    z-index: 1002;
+
+    transform:
+        translate3d(-105%, 0, 0);
+
+    will-change:
+        transform;
+
+    transition:
+        transform
+        .38s
+        cubic-bezier(.22,1,.36,1);
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    overflow:
+        hidden;
+
+}
+
+
+/* =========================================================
+   🚪 MOBILE OPEN
+   ========================================================= */
+
+.navigation-drawer.open {
+
+    transform:
+        translate3d(0,0,0);
+
+}
+
+
+/* =========================================================
+   ✕ DRAWER CLOSE
+   ========================================================= */
+
+.drawer-close {
+
+    width: 40px;
+    height: 40px;
+
+    flex-shrink: 0;
+
+    border-radius: 14px;
+
+    border:
+        1px solid rgba(255,255,255,.08);
+
+    background:
+        var(--card);
+
+    color:
+        var(--text);
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    padding: 0;
+
+    font-size: 21px;
+
+    cursor:
+        pointer;
+
+    transition:
+        none;
+
+    transform:
+        none;
+
+}
+
+
+.drawer-close:active {
+
+    transform:
+        none;
+
+}
+
+
+.drawer-close iconify-icon {
+
+    font-size: 21px;
+
+    transform: none;
+
+    transition: none;
+
+}
+
+
+/* =========================================================
+   🌑 MOBILE OVERLAY
+   ========================================================= */
+
+.nav-overlay {
+
+    position: fixed;
+
+    inset: 0;
+
+    background:
+        rgba(0,0,0,.45);
+
+    backdrop-filter:
+        blur(2px);
+
+    -webkit-backdrop-filter:
+        blur(2px);
+
+    z-index: 1001;
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    transition:
+        opacity .30s ease,
+        visibility .30s ease;
+
+}
+
+
+.nav-overlay.show {
+
+    opacity: 1;
+
+    visibility: visible;
+
+}
+
+
+/* =========================================================
+   🏷️ DRAWER HEADER
+   ========================================================= */
+
+.drawer-header {
+
+    min-height:
+        76px;
+
+    padding:
+        12px 16px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        space-between;
+
+    border-bottom:
+        1px solid rgba(255,255,255,.07);
+
+    flex-shrink:
+        0;
+
+    opacity:
+        0;
+
+    transform:
+        translate3d(-14px,0,0);
+
+    transition:
+        opacity .25s ease,
+        transform .40s cubic-bezier(.22,1,.36,1);
+
+}
+
+
+.navigation-drawer.open .drawer-header {
+
+    opacity:
+        1;
+
+    transform:
+        translate3d(0,0,0);
+
+    transition-delay:
+        .18s;
+
+}
+
+
+/* =========================================================
+   🪪 DRAWER LOGO
+   ========================================================= */
+
+.drawer-logo {
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    line-height:
+        1.05;
+
+}
+
+
+.drawer-logo span {
+    font-size: 20px;
+    font-weight: 700;
+
+    background: var(--gradient);
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+.drawer-logo small {
+
+    margin-top:
+        4px;
+
+    font-size:
+        12px;
+
+    background: var(--gradient);
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+
+}
+
+
+/* =========================================================
+   📜 DRAWER CONTENT
+   ========================================================= */
+
+.drawer-content {
+
+    flex:
+        1;
+
+    overflow-y:
+        auto;
+
+    padding:
+        14px 12px 30px;
+
+    overscroll-behavior:
+        contain;
+
+    scrollbar-width:
+        none;
+
+    touch-action:
+        pan-y;
+
+    opacity:
+        0;
+
+    transform:
+        translate3d(-16px,0,0);
+
+    transition:
+        opacity .30s ease,
+        transform .42s cubic-bezier(.22,1,.36,1);
+
+}
+
+
+.navigation-drawer.open .drawer-content {
+
+    opacity:
+        1;
+
+    transform:
+        translate3d(0,0,0);
+
+    transition-delay:
+        .25s;
+
+}
+
+
+.drawer-content::-webkit-scrollbar {
+
+    display:
+        none;
+
+}
+
+
+/* =========================================================
+   📂 DRAWER SECTION
+   ========================================================= */
+
+.drawer-section {
+
+    margin-bottom:
+        22px;
+
+    opacity:
+        0;
+
+    transform:
+        translate3d(-12px,0,0);
+
+    transition:
+        opacity .24s ease,
+        transform .36s cubic-bezier(.22,1,.36,1);
+
+}
+
+
+.navigation-drawer.open
+.drawer-section:nth-child(1) {
+
+    opacity:
+        1;
+
+    transform:
+        translate3d(0,0,0);
+
+    transition-delay:
+        .30s;
+
+}
+
+
+.navigation-drawer.open
+.drawer-section:nth-child(2) {
+
+    opacity:
+        1;
+
+    transform:
+        translate3d(0,0,0);
+
+    transition-delay:
+        .38s;
+
+}
+
+
+.navigation-drawer.open
+.drawer-section:nth-child(3) {
+
+    opacity:
+        1;
+
+    transform:
+        translate3d(0,0,0);
+
+    transition-delay:
+        .46s;
+
+}
+
+
+.drawer-section:last-child {
+
+    margin-bottom:
+        0;
+
+}
+
+
+/* =========================================================
+   🏷️ SECTION TITLE
+   ========================================================= */
+
+.drawer-section-title {
+
+    display:
+        block;
+
+    padding:
+        0 12px 7px;
+
+    font-size:
+        11px;
+
+    font-weight:
+        600;
+
+    text-transform:
+        uppercase;
+
+    letter-spacing:
+        .08em;
+
+    color:
+        var(--text-secondary);
+
+    opacity:
+        .75;
+
+}
+
+
+/* =========================================================
+   🧭 NAV ITEMS
+   ========================================================= */
+
+.drawer-nav-item,
+.drawer-action-item {
+
+    width:
+        100%;
+
+    min-height:
+        48px;
+
+    padding:
+        0 13px;
+
+    margin-bottom:
+        4px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    gap:
+        13px;
+
+    border:
+        none;
+
+    border-radius:
+        15px;
+
+    background:
+        transparent;
+
+    color:
+        var(--text-secondary);
+
+    font-family:
+        inherit;
+
+    font-size:
+        14px;
+
+    text-align:
+        left;
+
+    cursor:
+        pointer;
+
+    transition:
+        background .2s ease,
+        color .2s ease;
+
+}
+
+
+.drawer-nav-item iconify-icon,
+.drawer-action-item iconify-icon {
+
+    flex-shrink:
+        0;
+
+    width:
+        21px;
+
+    font-size:
+        21px;
+
+}
+
+
+.drawer-nav-item:hover,
+.drawer-action-item:hover {
+
+    background:
+        rgba(255,255,255,.055);
+
+    color:
+        var(--text);
+
+}
+
+
+.drawer-nav-item:active,
+.drawer-action-item:active {
+
+    transform:
+        none;
+
+}
+
+
+/* =========================================================
+   ⭐ ACTIVE
+   ========================================================= */
+
+.drawer-nav-item.active {
+
+    background:
+        rgba(111,168,255,.14);
+
+    color:
+        #9ec5ff;
+
+    box-shadow:
+        inset 0 0 0 1px
+        rgba(111,168,255,.06);
+
+}
+
+
+/* =========================================================
+   📱 MOBILE
+   ========================================================= */
+
+@media (max-width: 767px) {
+
+    .menu-btn {
+
+        display:
+            flex;
+
+    }
+
+
+    .bottom-nav {
+
+        display:
+            none;
+
+    }
+
+
+    body {
+
+        padding-bottom:
+            20px;
+
+    }
+
+}
+
+
+/* =========================================================
+   ♿ REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .navigation-drawer,
+    .nav-overlay,
+    .drawer-header,
+    .drawer-content,
+    .drawer-section {
+
+        transition:
+            none !important;
+
+    }
+
+
+    .menu-btn,
+    .drawer-close,
+    .menu-btn iconify-icon,
+    .drawer-close iconify-icon {
+
+        transition:
+            none !important;
+
+        transform:
+            none !important;
+
+    }
+
+}
+
+
+/* =========================================================
+   💻 TABLET / DESKTOP
+   ========================================================= */
+
+@media (min-width: 768px) {
+
+    /* =====================================================
+       📐 DESKTOP WIDTH
+       ===================================================== */
+
+    :root {
+
+        --desktop-drawer-width:
+            310px;
+
+    }
+
+
+    /* =====================================================
+       🚫 MOBILE CONTROLS
+       ===================================================== */
+
+    .menu-btn {
+
+        display:
+            none !important;
+
+    }
+
+
+    .drawer-close {
+
+        display:
+            none !important;
+
+    }
+
+
+    .nav-overlay {
+
+        display:
+            none !important;
+
+    }
+
+
+    /* =====================================================
+       🧱 SIDEBAR
+       ===================================================== */
+
+    .navigation-drawer {
+
+        position:
+            fixed;
+
+        top:
+            0;
+
+        left:
+            0;
+
+        width:
+            var(--desktop-drawer-width);
+
+        max-width:
+            var(--desktop-drawer-width);
+
+        height:
+            100dvh;
+
+        transform:
+            none !important;
+
+        background:
+            var(--card);
+
+        backdrop-filter:
+            blur(26px);
+
+        -webkit-backdrop-filter:
+            blur(26px);
+
+        /*
+         * CHỈ MỘT VẠCH NGĂN CÁCH
+         */
+        border-right:
+            1px solid
+            rgba(255,255,255,.10);
+
+        border-left:
+            none;
+
+        box-shadow:
+            none;
+
+        border-radius:
+            0;
+
+        z-index:
+            1002;
+
+        overflow:
+            hidden;
+
+        transition:
+            none;
+
+    }
+
+
+    .navigation-drawer.open {
+
+        transform:
+            none !important;
+
+    }
+
+
+    /* =====================================================
+       🏷️ DESKTOP DRAWER HEADER
+       ===================================================== */
+
+    .drawer-header {
+
+        min-height:
+            78px;
+
+        padding:
+            14px 18px;
+
+        opacity:
+            1 !important;
+
+        transform:
+            none !important;
+
+        transition:
+            none !important;
+
+    }
+
+
+    /* =====================================================
+       📜 DESKTOP DRAWER CONTENT
+       ===================================================== */
+
+    .drawer-content {
+
+        flex:
+            1;
+
+        opacity:
+            1 !important;
+
+        transform:
+            none !important;
+
+        transition:
+            none !important;
+
+        overflow-y:
+            auto;
+
+        padding:
+            18px 14px 32px;
+
+    }
+
+
+    /* =====================================================
+       📂 DESKTOP SECTIONS
+       ===================================================== */
+
+    .drawer-section {
+
+        opacity:
+            1 !important;
+
+        transform:
+            none !important;
+
+        transition:
+            none !important;
+
+        margin-bottom:
+            24px;
+
+    }
+
+
+    /* =====================================================
+       📄 HEADER
+       ===================================================== */
+
+    .header {
+
+        left:
+            var(--desktop-drawer-width) !important;
+
+        right:
+            auto !important;
+
+        width:
+            calc(
+                100% -
+                var(--desktop-drawer-width)
+            ) !important;
+
+    }
+
+
+    /* =====================================================
+       📄 MAIN CONTENT
+       ===================================================== */
+
+    .main-content {
+
+        width:
+            calc(
+                100% -
+                var(--desktop-drawer-width)
+            ) !important;
+
+        max-width:
+            none !important;
+
+        margin-left:
+            var(--desktop-drawer-width) !important;
+
+        margin-right:
+            0 !important;
+
+        padding-left:
+            24px;
+
+        padding-right:
+            24px;
+
+        box-sizing:
+            border-box;
+
+    }
+
+
+    /* =====================================================
+       📑 PAGE
+       ===================================================== */
+
+    .main-content .page {
+
+        width:
+            100%;
+
+        max-width:
+            none;
+
+        margin-left:
+            0 !important;
+
+        margin-right:
+            0 !important;
+
+        box-sizing:
+            border-box;
+
+    }
+
+
+    /* =====================================================
+       🚫 KHÔNG CHO MAIN / PAGE ĂN THÊM MARGIN
+       ===================================================== */
+
+    main {
+
+        margin-left:
+            0;
+
+    }
+
+
+    .page {
+
+        margin-left:
+            0;
+
+    }
+
+
+    /* =====================================================
+       🚫 BOTTOM NAV
+       ===================================================== */
+
+    .bottom-nav {
+
+        display:
+            none;
+
+    }
+
+}
+
+
+/* =========================================================
+   🖥️ DESKTOP ≥1024
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+    :root {
+
+        --desktop-drawer-width:
+            310px;
+
+    }
+
+
+    .main-content {
+
+        padding-left:
+            32px;
+
+        padding-right:
+            32px;
+
+    }
+
+
+    .card-grid {
+
+        grid-template-columns:
+            repeat(3,minmax(0,1fr));
+
+    }
+
+
+    .category-grid {
+
+        grid-template-columns:
+            repeat(4,minmax(0,1fr));
+
+    }
+
+
+    .banner {
+
+        padding:
+            48px;
+
+    }
+
+
+    .banner h1 {
+
+        font-size:
+            36px;
+
+    }
+
+}
+
+
+/* =========================================================
+   🖥️ LARGE DESKTOP ≥1200
+   ========================================================= */
+
+@media (min-width: 1200px) {
+
+    :root {
+
+        --desktop-drawer-width:
+            320px;
+
+    }
+
+
+    .main-content {
+
+        padding-left:
+            36px;
+
+        padding-right:
+            36px;
+
+    }
+
+
+    .drawer-header {
+
+        min-height:
+            82px;
+
+        padding:
+            15px 20px;
+
+    }
+
+
+    .drawer-content {
+
+        padding:
+            20px 16px 36px;
+
+    }
+
+
+    .drawer-nav-item,
+    .drawer-action-item {
+
+        min-height:
+            52px;
+
+        padding:
+            0 15px;
+
+        border-radius:
+            16px;
+
+        font-size:
+            15px;
+
+    }
+
+
+    .drawer-nav-item iconify-icon,
+    .drawer-action-item iconify-icon {
+
+        font-size:
+            22px;
+
+    }
+
+}
+
+
+/* =========================================================
+   🖥️ VERY LARGE ≥1600
+   ========================================================= */
+
+@media (min-width: 1600px) {
+
+    :root {
+
+        --desktop-drawer-width:
+            330px;
+
+    }
+
+
+    .main-content {
+
+        padding-left:
+            40px;
+
+        padding-right:
+            40px;
+
+    }
+
+}

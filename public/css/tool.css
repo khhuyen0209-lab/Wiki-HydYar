@@ -1,0 +1,4098 @@
+/* =========================================================
+   🧰 WIKI ACCESSIBILITY TOOLS
+   Thanh trợ năng dọc bên phải
+   ========================================================= */
+
+.wiki-accessibility-tools {
+
+    position: fixed;
+
+    /*
+     * Luôn sát mép phải viewport
+     */
+    right: 0;
+
+    /*
+     * JS điều khiển vị trí dọc
+     */
+    top: var(
+        --tool-position-y,
+        50%
+    );
+
+    transform:
+        translateY(-50%);
+
+    /*
+     * Khi đóng chỉ rộng 5px
+     */
+    width: 7px;
+
+    height: auto;
+
+    z-index: 9999;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-end;
+
+    /*
+     * Root không chặn click
+     */
+    pointer-events: none;
+
+    /*
+     * Cho panel bung ra ngoài root
+     */
+    overflow: visible;
+
+    /*
+     * Drag progress
+     */
+    --tool-drag-progress: 0;
+
+    /*
+     * Animation vị trí dọc
+     */
+    transition:
+        top .25s cubic-bezier(
+            .22,
+            1,
+            .36,
+            1
+        );
+
+}
+
+
+/* =========================================================
+   🖐️ ĐANG KÉO
+   ========================================================= */
+
+.wiki-accessibility-tools.is-dragging {
+
+    transition: none;
+
+}
+
+
+/* =========================================================
+   🔘 HANDLE
+   Thanh 5px khi đang đóng
+   ========================================================= */
+
+.wiki-tools-handle {
+
+    position: relative;
+
+    width: 70px;
+
+    min-width: 7px;
+
+    height: 70px;
+
+    min-height: 70px;
+
+    padding: 0;
+
+    margin: 0;
+
+    box-sizing: border-box;
+
+    border:
+        var(--border-light);
+
+    border-right: 0;
+
+    border-radius:
+        15px 0 0 15px;
+
+    background:
+        var(--card-soft);
+
+    color:
+        var(--text);
+
+    box-shadow:
+        var(--shadow);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    pointer-events: auto;
+
+    cursor: pointer;
+
+    /*
+     * Cho phép Pointer Events
+     * xử lý drag ngang + dọc
+     */
+    touch-action: none;
+
+    user-select: none;
+
+    -webkit-user-select: none;
+
+    /*
+     * Không cho nội dung tràn ra
+     */
+    overflow: hidden;
+
+    transition:
+        width .25s cubic-bezier(
+            .22,
+            1,
+            .36,
+            1
+        ),
+        min-width .25s cubic-bezier(
+            .22,
+            1,
+            .36,
+            1
+        ),
+        opacity .20s ease,
+        background .25s ease,
+        box-shadow .25s ease;
+
+}
+
+
+/* =========================================================
+   ✨ HANDLE HOVER
+   ========================================================= */
+
+.wiki-accessibility-tools:not(.tools-empty)
+.wiki-tools-handle:hover {
+
+    width: 13px;
+
+}
+
+
+/* =========================================================
+   🖱️ HANDLE ACTIVE
+   ========================================================= */
+
+.wiki-tools-handle:active {
+
+    width: 13px;
+
+}
+
+
+/* =========================================================
+   🔓 MỞ PANEL
+   Khi mở → handle biến mất hoàn toàn
+   ========================================================= */
+
+.wiki-accessibility-tools.tools-open
+.wiki-tools-handle {
+
+    width: 0;
+
+    min-width: 0;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+}
+
+
+/* =========================================================
+   🧰 MAIN TOOL CARD
+   Card chứa toàn bộ icon
+   ========================================================= */
+
+.wiki-tools-panel {
+
+    position: absolute;
+
+    /*
+     * Quan trọng:
+     * Panel neo vào mép phải của root.
+     */
+    right: 0;
+
+    top: 50%;
+
+    /*
+     * Tự lấy kích thước theo list
+     */
+    width: max-content;
+
+    /*
+     * Không vượt khỏi viewport
+     */
+    max-width:
+        calc(100vw - 4px);
+
+    /*
+     * Khoảng cách card
+     */
+    padding: 6px;
+
+    box-sizing: border-box;
+
+    /*
+     * Card
+     */
+    border:
+        var(--border-light);
+
+    border-radius: 17px;
+
+    background:
+        var(--card);
+
+    box-shadow:
+        var(--shadow);
+
+    /*
+     * Glass effect
+     */
+    backdrop-filter:
+        blur(20px);
+
+    -webkit-backdrop-filter:
+        blur(20px);
+
+    /*
+     * Cho item active bung ra
+     */
+    overflow: visible;
+
+    /*
+     * Ban đầu nằm ngoài màn hình
+     */
+    transform:
+        translateX(100%)
+        translateY(-50%);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+
+    /*
+     * Animation mở
+     */
+    transition:
+        transform .30s cubic-bezier(
+            .22,
+            1,
+            .36,
+            1
+        ),
+        opacity .20s ease,
+        visibility .20s ease;
+
+}
+
+
+/* =========================================================
+   🔓 PANEL OPEN
+   Card sát tuyệt đối mép phải
+   ========================================================= */
+
+.wiki-accessibility-tools.tools-open
+.wiki-tools-panel {
+
+    /*
+     * KHÔNG dùng -10px
+     * KHÔNG dùng khoảng đệm ngoài
+     */
+    transform:
+        translateX(0)
+        translateY(-50%);
+
+    opacity: 1;
+
+    visibility: visible;
+
+    pointer-events: auto;
+
+}
+
+
+/* =========================================================
+   🖐️ PANEL KHI DRAG
+   ========================================================= */
+
+.wiki-accessibility-tools.is-dragging
+.wiki-tools-panel {
+
+    transition:
+        transform .05s linear,
+        opacity .05s linear;
+
+}
+
+
+/* =========================================================
+   🚫 HEADER
+   Header cũ không còn sử dụng
+   ========================================================= */
+
+.wiki-tools-header {
+
+    display: none !important;
+
+}
+
+
+.wiki-tools-close {
+
+    display: none !important;
+
+}
+
+
+/* =========================================================
+   📋 TOOL LIST
+   Danh sách icon dọc
+   ========================================================= */
+
+.wiki-tools-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-end;
+
+    justify-content: center;
+
+    gap: 5px;
+
+    width: max-content;
+
+    max-width: 100%;
+
+}
+
+
+/* =========================================================
+   🧩 TOOL ITEM
+   Mặc định chỉ là icon
+   ========================================================= */
+
+.wiki-tool-item {
+
+    position: relative;
+
+    /*
+     * Kích thước icon
+     */
+    width: 42px;
+
+    min-width: 42px;
+
+    height: 42px;
+
+    min-height: 42px;
+
+    box-sizing: border-box;
+
+    padding: 0;
+
+    margin: 0;
+
+    /*
+     * Layout
+     */
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-start;
+
+    gap: 8px;
+
+    /*
+     * Card icon
+     */
+    border:
+        1px solid transparent;
+
+    border-radius: 12px;
+
+    background:
+        var(--card-soft);
+
+    color:
+        var(--text);
+
+    /*
+     * Interaction
+     */
+    cursor: pointer;
+
+    touch-action: manipulation;
+
+    user-select: none;
+
+    -webkit-user-select: none;
+
+    -webkit-tap-highlight-color:
+        transparent;
+
+    /*
+     * Không để content tràn
+     */
+    overflow: hidden;
+
+    flex-shrink: 0;
+
+    /*
+     * Animation
+     */
+    transition:
+        width .30s cubic-bezier(
+            .22,
+            1,
+            .36,
+            1
+        ),
+        min-width .30s cubic-bezier(
+            .22,
+            1,
+            .36,
+            1
+        ),
+        height .25s ease,
+        min-height .25s ease,
+        padding .25s ease,
+        background .20s ease,
+        border-color .20s ease,
+        border-radius .25s ease,
+        transform .20s ease;
+
+}
+
+
+/* =========================================================
+   ✨ TOOL HOVER
+   ========================================================= */
+
+.wiki-tool-item:hover {
+
+    background:
+        var(--card);
+
+    transform:
+        translateX(-2px);
+
+}
+
+
+/* =========================================================
+   👆 TOOL ACTIVE
+   Long press → kéo dài sang trái
+   ========================================================= */
+
+.wiki-tool-item.active {
+
+    width: 225px;
+
+    min-width: 225px;
+
+    height: 58px;
+
+    min-height: 58px;
+
+    padding:
+        8px 10px 8px 4px;
+
+    border-color:
+        var(--border-light);
+
+    border-radius: 15px;
+
+    background:
+        var(--card);
+
+    /*
+     * Quan trọng:
+     * Vì list align-end nên card mở
+     * sẽ mở về bên trái.
+     */
+    transform:
+        translateX(0);
+
+}
+
+
+/* =========================================================
+   🎨 TOOL ICON
+   ========================================================= */
+
+.wiki-tool-icon {
+
+    flex:
+        0 0 42px;
+
+    width: 42px;
+
+    min-width: 42px;
+
+    height: 42px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color:
+        var(--primary-blue);
+
+    pointer-events: none;
+
+    transition:
+        transform .25s cubic-bezier(
+            .22,
+            1,
+            .36,
+            1
+        );
+
+}
+
+
+/* Iconify */
+
+.wiki-tool-icon iconify-icon {
+
+    font-size: 19px;
+
+}
+
+
+/* =========================================================
+   ✨ ACTIVE ICON
+   ========================================================= */
+
+.wiki-tool-item.active
+.wiki-tool-icon {
+
+    transform:
+        scale(1.05);
+
+}
+
+
+/* =========================================================
+   📝 TOOL CONTENT
+   Mặc định hoàn toàn ẩn
+   ========================================================= */
+
+.wiki-tool-content {
+
+    width: 0;
+
+    max-width: 0;
+
+    min-width: 0;
+
+    flex:
+        0 0 auto;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 2px;
+
+    overflow: hidden;
+
+    opacity: 0;
+
+    transform:
+        translateX(-8px);
+
+    pointer-events: none;
+
+    transition:
+        width .27s cubic-bezier(
+            .22,
+            1,
+            .36,
+            1
+        ),
+        max-width .27s cubic-bezier(
+            .22,
+            1,
+            .36,
+            1
+        ),
+        opacity .16s ease,
+        transform .27s cubic-bezier(
+            .22,
+            1,
+            .36,
+            1
+        );
+
+}
+
+
+/* =========================================================
+   🔓 CONTENT ACTIVE
+   ========================================================= */
+
+.wiki-tool-item.active
+.wiki-tool-content {
+
+    width: 165px;
+
+    max-width: 165px;
+
+    opacity: 1;
+
+    transform:
+        translateX(0);
+
+    pointer-events: auto;
+
+}
+
+
+/* =========================================================
+   🏷️ TOOL NAME
+   ========================================================= */
+
+.wiki-tool-content strong {
+
+    display: block;
+
+    max-width: 100%;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    line-height: 1.2;
+
+    color:
+        var(--text);
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+}
+
+
+/* =========================================================
+   📄 TOOL DESCRIPTION
+   ========================================================= */
+
+.wiki-tool-content small {
+
+    display: block;
+
+    max-width: 100%;
+
+    font-size: 10.5px;
+
+    line-height: 1.35;
+
+    color:
+        var(--text-secondary);
+
+    white-space: normal;
+
+    overflow: hidden;
+
+}
+
+
+/* =========================================================
+   🚫 EMPTY
+   Không có tool → ẩn thanh
+   ========================================================= */
+
+.wiki-accessibility-tools.tools-empty {
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    pointer-events: none;
+
+}
+
+
+/* =========================================================
+   📱 MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .wiki-accessibility-tools {
+
+        /*
+         * Root vẫn có thể là 5px,
+         * không cần 9px vì handle thật sự chỉ 5px.
+         */
+        width: 7px;
+
+    }
+
+
+    /* -----------------------------
+       Handle
+       ----------------------------- */
+
+    .wiki-tools-handle {
+
+        width: 7px;
+
+        min-width: 7px;
+
+        height: 64px;
+
+        min-height: 64px;
+
+        border-radius:
+            13px 0 0 13px;
+
+    }
+
+
+    .wiki-accessibility-tools:not(.tools-empty)
+    .wiki-tools-handle:hover {
+
+        width: 11px;
+
+    }
+
+
+    /* -----------------------------
+       Main card
+       ----------------------------- */
+
+    .wiki-tools-panel {
+
+        max-width:
+            calc(100vw - 4px);
+
+        padding: 5px;
+
+        border-radius: 15px;
+
+    }
+
+
+    /* -----------------------------
+       Icon
+       ----------------------------- */
+
+    .wiki-tool-item {
+
+        width: 40px;
+
+        min-width: 40px;
+
+        height: 40px;
+
+        min-height: 40px;
+
+        border-radius: 11px;
+
+    }
+
+
+    .wiki-tool-icon {
+
+        flex:
+            0 0 40px;
+
+        width: 40px;
+
+        min-width: 40px;
+
+        height: 40px;
+
+    }
+
+
+    .wiki-tool-icon iconify-icon {
+
+        font-size: 18px;
+
+    }
+
+
+    /* -----------------------------
+       Active card
+       ----------------------------- */
+
+    .wiki-tool-item.active {
+
+        width: 210px;
+
+        min-width: 210px;
+
+        height: 56px;
+
+        min-height: 56px;
+
+        padding:
+            7px 8px 7px 3px;
+
+    }
+
+
+    .wiki-tool-item.active
+    .wiki-tool-content {
+
+        width: 155px;
+
+        max-width: 155px;
+
+    }
+
+
+    .wiki-tool-content strong {
+
+        font-size: 12.5px;
+
+    }
+
+
+    .wiki-tool-content small {
+
+        font-size: 10px;
+
+    }
+
+}
+
+
+/* =========================================================
+   📱 VERY SMALL SCREEN
+   ========================================================= */
+
+@media (max-width: 380px) {
+
+    .wiki-tools-panel {
+
+        max-width:
+            calc(100vw - 4px);
+
+    }
+
+
+    .wiki-tool-item.active {
+
+        width: 200px;
+
+        min-width: 200px;
+
+    }
+
+
+    .wiki-tool-item.active
+    .wiki-tool-content {
+
+        width: 145px;
+
+        max-width: 145px;
+
+    }
+
+}
+
+
+/* =========================================================
+   ♿ REDUCED MOTION
+   ========================================================= */
+
+@media (
+    prefers-reduced-motion: reduce
+) {
+
+    .wiki-accessibility-tools,
+    .wiki-tools-handle,
+    .wiki-tools-panel,
+    .wiki-tool-item,
+    .wiki-tool-content,
+    .wiki-tool-icon {
+
+        transition: none !important;
+
+    }
+
+}
+
+/* =========================================================
+   🪟 TOOL OVERLAY
+   ========================================================= */
+
+/* =========================================================
+   🪟 TOOL OVERLAY
+   ========================================================= */
+
+.wiki-tool-overlay {
+
+    box-sizing: border-box;
+
+    position: fixed;
+
+    left: 50%;
+    top: 50%;
+
+    width: 360px;
+    height: 260px;
+
+    min-width: 280px;
+    min-height: 180px;
+
+    /*
+     * Không bao giờ vượt viewport
+     */
+    max-width:
+        calc(100vw - 20px);
+
+    max-height:
+        calc(100vh - 20px);
+
+    transform:
+        translate(-50%, -50%);
+
+    z-index: 10000;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    background:
+        var(--card);
+
+    border:
+        var(--border-light);
+
+    border-radius:
+        17px;
+
+    box-shadow:
+        var(--shadow);
+
+    backdrop-filter:
+        blur(20px);
+
+    -webkit-backdrop-filter:
+        blur(20px);
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transition:
+        opacity .22s ease,
+        visibility .22s ease,
+        width .30s cubic-bezier(
+            .22, 1, .36, 1
+        ),
+        height .30s cubic-bezier(
+            .22, 1, .36, 1
+        ),
+        border-radius .30s ease;
+
+}
+
+
+/* =========================================================
+   🚫 NO ANIMATED
+   ========================================================= */
+
+.wiki-tool-overlay.no-animated {
+
+    transition: none !important;
+
+}
+
+
+/* =========================================================
+   🔓 OPEN
+   ========================================================= */
+
+.wiki-tool-overlay.is-visible {
+
+    opacity: 1;
+
+    visibility: visible;
+
+    pointer-events: auto;
+
+}
+
+/* =========================================================
+   🏷️ HEADER
+   ========================================================= */
+
+.wiki-tool-overlay-header {
+
+    height: 46px;
+
+    min-height: 46px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding:
+        0 8px 0 14px;
+
+    border-bottom:
+        var(--border-light);
+
+    background:
+        var(--card-soft);
+
+    cursor: grab;
+
+    user-select: none;
+
+    touch-action: none;
+
+}
+
+
+.wiki-tool-overlay-header:active {
+
+    cursor: grabbing;
+
+}
+
+
+/* =========================================================
+   📝 TITLE
+   ========================================================= */
+
+.wiki-tool-overlay-title {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    min-width: 0;
+
+}
+
+
+.wiki-tool-overlay-title strong {
+
+    color:
+        var(--text);
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+}
+
+
+/* =========================================================
+   🎨 ICON
+   ========================================================= */
+
+.wiki-tool-overlay-icon {
+
+    width: 28px;
+
+    height: 28px;
+
+    flex:
+        0 0 28px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color:
+        var(--primary-blue);
+
+}
+
+
+.wiki-tool-overlay-icon iconify-icon {
+
+    font-size: 18px;
+
+}
+
+
+/* =========================================================
+   🎛️ ACTIONS
+   ========================================================= */
+
+.wiki-tool-overlay-actions {
+
+    display: flex;
+
+    gap: 4px;
+
+}
+
+
+.wiki-tool-overlay-actions button {
+
+    width: 32px;
+
+    height: 32px;
+
+    padding: 0;
+
+    border: 0;
+
+    border-radius: 9px;
+
+    background:
+        transparent;
+
+    color:
+        var(--text-secondary);
+
+    font-size: 18px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    transition:
+        background .18s ease,
+        color .18s ease,
+        transform .18s ease;
+
+}
+
+
+.wiki-tool-overlay-actions button:hover {
+
+    background:
+        var(--card);
+
+    color:
+        var(--text);
+
+}
+
+
+/* =========================================================
+   📄 BODY
+   ========================================================= */
+
+.wiki-tool-overlay-body {
+
+    flex: 1;
+
+    min-height: 0;
+
+    padding: 12px;
+
+    overflow: auto;
+
+    color:
+        var(--text);
+
+    /*
+     * Animation khi minimize
+     */
+
+    opacity: 1;
+
+    transform:
+        translateY(0);
+
+    touch-action: pan-y;
+
+    transition:
+        opacity .18s ease,
+        transform .25s cubic-bezier(
+            .22,
+            1,
+            .36,
+            1
+        );
+
+}
+
+
+/* =========================================================
+   🔽 MINIMIZED
+   Chỉ giữ lại HEADER
+   ========================================================= */
+
+.wiki-tool-overlay.is-minimized {
+
+    height: 46px !important;
+
+    min-height: 46px;
+
+    border-radius:
+        14px;
+
+}
+
+
+/*
+ * Body biến mất bằng animation trước khi
+ * display:none hoàn toàn.
+ */
+
+.wiki-tool-overlay.is-minimized
+.wiki-tool-overlay-body {
+
+    opacity: 0;
+
+    transform:
+        translateY(-8px);
+
+    pointer-events: none;
+
+}
+
+
+/* =========================================================
+   🔽 MINIMIZE BUTTON
+   ========================================================= */
+
+.wiki-tool-overlay-minimize {
+
+    transition:
+        transform .25s cubic-bezier(
+            .22,
+            1,
+            .36,
+            1
+        ),
+        background .18s ease,
+        color .18s ease;
+
+}
+
+
+/*
+ * Xoay nhẹ nút khi minimized
+ */
+
+.wiki-tool-overlay.is-minimized
+.wiki-tool-overlay-minimize {
+
+    transform:
+        rotate(180deg);
+
+}
+
+
+/* =========================================================
+   ↘️ RESIZE HANDLE
+   ========================================================= */
+
+.wiki-tool-overlay-resize {
+
+    position: absolute;
+
+    right: 0;
+
+    bottom: 0;
+
+    width: 18px;
+
+    height: 18px;
+
+    cursor: nwse-resize;
+
+    touch-action: none;
+
+}
+
+
+.wiki-tool-overlay-resize::after {
+
+    content: "";
+
+    position: absolute;
+
+    right: 4px;
+
+    bottom: 4px;
+
+    width: 7px;
+
+    height: 7px;
+
+    border-right:
+        2px solid
+        var(--text-secondary);
+
+    border-bottom:
+        2px solid
+        var(--text-secondary);
+
+    opacity: .45;
+
+}
+
+
+/*
+ * Không cho resize khi minimized
+ */
+
+.wiki-tool-overlay.is-minimized
+.wiki-tool-overlay-resize {
+
+    display: none;
+
+}
+
+
+/* =========================================================
+   📱 MOBILE
+   ========================================================= */
+
+/* =========================================================
+   📱 MOBILE OVERLAY
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .wiki-tool-overlay {
+
+        /*
+         * Không được lớn hơn màn hình
+         */
+        width:
+            min(
+                360px,
+                calc(100vw - 20px)
+            );
+
+        height:
+            min(
+                260px,
+                calc(100vh - 30px)
+            );
+
+        min-width:
+            0;
+
+        min-height:
+            160px;
+
+        max-width:
+            calc(100vw - 20px);
+
+        max-height:
+            calc(100vh - 30px);
+
+        border-radius:
+            15px;
+
+    }
+
+}
+
+
+/* =========================================================
+   ♿ REDUCED MOTION
+   ========================================================= */
+
+@media (
+    prefers-reduced-motion: reduce
+) {
+
+    .wiki-tool-overlay,
+    .wiki-tool-overlay-body,
+    .wiki-tool-overlay-minimize,
+    .wiki-tool-overlay-actions button {
+
+        transition: none !important;
+
+    }
+
+}
+
+.wiki-tool-overlay-header,
+.wiki-tool-overlay-resize {
+    touch-action: none;
+}
+
+/* ==========================================================
+   📝 WORD COUNTER / TEXT ANALYZER
+   V4 UI — STABLE LAYOUT
+   ========================================================== */
+
+
+/* ==========================================================
+   ROOT
+   ========================================================== */
+
+.word-counter {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+
+    width: 100%;
+
+    height: 100%;
+
+    min-width: 0;
+
+    min-height: 0;
+
+    box-sizing: border-box;
+
+    overflow: hidden;
+
+}
+
+
+/* ==========================================================
+   EDITOR
+   ========================================================== */
+
+.word-counter-editor {
+
+    position: relative;
+
+    /*
+     * Editor nhận phần không gian còn lại.
+     */
+    flex: 1 1 auto;
+
+    min-width: 0;
+
+    min-height: 130px;
+
+    display: flex;
+
+    box-sizing: border-box;
+
+    overflow: hidden;
+
+}
+
+
+/* ==========================================================
+   INPUT
+   ========================================================== */
+
+.word-counter-input {
+
+    display: block;
+
+    width: 100%;
+
+    height: 100%;
+
+    min-width: 0;
+
+    min-height: 130px;
+
+    box-sizing: border-box;
+
+    resize: none;
+
+    overflow-x: hidden;
+
+    overflow-y: auto;
+
+    outline: none;
+
+    border: 1px solid
+        var(
+            --border-color,
+            rgba(128,128,128,.18)
+        );
+
+    border-radius: 12px;
+
+    padding: 13px;
+
+    background:
+        var(
+            --surface-color,
+            rgba(128,128,128,.06)
+        );
+
+    color:
+        var(
+            --text-color,
+            inherit
+        );
+
+    font-family:
+        inherit;
+
+    font-size: 15px;
+
+    line-height: 1.55;
+
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
+
+}
+
+
+.word-counter-input:focus {
+
+    border-color:
+        var(
+            --accent-color,
+            currentColor
+        );
+
+    box-shadow:
+        0 0 0 2px
+        rgba(128,128,128,.08);
+
+}
+
+
+/* ==========================================================
+   FULLSCREEN BACK
+   ========================================================== */
+
+.word-counter-fullscreen-back {
+
+    position: absolute;
+
+    top: 8px;
+
+    left: 8px;
+
+    z-index: 5;
+
+    width: 34px;
+
+    height: 34px;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border: none;
+
+    border-radius: 9px;
+
+    background:
+        rgba(0,0,0,.12);
+
+    color:
+        inherit;
+
+    font-size: 20px;
+
+    cursor: pointer;
+
+}
+
+
+/* ==========================================================
+   MAIN STATS
+   3 Ô LỚN
+   ========================================================== */
+
+.word-counter-main-stats {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+
+    gap: 7px;
+
+    width: 100%;
+
+    min-width: 0;
+
+    flex: 0 0 auto;
+
+    box-sizing: border-box;
+
+}
+
+
+.word-counter-main-stat {
+
+    min-width: 0;
+
+    padding:
+        10px 8px;
+
+    border-radius: 11px;
+
+    background:
+        var(
+            --surface-color,
+            rgba(128,128,128,.08)
+        );
+
+    border:
+        1px solid
+        var(
+            --border-color,
+            rgba(128,128,128,.12)
+        );
+
+    text-align: center;
+
+    box-sizing: border-box;
+
+    overflow: hidden;
+
+}
+
+
+.word-counter-main-stat span {
+
+    display: block;
+
+    min-width: 0;
+
+    font-size: 11px;
+
+    opacity: .6;
+
+    margin-bottom: 3px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+}
+
+
+.word-counter-main-stat strong {
+
+    display: block;
+
+    min-width: 0;
+
+    font-size: 20px;
+
+    line-height: 1.2;
+
+    font-variant-numeric:
+        tabular-nums;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+}
+
+
+/* ==========================================================
+   DETAILS
+   ========================================================== */
+
+.word-counter-details {
+
+    display: flex;
+
+    flex-direction: column;
+
+    width: 100%;
+
+    min-width: 0;
+
+    /*
+     * Không ép chiều cao cố định.
+     * Khi thiếu không gian, phần dưới
+     * sẽ bị container cắt.
+     */
+    flex: 0 1 auto;
+
+    box-sizing: border-box;
+
+    border:
+        1px solid
+        var(
+            --border-color,
+            rgba(128,128,128,.12)
+        );
+
+    border-radius: 11px;
+
+    overflow: hidden;
+
+    background:
+        var(
+            --surface-color,
+            rgba(128,128,128,.05)
+        );
+
+}
+
+
+/* ==========================================================
+   DETAIL ROW
+   ========================================================== */
+
+.word-counter-detail {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    width: 100%;
+
+    min-width: 0;
+
+    min-height: 34px;
+
+    padding:
+        5px 11px;
+
+    box-sizing: border-box;
+
+    flex-shrink: 0;
+
+}
+
+
+.word-counter-detail
++ .word-counter-detail {
+
+    border-top:
+        1px solid
+        var(
+            --border-color,
+            rgba(128,128,128,.10)
+        );
+
+}
+
+
+.word-counter-detail span {
+
+    min-width: 0;
+
+    flex: 1 1 auto;
+
+    font-size: 12px;
+
+    opacity: .68;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+}
+
+
+.word-counter-detail strong {
+
+    flex:
+        0 0 auto;
+
+    font-size: 13px;
+
+    font-variant-numeric:
+        tabular-nums;
+
+    white-space: nowrap;
+
+}
+
+
+/* ==========================================================
+   STATUS
+   ========================================================== */
+
+.word-counter-status {
+
+    flex:
+        0 0 auto;
+
+    min-width: 0;
+
+    min-height: 15px;
+
+    text-align: center;
+
+    font-size: 10px;
+
+    opacity: .55;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+}
+
+
+/* ==========================================================
+   HINT
+   ========================================================== */
+
+.word-counter-hint {
+
+    display: block;
+
+    flex:
+        0 0 auto;
+
+    min-width: 0;
+
+    text-align: center;
+
+    font-size: 10px;
+
+    line-height: 1.4;
+
+    opacity: .45;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+}
+
+
+/* ==========================================================
+   OVERLAY BODY COMPATIBILITY
+   ========================================================== */
+
+/*
+ * Quan trọng:
+ *
+ * Không để overlay body tạo scroll riêng cho tool.
+ * Textarea là nơi cuộn nội dung.
+ */
+
+.wiki-tool-overlay-body {
+
+    min-height: 0;
+
+}
+
+
+.wiki-tool-overlay-body
+.word-counter {
+
+    min-height: 0;
+
+}
+
+
+/* ==========================================================
+   NORMAL OVERLAY
+   ========================================================== */
+
+.wiki-tool-overlay
+.word-counter {
+
+    min-height: 0;
+
+}
+
+
+/* ==========================================================
+   FULLSCREEN
+   ========================================================== */
+
+.wiki-tool-overlay.word-counter-fullscreen {
+
+    position: fixed !important;
+
+    inset: 0 !important;
+
+    width: 100vw !important;
+
+    height: 100vh !important;
+
+    max-width: none !important;
+
+    max-height: none !important;
+
+    min-width: 0 !important;
+
+    min-height: 0 !important;
+
+    border-radius: 0 !important;
+
+    z-index: 99999 !important;
+
+}
+
+
+/* ==========================================================
+   FULLSCREEN BODY
+   ========================================================== */
+
+.wiki-tool-overlay.word-counter-fullscreen
+.wiki-tool-overlay-body {
+
+    min-width: 0;
+
+    min-height: 0;
+
+    height: 100%;
+
+    box-sizing: border-box;
+
+    padding: 12px;
+
+    overflow: hidden;
+
+}
+
+
+/* ==========================================================
+   FULLSCREEN WORD COUNTER
+   ========================================================== */
+
+.wiki-tool-overlay.word-counter-fullscreen
+.word-counter {
+
+    width: 100%;
+
+    height: 100%;
+
+    min-width: 0;
+
+    min-height: 0;
+
+    overflow: hidden;
+
+}
+
+
+/* ==========================================================
+   FULLSCREEN EDITOR
+   ========================================================== */
+
+.wiki-tool-overlay.word-counter-fullscreen
+.word-counter-editor {
+
+    min-height: 0;
+
+}
+
+
+/* ==========================================================
+   FULLSCREEN INPUT
+   ========================================================== */
+
+.wiki-tool-overlay.word-counter-fullscreen
+.word-counter-input {
+
+    min-height: 0;
+
+    height: 100%;
+
+    overflow-y: auto;
+
+}
+
+
+/* ==========================================================
+   FULLSCREEN BACK BUTTON
+   ========================================================== */
+
+.wiki-tool-overlay.word-counter-fullscreen
+.word-counter-fullscreen-back {
+
+    display: flex;
+
+}
+
+
+/* ==========================================================
+   FULLSCREEN HINT
+   ========================================================== */
+
+.wiki-tool-overlay.word-counter-fullscreen
+.word-counter-hint {
+
+    display: none;
+
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 600px) {
+
+    .word-counter {
+
+        gap: 8px;
+
+    }
+
+
+    /* ==============================================
+       MAIN STATS
+       ============================================== */
+
+    .word-counter-main-stats {
+
+        gap: 5px;
+
+    }
+
+
+    .word-counter-main-stat {
+
+        padding:
+            8px 5px;
+
+    }
+
+
+    .word-counter-main-stat span {
+
+        font-size: 10px;
+
+    }
+
+
+    .word-counter-main-stat strong {
+
+        font-size: 17px;
+
+    }
+
+
+    /* ==============================================
+       DETAILS
+       ============================================== */
+
+    .word-counter-detail {
+
+        min-height: 32px;
+
+        padding:
+            4px 9px;
+
+    }
+
+
+    .word-counter-detail span {
+
+        font-size: 11px;
+
+    }
+
+
+    .word-counter-detail strong {
+
+        font-size: 12px;
+
+    }
+
+
+    /* ==============================================
+       INPUT
+       ============================================== */
+
+    .word-counter-input {
+
+        font-size: 14px;
+
+        padding: 11px;
+
+    }
+
+
+    /* ==============================================
+       STATUS
+       ============================================== */
+
+    .word-counter-status {
+
+        font-size: 9px;
+
+    }
+
+
+    .word-counter-hint {
+
+        font-size: 9px;
+
+    }
+
+}
+
+
+/* ==========================================================
+   VERY SMALL HEIGHT
+   Ví dụ điện thoại ngang / bàn phím chiếm màn hình
+   ========================================================== */
+
+@media (max-height: 500px) {
+
+    .word-counter {
+
+        gap: 6px;
+
+    }
+
+
+    .word-counter-main-stat {
+
+        padding:
+            6px 5px;
+
+    }
+
+
+    .word-counter-main-stat span {
+
+        font-size: 9px;
+
+        margin-bottom: 2px;
+
+    }
+
+
+    .word-counter-main-stat strong {
+
+        font-size: 15px;
+
+    }
+
+
+    .word-counter-detail {
+
+        min-height: 29px;
+
+        padding:
+            3px 8px;
+
+    }
+
+
+    .word-counter-detail span {
+
+        font-size: 10px;
+
+    }
+
+
+    .word-counter-detail strong {
+
+        font-size: 11px;
+
+    }
+
+
+    .word-counter-hint {
+
+        display: none;
+
+    }
+
+}
+
+
+/* ==========================================================
+   ULTRA SMALL HEIGHT
+   ========================================================== */
+
+@media (max-height: 380px) {
+
+    .word-counter-status {
+
+        display: none;
+
+    }
+
+
+    .word-counter-main-stat {
+
+        padding:
+            5px 4px;
+
+    }
+
+
+    .word-counter-detail {
+
+        min-height: 27px;
+
+    }
+
+}
+
+/* ==========================================================
+   🗑️ CLEAR BUTTON
+   ========================================================== */
+
+.word-counter-clear {
+
+    position: absolute;
+
+    top: 8px;
+
+    right: 8px;
+
+    z-index: 6;
+
+    min-height: 32px;
+
+    padding:
+        6px 10px;
+
+    border:
+        1px solid
+        var(
+            --border-color,
+            rgba(128,128,128,.18)
+        );
+
+    border-radius: 9px;
+
+    background:
+        var(
+            --surface-color,
+            rgba(128,128,128,.12)
+        );
+
+    color:
+        var(
+            --text-color,
+            inherit
+        );
+
+    font-family:
+        inherit;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    backdrop-filter:
+        blur(6px);
+
+    -webkit-backdrop-filter:
+        blur(6px);
+
+    transition:
+        opacity .18s ease,
+        transform .18s ease;
+
+}
+
+
+.word-counter-clear.is-hidden,
+.word-counter-clear[hidden] {
+
+    display: none;
+
+}
+
+
+.word-counter-clear:active {
+
+    transform:
+        scale(.94);
+
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 600px) {
+
+    .word-counter-clear {
+
+        top: 7px;
+
+        right: 7px;
+
+        min-height: 30px;
+
+        padding:
+            5px 9px;
+
+        font-size: 10px;
+
+    }
+
+}
+
+/* ==========================================================
+   ✨ TEXT FORMATTER
+   ========================================================== */
+
+.text-formatter {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+    width: 100%;
+    height: 100%;
+
+    min-height: 0;
+
+    box-sizing: border-box;
+
+}
+
+
+/* ==========================================================
+   EDITOR
+   ========================================================== */
+
+.text-formatter-editor {
+
+    flex: 1;
+
+    min-height: 0;
+
+    display: flex;
+
+    position: relative;
+
+    overflow: hidden;
+
+}
+
+
+/* ==========================================================
+   INPUT
+   ========================================================== */
+
+.text-formatter-input {
+
+    width: 100%;
+
+    height: 100%;
+
+    min-height: 0;
+
+    box-sizing: border-box;
+
+    resize: none;
+
+    overflow-y: auto;
+
+    overflow-x: hidden;
+
+    overscroll-behavior: contain;
+
+    -webkit-overflow-scrolling: touch;
+
+    outline: none;
+
+    border:
+        1px solid
+        var(
+            --border-color,
+            rgba(128,128,128,.18)
+        );
+
+    border-radius: 12px;
+
+    padding: 13px;
+
+    background:
+        var(
+            --surface-color,
+            rgba(128,128,128,.06)
+        );
+
+    color:
+        var(
+            --text-color,
+            inherit
+        );
+
+    font-family:
+        inherit;
+
+    font-size: 15px;
+
+    line-height: 1.55;
+
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
+
+}
+
+
+.text-formatter-input:focus {
+
+    border-color:
+        var(
+            --accent-color,
+            currentColor
+        );
+
+    box-shadow:
+        0 0 0 2px
+        rgba(128,128,128,.08);
+
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 600px) {
+
+    .text-formatter-input {
+
+        font-size: 14px;
+
+        padding: 11px;
+
+        overflow-y: auto;
+
+        -webkit-overflow-scrolling: touch;
+
+    }
+
+}
+
+
+/* ==========================================================
+   FORMAT ACTIONS
+   ========================================================== */
+
+.text-formatter-actions {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            2,
+            minmax(0, 1fr)
+        );
+
+    gap: 6px;
+
+    flex:
+        0 0 auto;
+
+    min-height: 0;
+
+    overflow: hidden;
+
+}
+
+
+/* ==========================================================
+   ACTION
+   ========================================================== */
+
+.text-formatter-action {
+
+    min-width: 0;
+
+    min-height: 38px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding:
+        7px 9px;
+
+    box-sizing: border-box;
+
+    border:
+        1px solid
+        var(
+            --border-color,
+            rgba(128,128,128,.12)
+        );
+
+    border-radius: 10px;
+
+    background:
+        var(
+            --surface-color,
+            rgba(128,128,128,.06)
+        );
+
+    color: inherit;
+
+    cursor: pointer;
+
+    text-align: left;
+
+    overflow: hidden;
+
+    /*
+     * Chuyển động nhẹ khi nút bị loại khỏi layout.
+     */
+    transition:
+        opacity .16s ease,
+        transform .16s ease,
+        max-height .16s ease,
+        min-height .16s ease,
+        padding .16s ease,
+        border-color .16s ease;
+
+}
+
+
+/* ==========================================================
+   HIDDEN ACTION
+   ========================================================== */
+
+.text-formatter-action.is-hidden {
+
+    opacity: 0;
+
+    transform:
+        scale(.96);
+
+    min-height: 0;
+
+    max-height: 0;
+
+    padding-top: 0;
+    padding-bottom: 0;
+
+    border-top-width: 0;
+    border-bottom-width: 0;
+
+    pointer-events: none;
+
+}
+
+
+/* ==========================================================
+   ICON
+   ========================================================== */
+
+.text-formatter-action-icon {
+
+    width: 18px;
+    height: 18px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    opacity: .7;
+
+}
+
+
+.text-formatter-action-icon
+iconify-icon {
+
+    font-size: 17px;
+
+}
+
+
+/* ==========================================================
+   LABEL
+   ========================================================== */
+
+.text-formatter-action-label {
+
+    min-width: 0;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    font-size: 11px;
+
+}
+
+
+/* ==========================================================
+   BOTTOM
+   ========================================================== */
+
+.text-formatter-bottom {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            3,
+            minmax(0, 1fr)
+        );
+
+    gap: 6px;
+
+    flex:
+        0 0 auto;
+
+    min-height: 35px;
+
+    overflow: hidden;
+
+    transition:
+        opacity .18s ease,
+        transform .18s ease;
+
+}
+
+
+/* ==========================================================
+   BOTTOM BUTTON
+   ========================================================== */
+
+.text-formatter-bottom-button {
+
+    min-width: 0;
+
+    min-height: 35px;
+
+    border:
+        1px solid
+        var(
+            --border-color,
+            rgba(128,128,128,.12)
+        );
+
+    border-radius: 9px;
+
+    background:
+        var(
+            --surface-color,
+            rgba(128,128,128,.06)
+        );
+
+    color: inherit;
+
+    font-size: 11px;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    transition:
+        opacity .15s ease,
+        transform .15s ease;
+
+}
+
+
+.text-formatter-bottom-button:active {
+
+    transform:
+        scale(.97);
+
+}
+
+
+.text-formatter-bottom-button:disabled {
+
+    opacity: .35;
+
+    cursor: default;
+
+}
+
+
+/* ==========================================================
+   BOTTOM COMPRESSED
+   ========================================================== */
+
+.text-formatter-bottom.is-compressed {
+
+    opacity: .75;
+
+    transform:
+        scale(.97);
+
+}
+
+
+/* ==========================================================
+   STATUS
+   ========================================================== */
+
+.text-formatter-status {
+
+    flex:
+        0 0 15px;
+
+    min-height:
+        15px;
+
+    text-align:
+        center;
+
+    font-size:
+        10px;
+
+    line-height:
+        15px;
+
+    opacity:
+        .55;
+
+}
+
+
+/* ==========================================================
+   HINT
+   ========================================================== */
+
+.text-formatter-hint {
+
+    flex:
+        0 0 auto;
+
+    display:
+        block;
+
+    text-align:
+        center;
+
+    font-size:
+        10px;
+
+    line-height:
+        1.4;
+
+    opacity:
+        .45;
+
+}
+
+
+/* ==========================================================
+   MOBILE
+   ========================================================== */
+
+@media (max-width: 600px) {
+
+    .text-formatter {
+
+        gap:
+            6px;
+
+    }
+
+
+    .text-formatter-input {
+
+        font-size:
+            14px;
+
+        padding:
+            11px;
+
+    }
+
+
+    .text-formatter-action {
+
+        min-height:
+            35px;
+
+        padding:
+            6px 7px;
+
+    }
+
+
+    .text-formatter-action-label {
+
+        font-size:
+            10px;
+
+    }
+
+
+    .text-formatter-bottom {
+
+        min-height:
+            33px;
+
+    }
+
+
+    .text-formatter-bottom-button {
+
+        min-height:
+            33px;
+
+        font-size:
+            10px;
+
+    }
+
+
+    .text-formatter-hint {
+
+        display:
+            none;
+
+    }
+
+}
+
+/* =========================================================
+   🧮 CALCULATOR
+   HydYar Wiki
+   Natural Responsive Calculator
+   ========================================================= */
+
+
+/* =========================================================
+   ROOT
+   ========================================================= */
+
+:root {
+
+    --primary-blue: #6FA8FF;
+    --primary-purple: #8F7CFF;
+
+    --gradient:
+        linear-gradient(
+            135deg,
+            #6FA8FF,
+            #8F7CFF
+        );
+
+    --bg:
+        radial-gradient(
+            circle at top right,
+            rgba(111,168,255,.18),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at bottom left,
+            rgba(143,124,255,.12),
+            transparent 35%
+        ),
+        #050816;
+
+    --card:
+        rgba(255,255,255,.05);
+
+    --card-soft:
+        rgba(255,255,255,.08);
+
+    --text:
+        #E0E7FF;
+
+    --text-secondary:
+        rgba(255,255,255,.7);
+
+    --shadow:
+        0 10px 35px rgba(0,0,0,.25);
+
+    --radius:
+        22px;
+
+    --transition:
+        all .25s ease;
+
+    --border-light:
+        1px solid rgba(255,255,255,.06);
+}
+
+
+[data-theme="dark"] {
+
+    --bg:
+        radial-gradient(
+            circle at top right,
+            rgba(111,168,255,.16),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at bottom left,
+            rgba(143,124,255,.11),
+            transparent 35%
+        ),
+        #060D22;
+
+    --card:
+        rgba(255,255,255,.055);
+
+    --card-soft:
+        rgba(255,255,255,.085);
+
+    --text:
+        #F0F4FF;
+
+    --text-secondary:
+        rgba(255,255,255,.75);
+
+    --shadow:
+        0 10px 38px rgba(0,0,0,.32);
+}
+
+
+/* =========================================================
+   🧮 CALCULATOR ROOT
+   ========================================================= */
+
+.calculator {
+  container-type: size;
+  container-name: calculator;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.5cqh, 16px);
+  box-sizing: border-box;
+  color: var(--text);
+  overflow: hidden;
+}
+
+/* 📺 Màn hình hiển thị */
+.calculator-display {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  min-height: clamp(70px, 10vh, 120px);
+  max-height: 170px;
+  padding: clamp(14px, 2vw, 22px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Nội dung trên/dưới tách đều, không chồng */
+  overflow: hidden;
+  border-radius: clamp(15px, 2vw, 22px);
+  border: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(145deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    inset 0 0 30px rgba(111,168,255,.025),
+    0 8px 25px rgba(0,0,0,.15);
+  outline: none;
+  transition: all .25s ease;
+  flex-shrink: 0; /* Ngăn màn hình bị co lại gây cắt nội dung */
+}
+
+/* Hiệu ứng khi focus màn hình */
+.calculator-display:focus {
+  border-color: rgba(111,168,255,.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.07),
+    0 0 0 2px rgba(111,168,255,.06),
+    0 8px 25px rgba(0,0,0,.16);
+}
+
+/* 📜 Biểu thức & kết quả */
+.calculator-expression {
+  font-size: clamp(14px, 3cqh, 16px);
+  color: #aaa;
+  word-wrap: break-word;
+  word-break: break-all;
+  line-height: 1.3;
+  min-height: 1.2em; /* Đảm bảo luôn có đủ chỗ hiển thị */
+}
+
+.calculator-result {
+  font-size: clamp(22px, 5cqh, 32px);
+  font-weight: 500;
+  color: #fff;
+  word-wrap: break-word;
+  word-break: break-all;
+  text-align: right;
+  line-height: 1.2;
+  min-height: 1.2em; /* Không bị cắt chữ khi số lớn */
+}
+
+/* ⌨️ Bàn phím máy tính */
+.calculator-keypad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(8px, 1.2cqh, 12px);
+  padding: clamp(8px, 1.5cqh, 12px);
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+/* 💡 Câu nhắc */
+.calculator-hint {
+  font-size: 12px;
+  color: #888;
+  text-align: center;
+  padding: 10px;
+  border-top: 1px solid rgba(255,255,255,.1);
+  margin-top: auto; /* Đẩy xuống dưới cùng nếu còn khoảng trống */
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   📝 EXPRESSION
+   ========================================================= */
+
+.calculator-expression {
+
+    width:
+        100%;
+
+    min-width:
+        0;
+
+    min-height:
+        20px;
+
+    box-sizing:
+        border-box;
+
+    display:
+        block;
+
+    overflow:
+        hidden;
+
+    text-overflow:
+        ellipsis;
+
+    white-space:
+        nowrap;
+
+    color:
+        rgba(224,231,255,.62);
+
+    font-size:
+        clamp(
+            15px,
+            2.5vw,
+            24px
+        );
+
+    font-weight:
+        500;
+
+    line-height:
+        1.25;
+
+    letter-spacing:
+        .01em;
+
+    text-align:
+        left;
+
+    opacity:
+        .85;
+
+    transition:
+        opacity .25s ease,
+        transform .3s ease,
+        font-size .25s ease;
+
+}
+
+
+/* =========================================================
+   🧮 RESULT
+   ========================================================= */
+
+.calculator-result {
+
+    width:
+        100%;
+
+    min-width:
+        0;
+
+    min-height:
+        0;
+
+    box-sizing:
+        border-box;
+
+    overflow:
+        hidden;
+
+    text-overflow:
+        ellipsis;
+
+    white-space:
+        nowrap;
+
+    color:
+        #F4F7FF;
+
+    font-size:
+        clamp(
+            30px,
+            7vw,
+            58px
+        );
+
+    font-weight:
+        600;
+
+    line-height:
+        1;
+
+    letter-spacing:
+        -.025em;
+
+    text-align:
+        right;
+
+    /*
+     * Không hiện khoảng trống vô nghĩa
+     * khi chưa có kết quả.
+     */
+
+    opacity:
+        0;
+
+    transform:
+        translateY(6px);
+
+    transition:
+        opacity .22s ease,
+        transform .28s cubic-bezier(
+            .22,
+            1,
+            .36,
+            1
+        ),
+        font-size .25s ease;
+
+}
+
+
+/* =========================================================
+   ✨ HAS RESULT
+   ========================================================= */
+
+.calculator-display.has-result
+.calculator-expression {
+
+    color:
+        rgba(224,231,255,.48);
+
+    opacity:
+        .72;
+
+}
+
+
+.calculator-display.has-result
+.calculator-result {
+
+    opacity:
+        1;
+
+    transform:
+        translateY(0);
+
+}
+
+
+/* =========================================================
+   ❌ ERROR
+   ========================================================= */
+
+.calculator-expression.is-error,
+.calculator-result.is-error {
+
+    color:
+        #FF8298;
+
+}
+
+
+.calculator-result.is-error {
+
+    font-size:
+        clamp(
+            22px,
+            5vw,
+            40px
+        );
+
+}
+
+
+/* =========================================================
+   🔢 KEYPAD
+   ========================================================= */
+
+.calculator-keypad {
+
+    width:
+        100%;
+
+    min-width:
+        0;
+
+    box-sizing:
+        border-box;
+
+    display:
+        grid;
+
+    /*
+     * 4 cột tự giãn.
+     *
+     * minmax(0, 1fr) cực kỳ quan trọng:
+     * không để text trong nút ép grid rộng ra.
+     */
+
+    grid-template-columns:
+        repeat(
+            4,
+            minmax(
+                0,
+                1fr
+            )
+        );
+
+    /*
+     * Khoảng cách cũng tự thay đổi.
+     */
+
+    gap:
+        clamp(
+            6px,
+            1.25vw,
+            12px
+        );
+
+    /*
+     * Không dùng height cứng.
+     */
+
+    height:
+        auto;
+
+    transition:
+        gap .25s ease;
+
+}
+
+
+/* =========================================================
+   🔘 KEY
+   ========================================================= */
+
+.calculator-key {
+
+    position:
+        relative;
+
+    width:
+        100%;
+
+    min-width:
+        0;
+
+    /*
+     * Chiều cao tự cân đối theo
+     * chiều rộng của từng nút.
+     */
+
+    aspect-ratio:
+        1.7 / 1;
+
+    min-height:
+        38px;
+
+    max-height:
+        76px;
+
+    box-sizing:
+        border-box;
+
+    border:
+        1px solid
+        rgba(255,255,255,.10);
+
+    border-radius:
+        clamp(
+            11px,
+            1.8vw,
+            17px
+        );
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.105),
+            rgba(255,255,255,.045)
+        );
+
+    color:
+        #F2F5FF;
+
+    font-family:
+        inherit;
+
+    font-size:
+        clamp(
+            18px,
+            4vw,
+            30px
+        );
+
+    font-weight:
+        600;
+
+    line-height:
+        1;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    padding:
+        0;
+
+    margin:
+        0;
+
+    cursor:
+        pointer;
+
+    user-select:
+        none;
+
+    -webkit-tap-highlight-color:
+        transparent;
+
+    box-shadow:
+
+        inset 0 1px 0
+        rgba(255,255,255,.055),
+
+        0 3px 8px
+        rgba(0,0,0,.12);
+
+    transition:
+
+        transform .16s
+        cubic-bezier(
+            .22,
+            1,
+            .36,
+            1
+        ),
+
+        background .2s ease,
+
+        border-color .2s ease,
+
+        box-shadow .2s ease,
+
+        font-size .25s ease,
+
+        border-radius .25s ease;
+
+}
+
+
+/* =========================================================
+   KEY HOVER
+   ========================================================= */
+
+.calculator-key:hover {
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.14),
+            rgba(255,255,255,.065)
+        );
+
+    border-color:
+        rgba(255,255,255,.17);
+
+    box-shadow:
+
+        inset 0 1px 0
+        rgba(255,255,255,.08),
+
+        0 5px 14px
+        rgba(0,0,0,.18);
+
+}
+
+
+/* =========================================================
+   KEY ACTIVE
+   ========================================================= */
+
+.calculator-key:active {
+
+    transform:
+        scale(.94);
+
+    box-shadow:
+
+        inset 0 2px 5px
+        rgba(0,0,0,.16);
+
+}
+
+
+/* =========================================================
+   🔵 OPERATOR
+   ========================================================= */
+
+.calculator-key-operator {
+
+    color:
+        #73A8FF;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(111,168,255,.18),
+            rgba(111,168,255,.07)
+        );
+
+    border-color:
+        rgba(111,168,255,.25);
+
+}
+
+
+/* =========================================================
+   OPERATOR HOVER
+   ========================================================= */
+
+.calculator-key-operator:hover {
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(111,168,255,.28),
+            rgba(111,168,255,.11)
+        );
+
+    border-color:
+        rgba(111,168,255,.4);
+
+}
+
+
+/* =========================================================
+   🟥 AC
+   ========================================================= */
+
+.calculator-key-clear {
+
+    color:
+        #FF7892;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,103,137,.19),
+            rgba(255,103,137,.065)
+        );
+
+    border-color:
+        rgba(255,103,137,.3);
+
+}
+
+
+.calculator-key-clear:hover {
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,103,137,.28),
+            rgba(255,103,137,.1)
+        );
+
+    border-color:
+        rgba(255,103,137,.45);
+
+}
+
+
+/* =========================================================
+   🟣 EQUALS
+   ========================================================= */
+
+.calculator-key-equals {
+
+    color:
+        #FFFFFF;
+
+    border:
+        1px solid
+        rgba(255,255,255,.14);
+
+    background:
+        linear-gradient(
+            135deg,
+            #6FA8FF,
+            #8F7CFF
+        );
+
+    box-shadow:
+
+        0 6px 18px
+        rgba(111,168,255,.18),
+
+        inset 0 1px 0
+        rgba(255,255,255,.2);
+
+}
+
+
+/* =========================================================
+   EQUALS HOVER
+   ========================================================= */
+
+.calculator-key-equals:hover {
+
+    background:
+        linear-gradient(
+            135deg,
+            #7AB1FF,
+            #9A88FF
+        );
+
+    box-shadow:
+
+        0 8px 22px
+        rgba(111,168,255,.25),
+
+        inset 0 1px 0
+        rgba(255,255,255,.22);
+
+}
+
+
+/* =========================================================
+   EQUALS ACTIVE
+   ========================================================= */
+
+.calculator-key-equals:active {
+
+    box-shadow:
+
+        0 3px 10px
+        rgba(111,168,255,.18),
+
+        inset 0 2px 6px
+        rgba(0,0,0,.14);
+
+}
+
+
+/* =========================================================
+   0 BUTTON
+   ========================================================= */
+
+.calculator-key-zero {
+
+    /*
+     * Vì keypad có 4 cột:
+     *
+     * [ 0        ][ . ][ = ]
+     *
+     * 0 chiếm 2 cột.
+     */
+
+    grid-column:
+        span 2;
+
+    aspect-ratio:
+        auto;
+
+}
+
+
+/* =========================================================
+   🖱️ FOCUS
+   ========================================================= */
+
+.calculator-key:focus-visible {
+
+    outline:
+        none;
+
+    border-color:
+        rgba(111,168,255,.6);
+
+    box-shadow:
+
+        0 0 0 2px
+        rgba(111,168,255,.15),
+
+        inset 0 1px 0
+        rgba(255,255,255,.08);
+
+}
+
+
+/* =========================================================
+   📱 SMALL WIDTH
+   ========================================================= */
+
+@media (
+    max-width: 360px
+) {
+
+    .calculator {
+
+        padding:
+            8px;
+
+        gap:
+            8px;
+
+    }
+
+
+    .calculator-display {
+
+        min-height:
+            76px;
+
+        padding:
+            12px;
+
+        border-radius:
+            14px;
+
+    }
+
+
+    .calculator-keypad {
+
+        gap:
+            5px;
+
+    }
+
+
+    .calculator-key {
+
+        min-height:
+            34px;
+
+        border-radius:
+            10px;
+
+        font-size:
+            17px;
+
+    }
+
+
+    .calculator-expression {
+
+        font-size:
+            14px;
+
+    }
+
+
+    .calculator-result {
+
+        font-size:
+            29px;
+
+    }
+
+}
+
+
+/* =========================================================
+   📱 VERY SMALL WIDTH
+   ========================================================= */
+
+@media (
+    max-width: 300px
+) {
+
+    .calculator {
+
+        padding:
+            6px;
+
+        gap:
+            6px;
+
+    }
+
+
+    .calculator-keypad {
+
+        gap:
+            4px;
+
+    }
+
+
+    .calculator-key {
+
+        min-height:
+            30px;
+
+        border-radius:
+            8px;
+
+        font-size:
+            15px;
+
+    }
+
+
+    .calculator-display {
+
+        min-height:
+            68px;
+
+        padding:
+            10px;
+
+    }
+
+
+    .calculator-expression {
+
+        font-size:
+            13px;
+
+    }
+
+
+    .calculator-result {
+
+        font-size:
+            25px;
+
+    }
+
+}
+
+
+/* =========================================================
+   📐 TALL OVERLAY
+   ========================================================= */
+
+@media (
+    min-height: 700px
+) {
+
+    .calculator {
+
+        gap:
+            clamp(
+                12px,
+                2vh,
+                18px
+            );
+
+    }
+
+
+    .calculator-display {
+
+        min-height:
+            clamp(
+                100px,
+                15vh,
+                150px
+            );
+
+    }
+
+
+    .calculator-key {
+
+        max-height:
+            82px;
+
+    }
+
+}
+
+
+/* =========================================================
+   📏 SHORT OVERLAY
+   ========================================================= */
+
+@media (
+    max-height: 520px
+) {
+
+    .calculator {
+
+        padding:
+            8px;
+
+        gap:
+            7px;
+
+    }
+
+
+    .calculator-display {
+
+        min-height:
+            66px;
+
+        padding:
+            10px 12px;
+
+    }
+
+
+    .calculator-keypad {
+
+        gap:
+            5px;
+
+    }
+
+
+    .calculator-key {
+
+        min-height:
+            31px;
+
+        border-radius:
+            9px;
+
+        font-size:
+            17px;
+
+    }
+
+
+    .calculator-expression {
+
+        font-size:
+            13px;
+
+    }
+
+
+    .calculator-result {
+
+        font-size:
+            28px;
+
+    }
+
+}
+
+
+/* =========================================================
+   📐 VERY SHORT OVERLAY
+   ========================================================= */
+
+@media (
+    max-height: 420px
+) {
+
+    .calculator {
+
+        padding:
+            6px;
+
+        gap:
+            5px;
+
+    }
+
+
+    .calculator-display {
+    height: 70px !important;
+    min-height: 70px !important;
+    max-height: 70px !important;
+}
+
+
+    .calculator-keypad {
+
+        gap:
+            4px;
+
+    }
+
+
+    .calculator-key {
+
+        min-height:
+            27px;
+
+        max-height:
+            52px;
+
+        border-radius:
+            8px;
+
+        font-size:
+            15px;
+
+    }
+
+
+    .calculator-expression {
+
+        font-size:
+            12px;
+
+    }
+
+
+    .calculator-result {
+
+        font-size:
+            24px;
+
+    }
+
+}
+
+
+/* =========================================================
+   🌙 DARK THEME
+   ========================================================= */
+
+[data-theme="dark"] .calculator-display {
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.07),
+            rgba(255,255,255,.025)
+        );
+
+}
+
+
+[data-theme="dark"] .calculator-key {
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.095),
+            rgba(255,255,255,.035)
+        );
+
+}
+
+
+/* =========================================================
+   ✨ REDUCED MOTION
+   ========================================================= */
+
+@media (
+    prefers-reduced-motion: reduce
+) {
+
+    .calculator,
+    .calculator-display,
+    .calculator-expression,
+    .calculator-result,
+    .calculator-key,
+    .calculator-keypad {
+
+        transition:
+            none !important;
+
+    }
+
+}
+
+.calculator-hint {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    padding: 10px 12px;
+    border-top: 1px solid #eee;
+    margin-top: 8px;
+    line-height: 1.5;
+    max-width: 320px;
+    word-break: break-word;
+}
+
+

@@ -1,0 +1,1240 @@
+/* =========================================================
+   👑 PREMIUM PAGE
+   ========================================================= */
+
+
+/* =========================================================
+   🎨 ROOT
+   ========================================================= */
+
+:root {
+
+    --premium-blue: #6FA8FF;
+    --premium-purple: #8F7CFF;
+
+    --premium-gradient:
+        linear-gradient(
+            135deg,
+            #6FA8FF,
+            #8F7CFF
+        );
+
+    --premium-bg:
+        radial-gradient(
+            circle at top right,
+            rgba(111,168,255,.18),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at bottom left,
+            rgba(143,124,255,.12),
+            transparent 35%
+        ),
+        #050816;
+
+    --premium-card:
+        rgba(255,255,255,.05);
+
+    --premium-card-hover:
+        rgba(255,255,255,.075);
+
+    --premium-border:
+        1px solid rgba(255,255,255,.07);
+
+    --premium-text:
+        #E0E7FF;
+
+    --premium-text-secondary:
+        rgba(255,255,255,.7);
+
+    --premium-text-muted:
+        rgba(255,255,255,.5);
+
+    --premium-radius:
+        22px;
+
+    --premium-shadow:
+        0 12px 40px rgba(0,0,0,.25);
+
+    --premium-transition:
+        all .25s ease;
+}
+
+
+/* =========================================================
+   🌙 DARK
+   ========================================================= */
+
+[data-theme="dark"] {
+
+    --premium-bg:
+        radial-gradient(
+            circle at top right,
+            rgba(111,168,255,.16),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at bottom left,
+            rgba(143,124,255,.11),
+            transparent 35%
+        ),
+        #060D22;
+
+    --premium-card:
+        rgba(255,255,255,.055);
+
+    --premium-card-hover:
+        rgba(255,255,255,.085);
+
+    --premium-text:
+        #F0F4FF;
+
+    --premium-text-secondary:
+        rgba(255,255,255,.75);
+
+    --premium-text-muted:
+        rgba(255,255,255,.55);
+}
+
+
+/* =========================================================
+   📄 PAGE
+   ========================================================= */
+
+.premium-page {
+
+    width: 100%;
+    max-width: 1100px;
+
+    margin: 0 auto;
+
+    padding:
+        25px
+        24px
+        60px;
+
+    color: var(--premium-text);
+}
+
+
+/* =========================================================
+   ← BACK
+   ========================================================= */
+
+.premium-back {
+
+    display: inline-flex;
+    align-items: center;
+
+    gap: 8px;
+
+    margin-bottom: 20px;
+
+    padding: 10px 14px;
+
+    border:
+        var(--premium-border);
+
+    border-radius: 13px;
+
+    background:
+        var(--premium-card);
+
+    color:
+        var(--premium-text);
+
+    font-family: inherit;
+
+    font-size: 13px;
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition:
+        var(--premium-transition);
+}
+
+
+.premium-back:hover {
+
+    background:
+        var(--premium-card-hover);
+
+    transform:
+        translateX(-3px);
+}
+
+
+.premium-back iconify-icon {
+
+    font-size: 19px;
+}
+
+
+/* =========================================================
+   💳 CARD 1
+   ========================================================= */
+
+.premium-account-card {
+
+    padding: 22px;
+
+    border:
+        var(--premium-border);
+
+    border-radius:
+        var(--premium-radius);
+
+    background:
+        var(--premium-card);
+
+    box-shadow:
+        var(--premium-shadow);
+
+    margin-bottom: 25px;
+}
+
+
+/* =========================================================
+   ACCOUNT ROW
+   ========================================================= */
+
+.premium-account-row {
+
+    min-height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+}
+
+
+.premium-label {
+
+    color:
+        var(--premium-text-secondary);
+
+    font-size: 13px;
+}
+
+
+.premium-account-info {
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    text-align: right;
+}
+
+
+.premium-account-info strong {
+
+    font-size: 15px;
+}
+
+
+.premium-account-info span {
+
+    color:
+        var(--premium-text-muted);
+
+    font-size: 12px;
+}
+
+
+.premium-account-info b {
+
+    color:
+        var(--premium-text-secondary);
+
+    font-weight: 500;
+}
+
+
+/* =========================================================
+   WALLET
+   ========================================================= */
+
+.premium-balance {
+
+    color:
+        var(--premium-blue);
+
+    font-size: 16px;
+}
+
+
+/* =========================================================
+   CURRENT PLAN
+   ========================================================= */
+
+.premium-current-plan {
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+}
+
+
+.premium-current-plan strong {
+
+    font-size: 15px;
+}
+
+
+.premium-plan-status {
+
+    padding: 5px 9px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(111,168,255,.12);
+
+    color:
+        var(--premium-blue);
+
+    font-size: 10px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   DIVIDER
+   ========================================================= */
+
+.premium-divider {
+
+    height: 1px;
+
+    margin: 12px 0;
+
+    background:
+        rgba(255,255,255,.06);
+}
+
+
+/* =========================================================
+   📦 CARD 2
+   ========================================================= */
+
+.premium-package-card {
+
+    padding: 22px 0;
+
+    border:
+        var(--premium-border);
+
+    border-radius:
+        var(--premium-radius);
+
+    background:
+        var(--premium-card);
+
+    box-shadow:
+        var(--premium-shadow);
+
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.premium-package-header {
+
+    padding:
+        0 22px
+        20px;
+}
+
+
+.premium-package-header h1 {
+
+    margin: 0;
+
+    font-size: 21px;
+}
+
+
+.premium-package-header p {
+
+    margin: 5px 0 0;
+
+    color:
+        var(--premium-text-secondary);
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   🚨 HORIZONTAL SCROLL
+   ========================================================= */
+
+.premium-package-scroll {
+
+    display: flex;
+
+    gap: 16px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    padding:
+        2px
+        22px
+        12px;
+
+    scroll-behavior: smooth;
+
+    scroll-snap-type: x proximity;
+
+    overscroll-behavior-x: contain;
+
+    -webkit-overflow-scrolling: touch;
+
+    scrollbar-width: thin;
+}
+
+
+/* Chrome / Edge / Android */
+
+.premium-package-scroll::-webkit-scrollbar {
+
+    height: 5px;
+}
+
+
+.premium-package-scroll::-webkit-scrollbar-track {
+
+    background:
+        transparent;
+}
+
+
+.premium-package-scroll::-webkit-scrollbar-thumb {
+
+    background:
+        rgba(255,255,255,.15);
+
+    border-radius:
+        999px;
+}
+
+
+/* =========================================================
+   💎 PLAN CARD
+   ========================================================= */
+
+.premium-plan {
+
+    position: relative;
+
+    flex:
+        0 0
+        clamp(
+            245px,
+            30vw,
+            310px
+        );
+
+    min-height: 400px;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 22px;
+
+    border:
+        var(--premium-border);
+
+    border-radius:
+        20px;
+
+    background:
+        rgba(255,255,255,.035);
+
+    scroll-snap-align:
+        start;
+
+    transition:
+        var(--premium-transition);
+}
+
+
+.premium-plan:hover {
+
+    transform:
+        translateY(-4px);
+
+    background:
+        var(--premium-card-hover);
+
+    box-shadow:
+        var(--premium-shadow);
+}
+
+
+/* =========================================================
+   ICON
+   ========================================================= */
+
+.premium-plan-icon {
+
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 15px;
+
+    border-radius: 15px;
+
+    background:
+        var(--premium-gradient);
+
+    color: white;
+}
+
+
+.premium-plan-icon iconify-icon {
+
+    font-size: 24px;
+}
+
+
+/* =========================================================
+   TITLE
+   ========================================================= */
+
+.premium-plan h2 {
+
+    margin: 0;
+
+    font-size: 21px;
+}
+
+
+/* =========================================================
+   DESCRIPTION
+   ========================================================= */
+
+.premium-plan-description {
+
+    min-height: 58px;
+
+    margin:
+        8px 0
+        18px;
+
+    color:
+        var(--premium-text-secondary);
+
+    font-size: 13px;
+
+    line-height: 1.55;
+}
+
+
+/* =========================================================
+   PRICE
+   ========================================================= */
+
+.premium-plan-price {
+
+    display: flex;
+    align-items: baseline;
+
+    gap: 5px;
+
+    margin-bottom: 20px;
+}
+
+
+.premium-plan-price strong {
+
+    font-size: 25px;
+}
+
+
+.premium-plan-price span {
+
+    color:
+        var(--premium-text-muted);
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   LIST
+   ========================================================= */
+
+.premium-plan ul {
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 11px;
+
+    margin: 0 0 22px;
+    padding: 0;
+
+    list-style: none;
+}
+
+
+.premium-plan li {
+
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    color:
+        var(--premium-text-secondary);
+
+    font-size: 12px;
+}
+
+
+.premium-plan li iconify-icon {
+
+    color:
+        var(--premium-blue);
+
+    font-size: 17px;
+
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   🚀 BUTTON
+   ========================================================= */
+
+.premium-plan-button {
+
+    width: 100%;
+
+    margin-top: auto;
+
+    padding: 12px;
+
+    border: none;
+
+    border-radius: 13px;
+
+    background:
+        var(--premium-gradient);
+
+    color: white;
+
+    font-family: inherit;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        var(--premium-transition);
+}
+
+
+.premium-plan-button:hover {
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 8px 25px
+        rgba(111,168,255,.25);
+}
+
+
+.premium-plan-button.disabled {
+
+    background:
+        rgba(255,255,255,.08);
+
+    color:
+        var(--premium-text-muted);
+
+    cursor: default;
+
+    box-shadow: none;
+
+    transform: none;
+}
+
+
+/* =========================================================
+   ⭐ FEATURED
+   ========================================================= */
+
+.premium-plan.featured {
+
+    border:
+        1px solid
+        rgba(143,124,255,.4);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(111,168,255,.08),
+            rgba(143,124,255,.09)
+        );
+}
+
+
+/* =========================================================
+   BADGE
+   ========================================================= */
+
+.premium-plan-badge {
+
+    position: absolute;
+
+    top: 0;
+    right: 0;
+
+    padding:
+        6px 11px;
+
+    border-radius:
+        0 0 0 13px;
+
+    background:
+        var(--premium-gradient);
+
+    color: white;
+
+    font-size: 9px;
+    font-weight: 700;
+
+    letter-spacing: .5px;
+}
+
+
+/* =========================================================
+   🔥 ULTRA
+   ========================================================= */
+
+.premium-plan.ultra {
+
+    border:
+        1px solid
+        rgba(255,255,255,.1);
+}
+
+
+.premium-plan.ultra .premium-plan-icon {
+
+    background:
+        linear-gradient(
+            135deg,
+            #8F7CFF,
+            #6FA8FF
+        );
+}
+
+
+/* =========================================================
+   📱 MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+    .premium-page {
+
+        padding:
+            18px
+            12px
+            45px;
+    }
+
+
+    .premium-account-card {
+
+        padding:
+            17px;
+    }
+
+
+    .premium-account-row {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 7px;
+    }
+
+
+    .premium-account-info {
+
+        text-align: left;
+    }
+
+
+    .premium-current-plan {
+
+        align-self: flex-start;
+    }
+
+
+    .premium-divider {
+
+        margin:
+            15px 0;
+    }
+
+
+    .premium-package-card {
+
+        padding-top:
+            18px;
+    }
+
+
+    .premium-package-header {
+
+        padding:
+            0 17px
+            17px;
+    }
+
+
+    .premium-package-scroll {
+
+        padding-left:
+            17px;
+
+        padding-right:
+            17px;
+    }
+
+
+    .premium-plan {
+
+        flex-basis:
+            270px;
+    }
+
+}
+
+
+/* =========================================================
+   📱 VERY SMALL
+   ========================================================= */
+
+@media (max-width: 360px) {
+
+    .premium-plan {
+
+        flex-basis:
+            245px;
+    }
+
+}
+
+
+/* =========================================================
+   ♿ REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .premium-page *,
+    .premium-page *::before,
+    .premium-page *::after {
+
+        scroll-behavior: auto !important;
+
+        transition: none !important;
+
+        animation: none !important;
+    }
+
+}
+
+/* =========================================================
+   💳 PREMIUM PURCHASE MODAL
+   ========================================================= */
+
+.premium-purchase-modal {
+    position: fixed;
+    inset: 0;
+
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition:
+        opacity .2s ease,
+        visibility .2s ease;
+}
+
+.premium-purchase-modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+
+/* =========================================================
+   OVERLAY
+   ========================================================= */
+
+.premium-purchase-overlay {
+    position: absolute;
+    inset: 0;
+
+    background: rgba(0, 0, 0, .55);
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.premium-purchase {
+    position: relative;
+
+    width: min(460px, 100%);
+    max-height: calc(100vh - 40px);
+
+    overflow-y: auto;
+
+    padding: 24px;
+
+    border-radius: 24px;
+
+    box-sizing: border-box;
+
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(111,168,255,.13),
+            transparent 42%
+        ),
+        linear-gradient(
+            145deg,
+            rgba(30,35,50,.98),
+            rgba(20,23,35,.98)
+        );
+
+    border: 1px solid rgba(255,255,255,.1);
+
+    box-shadow:
+        0 25px 80px rgba(0,0,0,.4);
+
+    transform: translateY(15px) scale(.97);
+
+    transition:
+        transform .25s ease,
+        opacity .25s ease;
+}
+
+.premium-purchase-modal.show .premium-purchase {
+    transform: translateY(0) scale(1);
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.premium-purchase-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 22px;
+}
+
+.premium-purchase-header span {
+    display: block;
+
+    margin-bottom: 4px;
+
+    font-size: .78rem;
+
+    color: #999;
+}
+
+.premium-purchase-header h2 {
+    margin: 0;
+
+    font-size: 1.5rem;
+    font-weight: 900;
+
+    background:
+        linear-gradient(
+            135deg,
+            #6fa8ff,
+            #a18cff
+        );
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    color: transparent;
+}
+
+
+/* =========================================================
+   CLOSE
+   ========================================================= */
+
+.premium-purchase-close {
+    width: 36px;
+    height: 36px;
+
+    flex-shrink: 0;
+
+    border: none;
+    border-radius: 11px;
+
+    background: rgba(255,255,255,.07);
+
+    color: #aaa;
+
+    font-size: 17px;
+
+    cursor: pointer;
+
+    transition:
+        background .2s ease,
+        color .2s ease,
+        transform .2s ease;
+}
+
+.premium-purchase-close:hover {
+    background: rgba(255,255,255,.12);
+    color: #fff;
+
+    transform: rotate(5deg);
+}
+
+
+/* =========================================================
+   PACKAGE INFO
+   ========================================================= */
+
+.premium-purchase-info {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 10px;
+
+    margin-bottom: 25px;
+}
+
+.premium-purchase-info > div {
+    padding: 13px;
+
+    border-radius: 14px;
+
+    background: rgba(255,255,255,.045);
+
+    border: 1px solid rgba(255,255,255,.06);
+}
+
+.premium-purchase-info span {
+    display: block;
+
+    margin-bottom: 5px;
+
+    font-size: .72rem;
+
+    color: #888;
+}
+
+.premium-purchase-info strong {
+    display: block;
+
+    font-size: .9rem;
+
+    color: #eee;
+}
+
+
+/* =========================================================
+   PAYMENT METHODS
+   ========================================================= */
+
+.premium-purchase-methods h3 {
+    margin: 0 0 12px;
+
+    font-size: 1rem;
+
+    color: #eee;
+}
+
+
+/* =========================================================
+   PAYMENT BUTTON
+   ========================================================= */
+
+.premium-payment-method {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 15px;
+
+    margin-bottom: 10px;
+
+    border: 1px solid rgba(255,255,255,.08);
+
+    border-radius: 16px;
+
+    background: rgba(255,255,255,.045);
+
+    color: #fff;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        transform .2s ease,
+        background .2s ease,
+        border-color .2s ease;
+}
+
+.premium-payment-method:hover {
+    transform: translateY(-2px);
+
+    background: rgba(111,168,255,.08);
+
+    border-color: rgba(111,168,255,.3);
+}
+
+.premium-payment-method > span {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 13px;
+
+    background: rgba(111,168,255,.1);
+
+    font-size: 21px;
+}
+
+.premium-payment-method div {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.premium-payment-method strong {
+    font-size: .9rem;
+}
+
+.premium-payment-method small {
+    font-size: .76rem;
+
+    color: #888;
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.premium-purchase-footer {
+    display: flex;
+    justify-content: flex-end;
+
+    margin-top: 18px;
+}
+
+.premium-purchase-cancel {
+    padding: 10px 18px;
+
+    border: none;
+    border-radius: 11px;
+
+    background: rgba(255,255,255,.07);
+
+    color: #aaa;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.premium-purchase-cancel:hover {
+    background: rgba(255,255,255,.11);
+    color: #fff;
+}
+
+
+/* =========================================================
+   📱 MOBILE
+   ========================================================= */
+
+@media (max-width: 520px) {
+
+    .premium-purchase-modal {
+        align-items: flex-end;
+
+        padding: 0;
+    }
+
+    .premium-purchase {
+        width: 100%;
+
+        max-height: 90vh;
+
+        padding: 21px;
+
+        border-radius: 24px 24px 0 0;
+
+        transform: translateY(30px);
+    }
+
+    .premium-purchase-modal.show .premium-purchase {
+        transform: translateY(0);
+    }
+
+    .premium-purchase-info {
+        grid-template-columns: 1fr;
+    }
+
+}

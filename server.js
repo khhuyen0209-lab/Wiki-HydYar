@@ -10,6 +10,9 @@ const session = require("express-session");
 const app = express();
 
 const server = http.createServer(app);
+const {
+    registerSePayRoutes
+} = require("./sepay");
 
 // ==============================
 // 🔧 CẤU HÌNH CÙNG DOMAIN
@@ -24,6 +27,8 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+registerSePayRoutes(app);
 
 // 3. Session giữ nguyên cấu hình phù hợp cùng domain
 app.use(session({

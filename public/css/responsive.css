@@ -1,0 +1,342 @@
+/* =========================================================
+   🖥️ HYDYAR WIKI — DESKTOP SIDEBAR LAYOUT
+   ========================================================= */
+
+@media (min-width: 768px) {
+
+    /* =====================================================
+       🧱 PAGE ROOT
+       ===================================================== */
+
+    html,
+    body {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+
+        margin: 0;
+    }
+
+
+    body {
+        padding:
+            80px 0 30px;
+    }
+
+
+    /* =====================================================
+       🧭 DRAWER — SIDEBAR CỐ ĐỊNH
+       ===================================================== */
+
+    .navigation-drawer {
+
+        position: fixed;
+
+        top: 0;
+        left: 0;
+
+        width: 310px;
+        max-width: 310px;
+
+        height: 100dvh;
+
+        transform: none !important;
+
+        border-right:
+            1px solid rgba(255,255,255,.10);
+
+        border-radius: 0;
+
+        box-shadow:
+            none;
+
+        z-index: 1002;
+    }
+
+
+    /* =====================================================
+       🚫 KHÔNG DÙNG OPEN/CLOSE TRÊN DESKTOP
+       ===================================================== */
+
+    .navigation-drawer.open {
+
+        transform: none !important;
+    }
+
+
+    /* =====================================================
+       🚫 NÚT 3 GẠCH
+       ===================================================== */
+
+    .menu-btn {
+
+        display: none !important;
+    }
+
+
+    /* =====================================================
+       🚫 NÚT X
+       ===================================================== */
+
+    .drawer-close {
+
+        display: none;
+    }
+
+
+    /* =====================================================
+       🚫 OVERLAY
+       ===================================================== */
+
+    .nav-overlay {
+
+        display: none !important;
+    }
+
+
+    /* =====================================================
+       📜 DRAWER CONTENT
+       ===================================================== */
+
+    .drawer-content {
+
+        height: calc(100dvh - 78px);
+
+        overflow-y: auto;
+    }
+
+
+    /* =====================================================
+       🏠 HEADER
+       ===================================================== */
+
+    .header {
+
+        left: 310px;
+
+        width:
+            calc(100% - 310px);
+
+        right: auto;
+    }
+
+
+    .header-inner {
+
+        width: 100%;
+
+        max-width: none;
+
+        padding:
+            0 24px;
+    }
+
+
+    /* =====================================================
+       📄 MAIN CONTENT
+       ===================================================== */
+
+    .main-content {
+
+        width:
+            calc(100% - 310px);
+
+        max-width: none;
+
+        margin-left:
+            310px;
+
+        padding-left:
+            24px;
+
+        padding-right:
+            24px;
+
+        box-sizing:
+            border-box;
+    }
+
+
+    /* =====================================================
+       📑 PAGE
+       ===================================================== */
+
+    .page {
+
+        width: 100%;
+
+        max-width: none;
+
+        margin-left: 0;
+        margin-right: 0;
+
+        box-sizing: border-box;
+    }
+
+
+    /* =====================================================
+       🧱 CARD GRID
+       ===================================================== */
+
+    .card-grid {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+
+    .category-grid {
+
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+
+}
+
+
+/* =========================================================
+   🖥️ DESKTOP
+   ========================================================= */
+
+@media (min-width: 1024px) {
+
+    .navigation-drawer {
+
+        width: 310px;
+        max-width: 310px;
+    }
+
+
+    .header {
+
+        left: 310px;
+
+        width:
+            calc(100% - 310px);
+    }
+
+
+    .main-content {
+
+        width:
+            calc(100% - 310px);
+
+        margin-left:
+            310px;
+
+        padding-left:
+            32px;
+
+        padding-right:
+            32px;
+    }
+
+
+    .card-grid {
+
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+
+
+    .category-grid {
+
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+    }
+
+
+    .banner {
+
+        padding:
+            48px;
+    }
+
+
+    .banner h1 {
+
+        font-size:
+            36px;
+    }
+
+}
+
+
+/* =========================================================
+   🖥️ LARGE DESKTOP
+   ========================================================= */
+
+@media (min-width: 1200px) {
+
+    .navigation-drawer {
+
+        width: 320px;
+        max-width: 320px;
+    }
+
+
+    .header {
+
+        left: 320px;
+
+        width:
+            calc(100% - 320px);
+    }
+
+
+    .main-content {
+
+        width:
+            calc(100% - 320px);
+
+        margin-left:
+            320px;
+
+        padding-left:
+            36px;
+
+        padding-right:
+            36px;
+    }
+
+}
+
+
+/* =========================================================
+   🖥️ VERY LARGE DESKTOP
+   ========================================================= */
+
+@media (min-width: 1600px) {
+
+    .navigation-drawer {
+
+        width: 330px;
+        max-width: 330px;
+    }
+
+
+    .header {
+
+        left: 330px;
+
+        width:
+            calc(100% - 330px);
+    }
+
+
+    .main-content {
+
+        width:
+            calc(100% - 330px);
+
+        margin-left:
+            330px;
+
+        padding-left:
+            40px;
+
+        padding-right:
+            40px;
+    }
+
+}

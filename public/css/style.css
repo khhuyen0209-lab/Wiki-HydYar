@@ -256,11 +256,46 @@ select,
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: var(--gradient);
     cursor: pointer;
-    object-fit: cover;
-    border: 2px solid rgba(255, 255, 255, 0.25);
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    border: 2px solid #fff;
+    box-sizing: border-box;
+
     box-shadow: 0 8px 18px rgba(111,168,255,0.25);
+}
+
+.avatar-frame {
+    width: 44px;
+    height: 44px;
+    padding: 2px;
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+
+.avatar-frame.border-gradient {
+    background: linear-gradient(
+        135deg,
+        #6FA8FF,
+        #8F7CFF
+    );
+}
+
+.avatar-frame.border-gold {
+    background: #FFD700;
+}
+
+.avatar-frame:not(.border-gradient):not(.border-gold) {
+    background: #fff;
+}
+
+.avatar-frame .user-avatar {
+    width: 100%;
+    height: 100%;
+    border: none;
 }
 
 .logo{
@@ -307,30 +342,66 @@ select,
 }
 
 /* Banner trang chủ */
+
 .banner {
-    background: var(--card);
-    border-radius: var(--radius);
-    padding-top: 16px;
-    padding: 32px 20px;
-    text-align: center;
-    margin-bottom: 24px;
-    box-shadow: var(--shadow);
-    border: var(--border-light);
-    backdrop-filter: blur(14px);
+    background: transparent;
+
+    border: 1px solid rgba(255, 255, 255, 0.035);
+
+    border-radius:
+        var(--radius);
+
+    padding:
+        32px 20px;
+
+    text-align:
+        center;
+
+    margin-bottom:
+        24px;
+
+    box-shadow:
+        none;
+
+    outline:
+        none;
+
+    backdrop-filter:
+        none;
+
+    -webkit-backdrop-filter:
+        none;
+
+    box-sizing:
+        border-box;
 }
 
 .banner h1 {
-    font-size: 28px;
-    margin-bottom: 8px;
-    background: var(--gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-size:
+        28px;
+
+    margin-bottom:
+        8px;
+
+    background:
+        var(--gradient);
+
+    -webkit-background-clip:
+        text;
+
+    -webkit-text-fill-color:
+        transparent;
+
+    background-clip:
+        text;
 }
 
 .banner p {
-    margin-bottom: 20px;
-    color: var(--text-secondary);
+    margin-bottom:
+        20px;
+
+    color:
+        var(--text-secondary);
 }
 
 .search-box {
@@ -4837,4 +4908,257 @@ html.no-animations *::after {
 
         line-height: 1.55;
     }
+}
+
+
+/* Khu vực nút bên phải */
+.wiki-main-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+/* Nút mở rộng */
+.wiki-expand-btn {
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+
+    transition:
+        transform .25s ease,
+        opacity .2s ease;
+}
+
+.wiki-expand-btn.active {
+    transform: rotate(180deg);
+}
+
+/* ==========================================
+   🧰 WIKI TOOLS
+   Card tổng + các tool phụ = MỘT KHỐI
+   ========================================== */
+
+.settings-tools-card {
+
+    /*
+     * Card Tool dùng chung radius với Settings.
+     * Nếu hệ thống chưa có --settings-card-radius
+     * thì fallback về 16px.
+     */
+    --tools-radius:
+        var(--settings-card-radius, 16px);
+
+    /*
+     * Quan trọng:
+     * Card ngoài phải cắt phần con theo border-radius.
+     */
+    overflow: hidden;
+
+    /*
+     * Không để padding của .settings-card
+     * tạo khoảng hở giữa các phần.
+     */
+    padding: 0;
+
+    /*
+     * Chính card ngoài cũng phải có radius.
+     */
+    border-radius:
+        var(--tools-radius);
+}
+
+
+/* ==========================================
+   ⚙️ KHU VỰC NÚT BÊN PHẢI
+   ========================================== */
+
+.settings-tools-card
+.tool-main-actions {
+
+    display: flex;
+    align-items: center;
+
+    /*
+     * Nút mở rộng nằm bên trái toggle
+     */
+    gap: 10px;
+
+    margin-left: auto;
+}
+
+
+/* ==========================================
+   🔽 NÚT MỞ / ĐÓNG
+   ========================================== */
+
+.settings-tools-card
+.wiki-tools-expand {
+
+    width: 32px;
+    height: 32px;
+
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border: 0;
+    background: transparent;
+
+    cursor: pointer;
+
+    transition:
+        transform .25s cubic-bezier(.22, 1, .36, 1),
+        opacity .2s ease;
+}
+
+
+/* ==========================================
+   🔄 KHI MỞ
+   ========================================== */
+
+.settings-tools-card
+.wiki-tools-expand.active {
+
+    transform: rotate(180deg);
+}
+
+
+/* ==========================================
+   🧰 DANH SÁCH TOOL
+   ========================================== */
+
+.settings-tools-card
+.settings-tools-list {
+
+    /*
+     * Không tạo card riêng.
+     */
+    margin: 0;
+    padding: 0;
+
+    /*
+     * Các tool nằm liền nhau.
+     */
+    border-radius: 0;
+
+    /*
+     * Cắt phần con theo card ngoài.
+     */
+    overflow: hidden;
+
+    /*
+     * Animation mở / đóng.
+     *
+     * JS đang điều khiển max-height
+     * nên CSS chỉ cần transition.
+     */
+    transition:
+        max-height .3s cubic-bezier(.22, 1, .36, 1);
+}
+
+
+/* ==========================================
+   🔧 TOOL PHỤ
+   ========================================== */
+
+.settings-tools-card
+.tool-child-setting {
+
+    /*
+     * Vẫn kế thừa:
+     * .settings-item
+     * .settings-item-icon
+     * .settings-item-content
+     * .toggle-switch
+     */
+
+    margin: 0;
+
+    /*
+     * Tool ở giữa KHÔNG bo góc.
+     */
+    border-radius: 0;
+
+    cursor: pointer;
+}
+
+
+/* ==========================================
+   🔻 TOOL PHỤ CUỐI CÙNG
+   ========================================== */
+
+.settings-tools-card
+.settings-tools-list
+.tool-child-setting:last-child {
+
+    /*
+     * Chỉ BO 2 GÓC DƯỚI.
+     */
+    border-radius:
+        0
+        0
+        var(--tools-radius)
+        var(--tools-radius);
+}
+
+
+/* ==========================================
+   📱 MOBILE
+   ========================================== */
+
+@media (max-width: 600px) {
+
+    .settings-tools-card {
+
+        /*
+         * Giữ cùng radius với hệ Settings.
+         */
+        border-radius:
+            var(--tools-radius);
+    }
+
+    .settings-tools-card
+    .tool-main-setting {
+
+        border-radius:
+            var(--tools-radius)
+            var(--tools-radius)
+            0
+            0;
+    }
+
+    .settings-tools-card
+    .tool-child-setting {
+
+        border-radius: 0;
+    }
+
+    .settings-tools-card
+    .settings-tools-list
+    .tool-child-setting:last-child {
+
+        border-radius:
+            0
+            0
+            var(--tools-radius)
+            var(--tools-radius);
+    }
+}
+
+.divider {
+    border: none;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 0 4px rgba(111, 168, 255, 0.08);
+    margin: 16px 0;
 }

@@ -32,6 +32,9 @@ import Policy from "/js/policy.js";
 import Chat from "/js/chat.js";
 import Router from "/js/router.js";
 import History from "/js/history.js";
+import Tool from "/js/tool.js";
+import PremiumPurchase from "/js/PremiumPurchase.js";
+import WikiLog from "/js/WikiLog.js";
 
 
 (function () {
@@ -850,24 +853,35 @@ document.querySelectorAll(".wiki-link").forEach(link => {
 
     async init(){
 
-    // Hiện màn hình khởi động
     const boot = await Boot.wait();
+
     const result = await Promise.race([
-    this.auth.check(),
-    boot.offline
-]);
+        this.auth.check(),
+        boot.offline
+    ]);
 
-try{
+    try {
 
-    this.ui.initDomCache();
+        // ==============================
+        // 🧱 DOM
+        // ==============================
 
-
-if(result !== true){
-    boot.success();
-}
-       
         this.ui.initDomCache();
-     
+
+
+        // ==============================
+        // 🚀 BOOT
+        // ==============================
+
+        if(result !== true){
+            boot.success();
+        }
+
+
+        // ==============================
+        // 🎨 UI
+        // ==============================
+
         this.ui.initDarkMode();
 
         this.ui.initPerformance();
@@ -878,54 +892,117 @@ if(result !== true){
 
         this.ui.initNavigation();
 
+        this.premiumPurchase.init();
+
+
+        // ==============================
+        // 🔎 SEARCH
+        // ==============================
+
+        this.search.init();
+
+
+        // ==============================
+        // 📚 CATEGORY
+        // ==============================
+
         this.category.renderCategory();
+
+
+        // ==============================
+        // 📖 ARTICLE
+        // ==============================
 
         this.article.initArticleClick();
 
+
+        // ==============================
+        // 📜 POLICY
+        // ==============================
+
         document
-    .getElementById("wikiPolicy")
-    ?.addEventListener(
-        "click",
-        ()=>HydYarWiki.navigate("policy")
-    );
+            .getElementById("wikiPolicy")
+            ?.addEventListener(
+                "click",
+                () => HydYarWiki.navigate("policy")
+            );
 
-  document.addEventListener("click",e=>{
 
-    if(e.target.closest("#wikiPolicy")){
+        // ==============================
+        // 🧭 GLOBAL NAVIGATION
+        // ==============================
+
+        document.addEventListener("click", e => {
+
+    if (e.target.closest("#wikiPolicy")) {
+
         HydYarWiki.navigate("policy");
+
     }
 
-    if(e.target.closest("#wikiHistory")){
+
+    if (e.target.closest("#wikiHistory")) {
+
         HydYarWiki.navigate("history");
+
     }
 
-    if(e.target.closest("#historyBack")){
+
+    if (e.target.closest("#historyBack")) {
+
+        appStatus.history.restoreProfile();
+
         HydYarWiki.navigate("profile");
+
     }
 
 });
 
-appStatus.category.initCategoryClick();
+
+        appStatus.category.initCategoryClick();
+
+
+        // ==============================
+        // 🧭 ROUTER
+        // ==============================
 
         appStatus.router.init();
+
+
+        // ==============================
+        // 💬 CHAT
+        // ==============================
+
         appStatus.chat.init();
 
-    }catch(err){
 
-        console.error("Khởi tạo thất bại:",err);
+        // ==============================
+        // 🧰 TOOLS
+        // ==============================
 
-    }finally{
+        await appStatus.tool.init();
 
-    if(navigator.onLine){
-        bootDone();
+
+    } catch(err){
+
+        console.error(
+            "Khởi tạo thất bại:",
+            err
+        );
+
+    } finally {
+
+        if(navigator.onLine){
+            bootDone();
+        }
+
     }
 
 }
-
-    }
   };
-
+appStatus.log = WikiLog;
 appStatus.ui = new Ui(appStatus);
+appStatus.tool = new Tool(appStatus);
 appStatus.seo = new Seo(appStatus);
 appStatus.markdown = new Markdown(appStatus);
 appStatus.search = new Search(appStatus);
@@ -935,19 +1012,49 @@ appStatus.policy = new Policy(appStatus);
 appStatus.chat = new Chat(appStatus);
 appStatus.router = new Router(appStatus);
 appStatus.history = new History(appStatus);
-
+appStatus.premiumPurchase =
+    new PremiumPurchase(appStatus);
 
   // ==============================================
   // 📤 API CÔNG KHAI – ĐÓNG BĂNG HOÀN TOÀN
   // ==============================================
-  Object.defineProperty(window,"HydYarWiki",{
-    value:Object.freeze({
-      init:()=>appStatus.init(),
-      navigate:(...a)=>appStatus.router.navigate(...a),
-back:()=>appStatus.router.goBack()
+  Object.defineProperty(window, "HydYarWiki", {
+    value: Object.freeze({
+
+        init: () =>
+            appStatus.init(),
+
+        navigate: (...a) =>
+            appStatus.router.navigate(...a),
+
+        back: () =>
+            appStatus.router.goBack(),
+
+        log: {
+
+            enabled: () =>
+                appStatus.log.isEnabled(),
+
+            set: enabled =>
+                appStatus.log.setEnabled(enabled),
+
+            toggle: () =>
+                appStatus.log.toggle(),
+
+            on: () =>
+                appStatus.log.enable(),
+
+            off: () =>
+                appStatus.log.disable()
+
+        }
+
     }),
-    writable:false,configurable:false,enumerable:true
-  });
+
+    writable: false,
+    configurable: false,
+    enumerable: true
+});
 
   document.addEventListener("DOMContentLoaded",()=>HydYarWiki.init());
 

@@ -47,12 +47,9 @@ export default class Auth {
 
     }
 
-
     return new Promise((resolve) => {
 
-
         onAuthStateChanged(auth, async (user) => {
-
 
             if (user) {
 
@@ -69,36 +66,45 @@ export default class Auth {
 
             }
 
-
-
             try {
 
+                // ==============================
+                // 👤 ĐỒNG BỘ USER VỚI SERVER
+                // ==============================
 
-                // Không có user thì bỏ qua đồng bộ server
-                if(user){
+                if (user) {
 
-                    await syncLoginToServer(user);
+                    const serverUser =
+                        await syncLoginToServer(user);
+
+                    console.log(
+                        "🌐 USER TỪ SERVER:",
+                        serverUser
+                    );
+
+                    // ==============================
+                    // ⭐ DÙNG USER SERVER
+                    // ==============================
+
+                    this.user =
+                        serverUser || user;
+
+                } else {
+
+                    this.user = null;
 
                 }
 
-
-                this.user = user || null;
-
                 this.updateUI();
 
+                resolve(this.user);
 
-                resolve(user);
-
-
-
-            } catch(err){
-
+            } catch (err) {
 
                 console.warn(
                     "⚠️ Không thể kết nối Server:",
                     err
                 );
-
 
                 const text =
                     document.getElementById("bootText");
@@ -106,32 +112,29 @@ export default class Auth {
                 const btn =
                     document.getElementById("bootContinue");
 
-
-                if(text)
+                if (text)
                     text.textContent =
-                    "⚠️ Mất kết nối máy chủ.";
+                        "⚠️ Mất kết nối máy chủ.";
 
-
-                if(btn)
+                if (btn)
                     btn.style.display =
-                    "block";
+                        "block";
 
+                // ==============================
+                // OFFLINE FALLBACK
+                // ==============================
 
-
-                // Cho app tiếp tục chạy offline
-                this.user = user || null;
+                this.user =
+                    user || null;
 
                 this.updateUI();
+              
 
-
-                resolve(user);
-
+                resolve(this.user);
 
             }
 
-
         });
-
 
     });
 
@@ -178,74 +181,122 @@ export default class Auth {
     }
 
     updateUI() {
-        const userAvatar = document.getElementById("userAvatar");
-        const profileAvatar = document.getElementById("profileAvatar");
-        const profileName = document.getElementById("profileName");
-        const profileUID = document.getElementById("profileUID");
-        const menuList = document.querySelector(".menu-list");
-        const loginBtn = document.getElementById("loginLogoutBtn");
+console.log("🔥 THIS.USER =", this.user);
+console.log("🆔 HYDYAR ID =", this.user?.id);
+console.log("🔥 FIREBASE UID =", this.user?.uid);
+    const userAvatar = document.getElementById("userAvatar");
+    const profileAvatar = document.getElementById("profileAvatar");
+    const profileName = document.getElementById("profileName");
+    const profileUID = document.getElementById("profileUID");
+    const menuList = document.querySelector(".menu-list");
+    const loginBtn = document.getElementById("loginLogoutBtn");
 
-        if (!loginBtn || !menuList) return;
+    if (!loginBtn || !menuList) return;
 
-        // --- CHƯA ĐĂNG NHẬP ---
-        if (!this.user) {
-            if (profileName) profileName.textContent = "Chưa đăng nhập";
-            if (profileUID) profileUID.textContent = "Nhấn để đăng nhập";
+    // ==============================
+    // CHƯA ĐĂNG NHẬP
+    // ==============================
+    if (!this.user) {
 
-            if (userAvatar) {
-                userAvatar.textContent = "👤";
-                userAvatar.style.backgroundImage = "";
-                userAvatar.onclick = () => this.login();
-            }
+        if (profileName)
+            profileName.textContent = "Chưa đăng nhập";
 
-            if (profileAvatar) {
-                profileAvatar.textContent = "👤";
-                profileAvatar.style.backgroundImage = "";
-                profileAvatar.onclick = () => this.login();
-            }
+        if (profileUID)
+            profileUID.textContent = "Nhấn để đăng nhập";
 
-            loginBtn.innerHTML = `
-                <iconify-icon icon="solar:login-3-bold"></iconify-icon>
-                <span>Đăng nhập</span>
-            `;
-            loginBtn.classList.remove("text-danger");
-            loginBtn.onclick = () => this.login();
-
-            // Đặt lại vị trí nút
-            if (loginBtn.parentElement) loginBtn.remove();
-            menuList.prepend(loginBtn);
-            return;
+        if (userAvatar) {
+            userAvatar.textContent = "👤";
+            userAvatar.style.backgroundImage = "";
+            userAvatar.onclick = () => this.login();
         }
 
-        // --- ĐÃ ĐĂNG NHẬP ---
-        if (profileName) profileName.textContent = this.user.displayName || "Người dùng";
-        if (profileUID) profileUID.textContent = "@" + this.user.uid.substring(0, 8);
-
-        if (this.user.photoURL) {
-            if (userAvatar) {
-                userAvatar.textContent = "";
-                userAvatar.style.backgroundImage = `url("${this.user.photoURL}")`;
-                userAvatar.style.backgroundSize = "cover";
-                userAvatar.style.backgroundPosition = "center";
-            }
-            if (profileAvatar) {
-                profileAvatar.textContent = "";
-                profileAvatar.style.backgroundImage = `url("${this.user.photoURL}")`;
-                profileAvatar.style.backgroundSize = "cover";
-                profileAvatar.style.backgroundPosition = "center";
-            }
+        if (profileAvatar) {
+            profileAvatar.textContent = "👤";
+            profileAvatar.style.backgroundImage = "";
+            profileAvatar.onclick = () => this.login();
         }
 
         loginBtn.innerHTML = `
-            <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
-            <span>Đăng xuất</span>
+            <iconify-icon icon="solar:login-3-bold"></iconify-icon>
+            <span>Đăng nhập</span>
         `;
-        loginBtn.classList.add("text-danger");
-        loginBtn.onclick = () => this.logout();
 
-        // Đặt lại vị trí nút
-        if (loginBtn.parentElement) loginBtn.remove();
-        menuList.append(loginBtn);
+        loginBtn.classList.remove("text-danger");
+        loginBtn.onclick = () => this.login();
+
+        // Đưa nút đăng nhập lên đầu
+        if (loginBtn.parentElement)
+            loginBtn.remove();
+
+        menuList.prepend(loginBtn);
+
+        return;
     }
+
+    // ==============================
+    // ĐÃ ĐĂNG NHẬP
+    // ==============================
+
+    if (profileName) {
+        profileName.textContent =
+            this.user.displayName ||
+            this.user.name ||
+            "Người dùng";
+    }
+
+    // ==============================
+    // HYDYAR ID
+    // ==============================
+
+    if (profileUID) {
+    profileUID.textContent = this.user.id || "Chưa có ID";
+}
+
+    // ==============================
+    // AVATAR
+    // ==============================
+
+    if (this.user.photoURL || this.user.avatar) {
+
+        const avatar =
+            this.user.photoURL ||
+            this.user.avatar;
+
+        if (userAvatar) {
+            userAvatar.textContent = "";
+            userAvatar.style.backgroundImage =
+                `url("${avatar}")`;
+            userAvatar.style.backgroundSize = "cover";
+            userAvatar.style.backgroundPosition = "center";
+        }
+
+        if (profileAvatar) {
+            profileAvatar.textContent = "";
+            profileAvatar.style.backgroundImage =
+                `url("${avatar}")`;
+            profileAvatar.style.backgroundSize = "cover";
+            profileAvatar.style.backgroundPosition = "center";
+        }
+
+    }
+
+    // ==============================
+    // NÚT ĐĂNG XUẤT
+    // ==============================
+
+    loginBtn.innerHTML = `
+        <iconify-icon icon="solar:logout-2-bold"></iconify-icon>
+        <span>Đăng xuất</span>
+    `;
+
+    loginBtn.classList.add("text-danger");
+    loginBtn.onclick = () => this.logout();
+
+    // Đưa nút đăng xuất xuống cuối
+    if (loginBtn.parentElement)
+        loginBtn.remove();
+
+    menuList.append(loginBtn);
+}
 
 }

@@ -42,65 +42,106 @@ export async function syncLoginToServer(user) {
 
     try {
 
-        if(!user){
+        if (!user) {
             throw new Error("Chưa đăng nhập");
         }
 
+        // ==============================
+        // 🔑 LẤY FIREBASE ID TOKEN
+        // ==============================
 
         const token = await user.getIdToken(true);
 
+        // ==============================
+        // 📡 ĐỒNG BỘ VỚI SERVER
+        // ==============================
 
         const res = await fetch(`${API_URL}/api/login`, {
-            method:"POST",
-            credentials:"include",
-            headers:{
-                "Content-Type":"application/json"
+            method: "POST",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
             },
-            body:JSON.stringify({ token })
+            body: JSON.stringify({ token })
         });
 
-
-        if(!res.ok){
+        if (!res.ok) {
             throw new Error("Server không phản hồi");
         }
 
-
         const json = await res.json();
 
-
-        if(!json.success){
+        if (!json.success) {
             throw new Error(
                 json.message || "Đồng bộ thất bại"
             );
         }
 
+        // ==============================
+        // 👤 USER TỪ SERVER
+        // ==============================
 
-        // ⭐ THÊM ĐOẠN NÀY
+        const serverUser = json.user || {};
+
+        // ==============================
+        // ⭐ USER HYDYAR HOÀN CHỈNH
+        // ==============================
+
         window.currentUser = {
 
-            uid:user.uid,
+            // Firebase UID
+            uid:
+                serverUser.uid ||
+                user.uid,
 
-            name:user.displayName || 
-                 user.email?.split("@")[0] ||
-                 "Người dùng",
+            // 🆔 HydYar ID
+            id:
+                serverUser.id || null,
 
-            avatar:user.photoURL || "",
+            // Tên
+            name:
+                serverUser.name ||
+                user.displayName ||
+                user.email?.split("@")[0] ||
+                "Người dùng",
 
-            email:user.email || ""
+            // Avatar
+            avatar:
+                serverUser.avatar ||
+                user.photoURL ||
+                "",
+
+            // Email
+            email:
+                serverUser.email ||
+                user.email ||
+                "",
+
+            // Quyền
+            role:
+                serverUser.role ||
+                "user",
+
+            // Trạng thái
+            status:
+                serverUser.status ||
+                "active"
 
         };
 
-
         console.log(
-            "✅ Đã đồng bộ với Server",
-            window.currentUser
-        );
+    "✅ Đã đồng bộ với Server:",
+    window.currentUser
+);
 
+console.log(
+    "🆔 HYDYAR ID:",
+    window.currentUser.id
+);
 
-        return true;
+return window.currentUser;
 
-
-    } catch(err){
+    } catch (err) {
 
         console.error(
             "❌ Không thể đồng bộ Server:",
@@ -110,6 +151,7 @@ export async function syncLoginToServer(user) {
         throw err;
 
     }
+  
 
 }
 
