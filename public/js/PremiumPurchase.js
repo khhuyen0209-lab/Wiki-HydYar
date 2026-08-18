@@ -89,10 +89,8 @@ export default class PremiumPurchase {
 
         }
 
-
         this.selectedPackage =
             packageId;
-
 
         this.render(pkg);
 
@@ -107,7 +105,6 @@ export default class PremiumPurchase {
 
         this.close();
 
-
         const modal =
             document.createElement("div");
 
@@ -117,13 +114,11 @@ export default class PremiumPurchase {
         modal.className =
             "premium-purchase-modal";
 
-
         modal.innerHTML = `
 
             <div class="premium-purchase-overlay"
                  data-close="true">
             </div>
-
 
             <div class="premium-purchase">
 
@@ -164,7 +159,6 @@ export default class PremiumPurchase {
 
                     </div>
 
-
                     <div>
 
                         <span>Thời hạn</span>
@@ -175,17 +169,18 @@ export default class PremiumPurchase {
 
                     </div>
 
-
                     <div>
 
                         <span>Giá</span>
 
                         <strong>
+
                             ${
                                 pkg.price === null
                                 ? "Liên hệ"
                                 : `${pkg.price.toLocaleString("vi-VN")}đ`
                             }
+
                         </strong>
 
                     </div>
@@ -242,7 +237,7 @@ export default class PremiumPurchase {
                             </strong>
 
                             <small>
-                                Nạp tiền rồi thanh toán
+                                Thanh toán qua SePay
                             </small>
 
                         </div>
@@ -268,16 +263,13 @@ export default class PremiumPurchase {
 
         `;
 
-
         document.body.appendChild(modal);
-
 
         requestAnimationFrame(() => {
 
             modal.classList.add("show");
 
         });
-
 
         this.bindModalEvents(modal);
 
@@ -303,14 +295,12 @@ export default class PremiumPurchase {
 
             }
 
-
             const method =
                 e.target.closest(
                     ".premium-payment-method"
                 );
 
             if (!method) return;
-
 
             this.selectPayment(
                 method.dataset.method
@@ -327,7 +317,8 @@ export default class PremiumPurchase {
 
     selectPayment(method) {
 
-        if (!this.selectedPackage) return;
+        if (!this.selectedPackage)
+            return;
 
 
         if (method === "inumi") {
@@ -359,20 +350,6 @@ export default class PremiumPurchase {
             this.selectedPackage
         );
 
-
-        /*
-         * Sau này gọi API server:
-         *
-         * POST /api/premium/purchase
-         *
-         * Server kiểm tra:
-         * - user
-         * - package
-         * - số dư
-         * - giao dịch
-         */
-
-
         alert(
             "Phần thanh toán bằng Inumi sẽ được kết nối với máy chủ."
         );
@@ -381,14 +358,306 @@ export default class PremiumPurchase {
 
 
     // ==========================================
-    // 💳 DEPOSIT
+    // 💳 SEPAY DEPOSIT
     // ==========================================
 
-    openDeposit() {
+    async openDeposit() {
 
-        alert(
-            "Mở hệ thống nạp tiền."
+        const packageId =
+            this.selectedPackage;
+
+        const pkg =
+            this.packages[packageId];
+
+
+        // ------------------------------------------
+        // Kiểm tra gói
+        // ------------------------------------------
+
+        if (!pkg) {
+
+            alert("Không tìm thấy gói.");
+
+            return;
+
+        }
+
+
+        if (
+            pkg.price === null ||
+            !Number.isInteger(pkg.price) ||
+            pkg.price <= 0
+        ) {
+
+            alert(
+                "Gói này hiện chưa hỗ trợ thanh toán."
+            );
+
+            return;
+
+        }
+
+
+        // ------------------------------------------
+        // Đóng modal
+        // ------------------------------------------
+
+        this.close();
+
+
+        // ------------------------------------------
+        // Tạo loading
+        // ------------------------------------------
+
+        this.showPaymentLoading();
+
+
+        try {
+
+            // --------------------------------------
+            // Gọi server
+            // --------------------------------------
+
+            const response = await fetch(
+    "https://wiki-hydyar.onrender.com/api/payment/create",
+    {
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        credentials: "include",
+
+        body: JSON.stringify({
+            amount: pkg.price,
+
+            description:
+                `HydYar - ${pkg.name}`,
+
+            custom_data: {
+                type: "premium",
+                package: packageId
+            }
+        })
+    }
+);
+                
+
+
+            const data =
+                await response.json();
+
+
+            // --------------------------------------
+            // Kiểm tra lỗi
+            // --------------------------------------
+
+            if (
+                !response.ok ||
+                !data.success
+            ) {
+
+                throw new Error(
+                    data.message ||
+                    "Không thể tạo thanh toán"
+                );
+
+            }
+
+
+            // --------------------------------------
+            // Kiểm tra dữ liệu SePay
+            // --------------------------------------
+
+            if (
+                !data.checkoutURL ||
+                !data.fields
+            ) {
+
+                throw new Error(
+                    "SePay không trả về dữ liệu checkout"
+                );
+
+            }
+
+
+            console.log(
+                "💳 SePay Checkout:",
+                data
+            );
+
+
+            // --------------------------------------
+            // Submit tới SePay
+            // --------------------------------------
+
+            this.submitSePayCheckout(
+                data.checkoutURL,
+                data.fields
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "❌ SePay Payment Error:",
+                error
+            );
+
+            this.hidePaymentLoading();
+
+
+            alert(
+                "Không thể tạo thanh toán.\n\n" +
+                (error.message ||
+                    "Vui lòng thử lại sau.")
+            );
+
+        }
+
+    }
+
+
+    // ==========================================
+    // 🚀 SUBMIT SEPAY CHECKOUT
+    // ==========================================
+
+    submitSePayCheckout(
+        checkoutURL,
+        fields
+    ) {
+
+        const form =
+            document.createElement("form");
+
+
+        form.method =
+            "POST";
+
+        form.action =
+            checkoutURL;
+
+        form.style.display =
+            "none";
+
+
+        // ------------------------------------------
+        // Thêm toàn bộ fields SePay
+        // ------------------------------------------
+
+        Object.entries(fields)
+            .forEach(([key, value]) => {
+
+                if (
+                    value === undefined ||
+                    value === null
+                ) {
+
+                    return;
+
+                }
+
+
+                const input =
+                    document.createElement("input");
+
+
+                input.type =
+                    "hidden";
+
+                input.name =
+                    key;
+
+                input.value =
+                    typeof value === "object"
+                        ? JSON.stringify(value)
+                        : String(value);
+
+
+                form.appendChild(input);
+
+            });
+
+
+        document.body.appendChild(form);
+
+
+        // ------------------------------------------
+        // Submit
+        // ------------------------------------------
+
+        form.submit();
+
+    }
+
+
+    // ==========================================
+    // ⏳ PAYMENT LOADING
+    // ==========================================
+
+    showPaymentLoading() {
+
+        this.hidePaymentLoading();
+
+
+        const loading =
+            document.createElement("div");
+
+
+        loading.id =
+            "sepayPaymentLoading";
+
+
+        loading.className =
+            "premium-payment-loading";
+
+
+        loading.innerHTML = `
+
+            <div class="premium-payment-loading-box">
+
+                <div class="premium-payment-spinner">
+                    ⏳
+                </div>
+
+                <strong>
+                    Đang tạo thanh toán...
+                </strong>
+
+                <small>
+                    Vui lòng chờ một chút
+                </small>
+
+            </div>
+
+        `;
+
+
+        document.body.appendChild(
+            loading
         );
+
+    }
+
+
+    // ==========================================
+    // ❌ HIDE LOADING
+    // ==========================================
+
+    hidePaymentLoading() {
+
+        const loading =
+            document.getElementById(
+                "sepayPaymentLoading"
+            );
+
+
+        if (loading) {
+
+            loading.remove();
+
+        }
 
     }
 
@@ -404,10 +673,14 @@ export default class PremiumPurchase {
                 "premiumPurchaseModal"
             );
 
-        if (!modal) return;
+
+        if (!modal)
+            return;
 
 
-        modal.classList.remove("show");
+        modal.classList.remove(
+            "show"
+        );
 
 
         setTimeout(() => {
