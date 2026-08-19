@@ -24,8 +24,11 @@ export default function History(appStatus) {
                     localStorage.getItem(KEY) || "[]"
                 );
 
+
                 if (!Array.isArray(list)) {
+
                     list = [];
+
                 }
 
             } catch (e) {
@@ -40,16 +43,19 @@ export default function History(appStatus) {
             }
 
 
-            // Xóa bản cũ nếu đã tồn tại
+            // Xóa bản cũ nếu bài viết đã tồn tại
             list = list.filter(
-                item => item.id !== article.id
+                item =>
+                    String(item.id) !==
+                    String(article.id)
             );
 
 
-            // Thêm lên đầu
+            // Thêm bài mới lên đầu
             list.unshift({
 
-                id: article.id,
+                id:
+                    article.id,
 
                 title:
                     article.title ||
@@ -69,13 +75,24 @@ export default function History(appStatus) {
             });
 
 
-            // Giới hạn 100 bài
-            localStorage.setItem(
-                KEY,
-                JSON.stringify(
-                    list.slice(0, 100)
-                )
-            );
+            // Giới hạn tối đa 100 bài
+            try {
+
+                localStorage.setItem(
+                    KEY,
+                    JSON.stringify(
+                        list.slice(0, 100)
+                    )
+                );
+
+            } catch (e) {
+
+                console.warn(
+                    "Không thể lưu lịch sử:",
+                    e
+                );
+
+            }
 
         },
 
@@ -94,16 +111,23 @@ export default function History(appStatus) {
 
 
                 if (!Array.isArray(list)) {
+
                     return [];
+
                 }
 
 
-                return list.sort(
-                    (a, b) =>
-                        Number(b.time) -
-                        Number(a.time)
-                );
-
+                return list
+                    .filter(
+                        item =>
+                            item &&
+                            item.id
+                    )
+                    .sort(
+                        (a, b) =>
+                            Number(b.time || 0) -
+                            Number(a.time || 0)
+                    );
 
             } catch (e) {
 
@@ -125,284 +149,273 @@ export default function History(appStatus) {
 
         clear() {
 
-            localStorage.removeItem(KEY);
+            try {
 
-        },
+                localStorage.removeItem(KEY);
 
-
-        // =====================================================
-        // ♻️ KHÔI PHỤC PROFILE
-        // =====================================================
-
-        restoreProfile() {
-
-            const page =
-                document.getElementById(
-                    "page-profile"
-                );
-
-
-            if (!page) {
-
-                console.error(
-                    "Không tìm thấy page-profile"
-                );
-
-                return;
-
-            }
-
-
-            const original =
-                appStatus.state.profileOriginalHTML;
-
-
-            if (!original) {
+            } catch (e) {
 
                 console.warn(
-                    "Không có profileOriginalHTML để khôi phục."
+                    "Không thể xóa lịch sử:",
+                    e
                 );
 
-                return;
-
             }
-
-
-            page.innerHTML = original;
-
-
-            // Xóa bản backup sau khi khôi phục
-            appStatus.state.profileOriginalHTML = "";
-
-
-            // Đưa scroll về đầu
-            window.scrollTo(
-                0,
-                0
-            );
 
         },
 
 
         // =====================================================
-        // 📚 MỞ TRANG LỊCH SỬ
+        // 🎨 RENDER
         // =====================================================
 
-        open() {
-
-            const history = this;
-
+        render() {
 
             const page =
                 document.getElementById(
-                    "page-profile"
+                    "page-history"
                 );
 
 
             if (!page) {
 
                 console.error(
-                    "Không tìm thấy page-profile"
+                    "[History] Không tìm thấy #page-history"
                 );
 
                 return;
-
-            }
-
-
-            // =================================================
-            // 💾 LƯU PROFILE GỐC
-            // =================================================
-
-            if (
-                !appStatus.state.profileOriginalHTML
-            ) {
-
-                appStatus.state.profileOriginalHTML =
-                    page.innerHTML;
 
             }
 
 
             const list =
-                history.get();
+                this.get();
 
-
-            // =================================================
-            // 🧱 RENDER HISTORY
-            // =================================================
 
             page.innerHTML = `
 
-<div class="history-page">
+                <div class="history-page">
 
-    <!-- =========================================
-         HEADER
-         ========================================= -->
-
-    <div
-        style="
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:12px;
-            margin-bottom:16px;
-        "
-    >
-
-        <button
-            id="historyBack"
-            class="policy-back"
-            style="
-                margin:0;
-                display:flex;
-                align-items:center;
-                gap:8px;
-            "
-        >
-
-            ${appStatus.ui.icon(
-                "solar:arrow-left-bold"
-            )}
-
-            Lịch sử đọc
-
-        </button>
-
-
-        ${
-            list.length
-                ?
-                `
-                <button
-                    id="clearHistory"
-                    style="
-                        border:none;
-                        padding:10px 16px;
-                        border-radius:12px;
-                        background:#ff5b5b;
-                        color:white;
-                        font-weight:600;
-                        cursor:pointer;
-                        transition:.2s;
-                    "
-                >
-                    Xóa lịch sử
-                </button>
-                `
-                :
-                ""
-        }
-
-    </div>
-
-
-    <!-- =========================================
-         DANH SÁCH
-         ========================================= -->
-
-    <div class="policy-page">
-
-        ${
-            list.length
-
-                ?
-
-                list.map(article => `
+                    <!-- =====================================
+                         HEADER
+                         ===================================== -->
 
                     <div
-                        class="article-card"
-                        data-id="${appStatus.markdown.escapeHTML(
-                            String(article.id)
-                        )}"
-                        data-cat="${appStatus.markdown.escapeHTML(
-                            String(
-                                article.categoryId ||
-                                "khac"
-                            )
-                        )}"
+                        class="history-header"
                     >
 
-                        <div class="card-content">
+                        <button
+                            id="historyBack"
+                            class="policy-back"
+                            type="button"
+                        >
 
-                            <h3 class="card-title">
+                            ${appStatus.ui.icon(
+                                "solar:arrow-left-bold"
+                            )}
 
-                                ${
-                                    appStatus.markdown
-                                        .escapeHTML(
-                                            article.title ||
-                                            "Không có tiêu đề"
-                                        )
-                                }
+                            <span>
+                                Lịch sử đọc
+                            </span>
 
-                            </h3>
-
-
-                            <p class="card-desc">
-
-                                ${
-                                    appStatus.markdown
-                                        .escapeHTML(
-                                            article.desc ||
-                                            "Chưa có mô tả"
-                                        )
-                                }
-
-                            </p>
+                        </button>
 
 
-                            <small>
-
-                                ${
-                                    new Date(
-                                        article.time
-                                    ).toLocaleString(
-                                        "vi-VN"
-                                    )
-                                }
-
-                            </small>
-
-                        </div>
+                        ${
+                            list.length
+                                ?
+                                `
+                                <button
+                                    id="clearHistory"
+                                    class="history-clear"
+                                    type="button"
+                                >
+                                    Xóa lịch sử
+                                </button>
+                                `
+                                :
+                                ""
+                        }
 
                     </div>
 
-                `).join("")
 
-                :
+                    <!-- =====================================
+                         LIST
+                         ===================================== -->
 
-                `
+                    <div
+                        class="policy-page"
+                        id="historyList"
+                    >
 
-                <div class="empty-card">
+                        ${
+                            list.length
 
-                    <div class="card-content empty-content">
+                                ?
 
-                        ${appStatus.ui.icon(
-                            "solar:clock-circle-bold"
-                        )}
+                                list
+                                    .map(
+                                        article => {
 
-                        <h3>
-                            Chưa có lịch sử đọc
-                        </h3>
+                                            const id =
+                                                appStatus.markdown
+                                                    .escapeHTML(
+                                                        String(
+                                                            article.id
+                                                        )
+                                                    );
 
-                        <p>
-                            Những bài viết bạn đã đọc
-                            sẽ xuất hiện ở đây.
-                        </p>
+
+                                            const category =
+                                                appStatus.markdown
+                                                    .escapeHTML(
+                                                        String(
+                                                            article.categoryId ||
+                                                            "khac"
+                                                        )
+                                                    );
+
+
+                                            const title =
+                                                appStatus.markdown
+                                                    .escapeHTML(
+                                                        article.title ||
+                                                        "Không có tiêu đề"
+                                                    );
+
+
+                                            const desc =
+                                                appStatus.markdown
+                                                    .escapeHTML(
+                                                        article.desc ||
+                                                        "Chưa có mô tả"
+                                                    );
+
+
+                                            const time =
+                                                Number(
+                                                    article.time
+                                                );
+
+
+                                            const date =
+                                                Number.isFinite(
+                                                    time
+                                                )
+                                                    ?
+                                                    new Date(
+                                                        time
+                                                    ).toLocaleString(
+                                                        "vi-VN"
+                                                    )
+                                                    :
+                                                    "";
+
+
+
+                                            return `
+
+                                                <div
+                                                    class="article-card"
+                                                    data-id="${id}"
+                                                    data-cat="${category}"
+                                                >
+
+                                                    <div class="card-content">
+
+                                                        <h3
+                                                            class="card-title"
+                                                        >
+                                                            ${title}
+                                                        </h3>
+
+
+                                                        <p
+                                                            class="card-desc"
+                                                        >
+                                                            ${desc}
+                                                        </p>
+
+
+                                                        ${
+                                                            date
+                                                                ?
+                                                                `
+                                                                <small>
+                                                                    ${date}
+                                                                </small>
+                                                                `
+                                                                :
+                                                                ""
+                                                        }
+
+                                                    </div>
+
+                                                </div>
+
+                                            `;
+
+                                        }
+                                    )
+                                    .join("")
+
+                                :
+
+                                `
+
+                                <div class="empty-card">
+
+                                    <div
+                                        class="card-content empty-content"
+                                    >
+
+                                        ${appStatus.ui.icon(
+                                            "solar:clock-circle-bold"
+                                        )}
+
+                                        <h3>
+                                            Chưa có lịch sử đọc
+                                        </h3>
+
+                                        <p>
+                                            Những bài viết bạn đã đọc
+                                            sẽ xuất hiện ở đây.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                `
+
+                        }
 
                     </div>
 
                 </div>
 
-                `
+            `;
 
-        }
 
-    </div>
+            this.bindEvents();
 
-</div>
+        },
 
-`;
+
+        // =====================================================
+        // 🔗 EVENTS
+        // =====================================================
+
+        bindEvents() {
+
+            const page =
+                document.getElementById(
+                    "page-history"
+                );
+
+
+            if (!page) return;
 
 
             // =================================================
@@ -415,12 +428,6 @@ export default function History(appStatus) {
                     "click",
                     () => {
 
-                        // QUAN TRỌNG:
-                        // Khôi phục Profile trước
-                        history.restoreProfile();
-
-
-                        // Sau đó mới navigate
                         HydYarWiki.navigate(
                             "profile"
                         );
@@ -439,82 +446,99 @@ export default function History(appStatus) {
                     "click",
                     () => {
 
-                        if (
-                            !confirm(
+                        const confirmed =
+                            confirm(
                                 "Xóa toàn bộ lịch sử đọc?"
-                            )
-                        ) {
+                            );
+
+
+                        if (!confirmed) {
 
                             return;
 
                         }
 
 
-                        history.clear();
+                        this.clear();
 
 
-                        // Render lại lịch sử
-                        // KHÔNG khôi phục Profile
-                        history.open();
+                        this.render();
 
                     }
                 );
 
 
             // =================================================
-            // 📖 MỞ BÀI VIẾT
+            // 📖 ARTICLE
             // =================================================
 
             page
                 .querySelectorAll(
-                    ".article-card"
+                    ".article-card[data-id]"
                 )
-                .forEach(card => {
+                .forEach(
+                    card => {
 
-                    card.addEventListener(
-                        "click",
-                        () => {
+                        card.addEventListener(
+                            "click",
+                            () => {
 
-                            const id =
-                                card.dataset.id;
-
-                            const category =
-                                card.dataset.cat ||
-                                "khac";
+                                const id =
+                                    card.dataset.id;
 
 
-                            if (!id) {
-                                return;
-                            }
+                                const category =
+                                    card.dataset.cat ||
+                                    "khac";
 
 
-                            HydYarWiki.navigate(
-                                "article",
-                                {
+                                if (!id) {
 
-                                    category:
-                                        category,
-
-                                    id:
-                                        id
+                                    return;
 
                                 }
-                            );
-
-                        }
-                    );
-
-                });
 
 
-            // =================================================
-            // ⬆️ SCROLL TOP
-            // =================================================
+                                HydYarWiki.navigate(
+                                    "article",
+                                    {
 
-            window.scrollTo(
-                0,
-                0
-            );
+                                        category:
+                                            category,
+
+                                        id:
+                                            id
+
+                                    }
+                                );
+
+                            }
+                        );
+
+                    }
+                );
+
+        },
+
+
+        // =====================================================
+        // 📚 MỞ TRANG LỊCH SỬ
+        // =====================================================
+
+        open() {
+
+            this.render();
+
+
+            window.scrollTo({
+
+                top: 0,
+
+                left: 0,
+
+                behavior: "instant"
+
+            });
 
         }
 

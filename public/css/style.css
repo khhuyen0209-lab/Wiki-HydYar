@@ -5162,3 +5162,122 @@ html.no-animations *::after {
     box-shadow: 0 0 4px rgba(111, 168, 255, 0.08);
     margin: 16px 0;
 }
+
+/* =====================================================
+   📚 HISTORY HEADER
+   ===================================================== */
+
+.history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+
+/* =====================================================
+   ⬅️ HISTORY BACK
+   ===================================================== */
+
+.history-header .policy-back {
+    margin: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    border: none;
+    outline: none;
+
+    background: var(--primary-blue);
+
+    color: inherit;
+
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+
+    padding: 10px 12px;
+
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition:
+        background .2s ease,
+        transform .2s ease;
+}
+
+.history-header .policy-back:hover {
+    background: rgba(127, 127, 127, .10);
+}
+
+.history-header .policy-back:active {
+    transform: scale(.96);
+}
+
+
+/* =====================================================
+   🗑️ CLEAR HISTORY
+   ===================================================== */
+
+.history-clear {
+    border: none;
+    outline: none;
+
+    padding: 10px 16px;
+
+    border-radius: 12px;
+
+    background: #ff5b5b;
+    color: #fff;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background .2s ease,
+        transform .2s ease,
+        opacity .2s ease;
+}
+
+.history-clear:hover {
+    background: #ff4545;
+}
+
+.history-clear:active {
+    transform: scale(.96);
+}
+
+.history-clear:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+
+/* =====================================================
+   📱 MOBILE
+   ===================================================== */
+
+@media (max-width: 600px) {
+
+    .history-header {
+        gap: 8px;
+    }
+
+    .history-header .policy-back {
+        padding: 9px 10px;
+        font-size: 15px;
+    }
+
+    .history-clear {
+        padding: 9px 12px;
+        font-size: 13px;
+        border-radius: 10px;
+    }
+
+}
