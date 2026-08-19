@@ -10,13 +10,6 @@ const session = require("express-session");
 const app = express();
 
 const server = http.createServer(app);
-const {
-    registerSePayRoutes
-} = require("./sepay");
-
-const {
-    registerChatRoutes
-} = require("./chat");
 
 // ==============================
 // 🔧 CẤU HÌNH CÙNG DOMAIN
@@ -30,11 +23,10 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
-
-registerSePayRoutes(app);
-
-// 3. Session giữ nguyên cấu hình phù hợp cùng domain
+// ==============================
+// SESSION — ĐẶT TRƯỚC SEPAY
+// ==============================
+// SePay routes cần req.session.user để auth
 app.use(session({
   secret: process.env.SESSION_SECRET || "hydyar-wiki-secret-2026",
   resave: false,
@@ -48,11 +40,34 @@ app.use(session({
 }));
 
 // ==============================
-// FIREBASE ADMIN
+// FIREBASE ADMIN — ĐẶT TRƯỚC SEPAY
 // ==============================
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = admin.firestore();
+
+// ==============================
+// SEPAY — ĐĂNG KÝ SAU SESSION + FIREBASE
+// ==============================
+// Webhook cần đăng ký TRƯỚC app.use(express.json())
+// để giữ được raw body cho HMAC verify
+const {
+    registerSePayRoutes
+} = require("./sepay");
+
+registerSePayRoutes(app, db);
+
+// ==============================
+// JSON PARSER — ĐẶT SAU SEPAY
+// ==============================
+app.use(express.json());
+
+// ==============================
+// CHAT
+// ==============================
+const {
+    registerChatRoutes
+} = require("./chat");
 
 
 // ==============================

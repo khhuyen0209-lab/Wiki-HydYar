@@ -31,6 +31,7 @@
 // ==========================================================
 
 const crypto = require("crypto");
+const express = require("express");
 
 
 // ==========================================================
@@ -717,6 +718,9 @@ function registerSePayRoutes(
 
     app.post(
         "/api/payment/create",
+
+        express.json(),
+
         async (req, res) => {
 
             try {
@@ -1109,17 +1113,18 @@ function registerSePayRoutes(
     // ======================================================
     //
     // QUAN TRỌNG:
+    // Dùng express.raw() để lấy RAW BODY cho HMAC verify.
     // Route này phải được đăng ký TRƯỚC
-    // app.use(express.json()).
-    //
-    // Vì HMAC cần RAW BODY.
+    // app.use(express.json()) ở server.js.
     //
     // ======================================================
 
     app.post(
         "/api/payment/sepay/webhook",
 
-        requireRawBodyMiddleware,
+        express.raw({
+            type: "application/json"
+        }),
 
         async (req, res) => {
 
@@ -1561,68 +1566,6 @@ function registerSePayRoutes(
 
         }
     );
-
-}
-
-
-// ==========================================================
-// RAW BODY MIDDLEWARE
-// ==========================================================
-//
-// SePay ký trên raw body.
-// KHÔNG JSON.parse trước khi verify.
-//
-// ==========================================================
-
-function requireRawBodyMiddleware(
-    req,
-    res,
-    next
-) {
-
-    // Nếu body đã được parse bởi express.json()
-    // thì không thể khôi phục chính xác raw bytes.
-    //
-    // Middleware này đọc raw body trực tiếp.
-
-    let chunks = [];
-
-
-    req.on("data", chunk => {
-
-        chunks.push(chunk);
-
-    });
-
-
-    req.on("end", () => {
-
-        req.body =
-            Buffer.concat(chunks);
-
-        next();
-
-    });
-
-
-    req.on("error", err => {
-
-        console.error(
-            "❌ Raw body error:",
-            err
-        );
-
-        res.status(400).json({
-
-            success:
-                false,
-
-            message:
-                "Invalid request body"
-
-        });
-
-    });
 
 }
 
