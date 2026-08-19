@@ -749,23 +749,53 @@ function registerSePayRoutes(
                 // ------------------------------------------
                 // AUTH
                 // ------------------------------------------
+let user = req.session?.user;
 
-                const user =
-                    req.session?.user;
+if (!user) {
 
+    const authHeader =
+        req.headers.authorization;
 
-                if (!user) {
+    if (
+        authHeader &&
+        authHeader.startsWith("Bearer ")
+    ) {
 
-                    return res.status(401).json({
+        try {
 
-                        success: false,
+            const token =
+                authHeader.substring(7);
 
-                        message:
-                            "Chưa đăng nhập"
+            const decoded =
+                await admin
+                    .auth()
+                    .verifyIdToken(token);
 
-                    });
+            user = {
+                uid: decoded.uid
+            };
 
-                }
+        } catch (err) {
+
+            console.error(
+                "❌ Firebase token không hợp lệ:",
+                err.message
+            );
+
+        }
+
+    }
+
+}
+
+if (!user) {
+
+    return res.status(401).json({
+        success: false,
+        message: "Chưa đăng nhập"
+    });
+
+}
 
 
                 // ------------------------------------------

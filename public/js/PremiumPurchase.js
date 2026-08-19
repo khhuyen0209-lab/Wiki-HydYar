@@ -141,61 +141,138 @@ class PremiumPurchaseLogic {
     // 💳 GỌI API TẠO THANH TOÁN SEPAY
     // ==========================================
 
-    async createSePayPayment(packageId = this.selectedPackage) {
+async createSePayPayment(packageId = this.selectedPackage) {
 
-        const check = this.canPay(packageId);
+    // ==========================================
+    // 🔍 KIỂM TRA GÓI
+    // ==========================================
 
-        if (!check.ok) {
-            throw new Error(check.error);
-        }
+    const check = this.canPay(packageId);
 
-        const { pkg } = check;
-
-        const response = await fetch(
-            "https://wiki-hydyar.onrender.com/api/payment/create",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: "include",
-                body: JSON.stringify({
-    amount: pkg.price,
-
-    description: `HydYar - ${pkg.name}`,
-
-    success_url: `${location.origin}/?payment=success`,
-error_url: `${location.origin}/?payment=error`,
-cancel_url: `${location.origin}/?payment=cancel`,
-
-    custom_data: {
-        type: "premium",
-        package: packageId
+    if (!check.ok) {
+        throw new Error(check.error);
     }
-})
-            }
+
+    const { pkg } = check;
+
+
+    // ==========================================
+    // 🔐 LẤY FIREBASE USER
+    // ==========================================
+
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+
+        throw new Error(
+            "Chưa đăng nhập Firebase"
         );
 
-        const data = await response.json();
+    }
 
-        if (!response.ok || !data.success) {
-            throw new Error(
-                data.message || "Không thể tạo thanh toán"
-            );
+
+    // ==========================================
+    // 🎫 LẤY FIREBASE ID TOKEN
+    // ==========================================
+
+    const token =
+        await currentUser.getIdToken();
+
+
+    // ==========================================
+    // 💳 GỌI SERVER
+    // ==========================================
+
+    const response = await fetch(
+        "https://wiki-hydyar.onrender.com/api/payment/create",
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json",
+
+                // 🔐 Gửi Firebase token
+                "Authorization":
+                    `Bearer ${token}`
+            },
+
+            // Giữ lại session nếu có
+            credentials: "include",
+
+            body: JSON.stringify({
+
+                // 🔐 Server tự quyết định giá
+                package:
+                    packageId,
+
+                success_url:
+                    `${location.origin}/?payment=success`,
+
+                error_url:
+                    `${location.origin}/?payment=error`,
+
+                cancel_url:
+                    `${location.origin}/?payment=cancel`
+
+            })
         }
+    );
 
-        if (!data.checkoutURL || !data.fields) {
-            throw new Error(
-                "SePay không trả về dữ liệu checkout"
-            );
-        }
 
-        console.log("💳 SePay Checkout:", data);
+    // ==========================================
+    // 📦 ĐỌC RESPONSE
+    // ==========================================
 
-        return data;
+    const data =
+        await response.json();
+
+
+    // ==========================================
+    // ❌ API ERROR
+    // ==========================================
+
+    if (
+        !response.ok ||
+        !data.success
+    ) {
+
+        throw new Error(
+            data.message ||
+            "Không thể tạo thanh toán"
+        );
 
     }
 
+
+    // ==========================================
+    // 🔎 KIỂM TRA CHECKOUT
+    // ==========================================
+
+    if (
+        !data.checkoutURL ||
+        !data.fields
+    ) {
+
+        throw new Error(
+            "SePay không trả về dữ liệu checkout"
+        );
+
+    }
+
+
+    // ==========================================
+    // 🧾 LOG
+    // ==========================================
+
+    console.log(
+        "💳 SePay Checkout:",
+        data
+    );
+
+
+    return data;
+
+}
 
     // ==========================================
     // 🚀 TẠO FORM SUBMIT SEPAY
