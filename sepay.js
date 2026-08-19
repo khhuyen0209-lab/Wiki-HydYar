@@ -1260,320 +1260,500 @@ if (!user) {
     //
     // ======================================================
 
-    app.post(
-        "/api/payment/sepay/webhook",
+    // ======================================================
+// 🔔 SEPAY WEBHOOK
+// ======================================================
 
-        express.raw({
-            type: "application/json"
-        }),
+app.post(
+    "/api/payment/sepay/webhook",
 
-        async (req, res) => {
+    express.raw({
+        type: "application/json"
+    }),
 
-            try {
+    async (req, res) => {
 
-                const rawBody =
-                    req.body.toString("utf8");
+        console.log("");
+        console.log("==========================================");
+        console.log("🚨🚨🚨 SEPAY WEBHOOK ĐÃ VÀO SERVER 🚨🚨🚨");
+        console.log("==========================================");
 
+        try {
 
-                if (!rawBody) {
+            // ==================================================
+            // 🔍 DEBUG REQUEST
+            // ==================================================
 
-                    return res.status(400).json({
+            console.log(
+                "📍 Method:",
+                req.method
+            );
 
-                        success:
-                            false,
+            console.log(
+                "📍 URL:",
+                req.originalUrl
+            );
 
-                        message:
-                            "Empty body"
+            console.log(
+                "📍 Content-Type:",
+                req.headers["content-type"] || "MISSING"
+            );
 
-                    });
+            console.log(
+                "🔐 Signature:",
+                req.headers["x-sepay-signature"]
+                    ? "PRESENT"
+                    : "MISSING"
+            );
 
-                }
-
-
-                const signature =
-                    req.headers[
-                        "x-sepay-signature"
-                    ];
-
-
-                const timestamp =
-                    req.headers[
-                        "x-sepay-timestamp"
-                    ];
-
-
-                // ------------------------------------------
-                // VERIFY HMAC
-                // ------------------------------------------
-
-                const valid =
-                    verifyWebhookSignature(
-
-                        rawBody,
-
-                        signature,
-
-                        timestamp
-
-                    );
+            console.log(
+                "⏱️ Timestamp:",
+                req.headers["x-sepay-timestamp"]
+                    ? "PRESENT"
+                    : "MISSING"
+            );
 
 
-                if (!valid) {
+            // ==================================================
+            // RAW BODY
+            // ==================================================
 
-                    console.warn(
-                        "🚨 SePay webhook signature invalid"
-                    );
+            if (!Buffer.isBuffer(req.body)) {
 
-                    return res.status(401).json({
+                console.error(
+                    "❌ req.body không phải Buffer!"
+                );
 
-                        success:
-                            false,
+                console.error(
+                    "Body type:",
+                    typeof req.body
+                );
 
-                        message:
-                            "Invalid signature"
+                return res.status(400).json({
 
-                    });
+                    success: false,
 
-                }
+                    message:
+                        "Webhook body không hợp lệ"
 
+                });
 
-                // ------------------------------------------
-                // PARSE JSON
-                // ------------------------------------------
-
-                let data;
-
-
-                try {
-
-                    data =
-                        JSON.parse(
-                            rawBody
-                        );
-
-                } catch {
-
-                    return res.status(400).json({
-
-                        success:
-                            false,
-
-                        message:
-                            "Invalid JSON"
-
-                    });
-
-                }
+            }
 
 
-                console.log(
-                    "🔔 SePay Webhook:",
-                    data
+            const rawBody =
+                req.body.toString("utf8");
+
+
+            console.log(
+                "📦 Raw body length:",
+                rawBody.length
+            );
+
+            console.log(
+                "📦 Raw body:",
+                rawBody
+            );
+
+
+            if (!rawBody) {
+
+                console.error(
+                    "❌ Webhook body rỗng"
+                );
+
+                return res.status(400).json({
+
+                    success: false,
+
+                    message:
+                        "Empty body"
+
+                });
+
+            }
+
+
+            // ==================================================
+            // HMAC HEADERS
+            // ==================================================
+
+            const signature =
+                req.headers[
+                    "x-sepay-signature"
+                ];
+
+            const timestamp =
+                req.headers[
+                    "x-sepay-timestamp"
+                ];
+
+
+            console.log(
+                "🔐 HMAC secret configured:",
+                SEPAY_WEBHOOK_SECRET
+                    ? "YES"
+                    : "NO"
+            );
+
+
+            if (!signature) {
+
+                console.error(
+                    "❌ Thiếu X-SePay-Signature"
+                );
+
+                return res.status(401).json({
+
+                    success: false,
+
+                    message:
+                        "Missing signature"
+
+                });
+
+            }
+
+
+            if (!timestamp) {
+
+                console.error(
+                    "❌ Thiếu X-SePay-Timestamp"
+                );
+
+                return res.status(401).json({
+
+                    success: false,
+
+                    message:
+                        "Missing timestamp"
+
+                });
+
+            }
+
+
+            // ==================================================
+            // VERIFY HMAC
+            // ==================================================
+
+            console.log(
+                "🔐 Đang xác minh HMAC..."
+            );
+
+
+            const valid =
+                verifyWebhookSignature(
+                    rawBody,
+                    signature,
+                    timestamp
                 );
 
 
-                // ------------------------------------------
-                // ONLY MONEY IN
-                // ------------------------------------------
+            if (!valid) {
 
-                if (
-                    data.transferType &&
-                    data.transferType !== "in"
-                ) {
+                console.error(
+                    "🚨 HMAC INVALID"
+                );
 
-                    return res.json({
+                console.error(
+                    "Signature:",
+                    signature
+                );
 
-                        success:
-                            true,
+                console.error(
+                    "Timestamp:",
+                    timestamp
+                );
 
-                        ignored:
-                            true
+                return res.status(401).json({
 
-                    });
+                    success: false,
 
-                }
+                    message:
+                        "Invalid signature"
 
+                });
 
-                // ------------------------------------------
-                // FIND ORDER
-                // ------------------------------------------
-
-                const orderId =
-                    extractOrderId(data);
+            }
 
 
-                if (!orderId) {
+            console.log(
+                "✅ HMAC hợp lệ"
+            );
 
-                    console.warn(
-                        "⚠️ Không tìm thấy HY order ID trong webhook"
+
+            // ==================================================
+            // PARSE JSON
+            // ==================================================
+
+            let data;
+
+
+            try {
+
+                data =
+                    JSON.parse(
+                        rawBody
                     );
 
-                    // Không phải order của HydYar.
-                    return res.json({
+            } catch (err) {
 
-                        success:
-                            true,
+                console.error(
+                    "❌ JSON webhook không hợp lệ:",
+                    err
+                );
 
-                        ignored:
-                            true
+                return res.status(400).json({
 
-                    });
+                    success: false,
 
-                }
+                    message:
+                        "Invalid JSON"
 
+                });
 
-                // ------------------------------------------
-                // LOAD ORDER
-                // ------------------------------------------
-
-                const orderRef =
-                    db
-                        .collection("paymentOrders")
-                        .doc(orderId);
+            }
 
 
-                const orderSnap =
-                    await orderRef.get();
+            console.log(
+                "🔔 SePay Webhook DATA:"
+            );
+
+            console.log(
+                JSON.stringify(
+                    data,
+                    null,
+                    2
+                )
+            );
 
 
-                if (!orderSnap.exists) {
+            // ==================================================
+            // ONLY MONEY IN
+            // ==================================================
 
-                    console.warn(
-                        "⚠️ Webhook order không tồn tại:",
-                        orderId
-                    );
+            if (
+                data.transferType &&
+                data.transferType !== "in"
+            ) {
 
-                    return res.json({
+                console.log(
+                    "ℹ️ Bỏ qua giao dịch tiền ra:",
+                    data.transferType
+                );
 
-                        success:
-                            true,
+                return res.json({
 
-                        ignored:
-                            true
+                    success: true,
 
-                    });
+                    ignored: true,
 
-                }
+                    reason:
+                        "transferType_not_in"
 
+                });
 
-                const order =
-                    orderSnap.data();
-
-
-                // ------------------------------------------
-                // IDEMPOTENCY
-                // ------------------------------------------
-
-                if (
-                    order.status === "paid" &&
-                    order.premiumActivated === true
-                ) {
-
-                    return res.json({
-
-                        success:
-                            true,
-
-                        alreadyProcessed:
-                            true
-
-                    });
-
-                }
+            }
 
 
-                // ------------------------------------------
-                // AMOUNT
-                // ------------------------------------------
+            // ==================================================
+            // FIND HYDYAR ORDER
+            // ==================================================
 
-                const transferAmount =
-                    Number(
-                        data.transferAmount
-                    );
+            console.log(
+                "🔎 Đang tìm HY order ID..."
+            );
 
 
-                if (
-                    !Number.isFinite(
+            const orderId =
+                extractOrderId(data);
+
+
+            console.log(
+                "🆔 Extracted orderId:",
+                orderId || "NONE"
+            );
+
+
+            if (!orderId) {
+
+                console.warn(
+                    "⚠️ Không tìm thấy HY order ID trong webhook"
+                );
+
+                console.warn(
+                    "📦 Các field nhận được:",
+                    Object.keys(data)
+                );
+
+                return res.json({
+
+                    success: true,
+
+                    ignored: true,
+
+                    reason:
+                        "order_not_found"
+
+                });
+
+            }
+
+
+            // ==================================================
+            // LOAD ORDER
+            // ==================================================
+
+            console.log(
+                "📦 Đang tải payment order:",
+                orderId
+            );
+
+
+            const orderRef =
+                db
+                    .collection("paymentOrders")
+                    .doc(orderId);
+
+
+            const orderSnap =
+                await orderRef.get();
+
+
+            if (!orderSnap.exists) {
+
+                console.warn(
+                    "⚠️ Webhook order không tồn tại:",
+                    orderId
+                );
+
+                return res.json({
+
+                    success: true,
+
+                    ignored: true,
+
+                    reason:
+                        "order_not_exists"
+
+                });
+
+            }
+
+
+            const order =
+                orderSnap.data();
+
+
+            console.log(
+                "📄 Payment order:",
+                JSON.stringify(
+                    order,
+                    null,
+                    2
+                )
+            );
+
+
+            // ==================================================
+            // IDEMPOTENCY
+            // ==================================================
+
+            if (
+                order.status === "paid" &&
+                order.premiumActivated === true
+            ) {
+
+                console.log(
+                    "♻️ Order đã được xử lý:",
+                    orderId
+                );
+
+                return res.json({
+
+                    success: true,
+
+                    alreadyProcessed: true
+
+                });
+
+            }
+
+
+            // ==================================================
+            // AMOUNT
+            // ==================================================
+
+            const transferAmount =
+                Number(
+                    data.transferAmount
+                );
+
+
+            console.log(
+                "💰 Transfer amount:",
+                transferAmount
+            );
+
+            console.log(
+                "💰 Expected amount:",
+                order.amount
+            );
+
+
+            if (
+                !Number.isFinite(
+                    transferAmount
+                )
+            ) {
+
+                console.error(
+                    "❌ transferAmount không hợp lệ"
+                );
+
+                return res.status(400).json({
+
+                    success: false,
+
+                    message:
+                        "Invalid transfer amount"
+
+                });
+
+            }
+
+
+            // ==================================================
+            // EXACT AMOUNT
+            // ==================================================
+
+            if (
+                transferAmount !==
+                Number(order.amount)
+            ) {
+
+                console.error(
+                    "❌ SAI SỐ TIỀN"
+                );
+
+                console.error({
+
+                    orderId,
+
+                    expected:
+                        order.amount,
+
+                    received:
                         transferAmount
-                    )
-                ) {
 
-                    return res.status(400).json({
+                });
 
-                        success:
-                            false,
-
-                        message:
-                            "Invalid transfer amount"
-
-                    });
-
-                }
-
-
-                // ------------------------------------------
-                // EXACT AMOUNT
-                // ------------------------------------------
-
-                if (
-                    transferAmount !==
-                    Number(order.amount)
-                ) {
-
-                    console.error(
-                        "❌ Sai số tiền:",
-                        {
-                            orderId,
-                            expected:
-                                order.amount,
-                            received:
-                                transferAmount
-                        }
-                    );
-
-
-                    await orderRef.update({
-
-                        status:
-                            "amount_mismatch",
-
-                        webhookReceivedAt:
-                            new Date()
-
-                    });
-
-
-                    return res.status(400).json({
-
-                        success:
-                            false,
-
-                        message:
-                            "Số tiền không khớp"
-
-                    });
-
-                }
-
-
-                // ------------------------------------------
-                // MARK PAID
-                // ------------------------------------------
 
                 await orderRef.update({
 
                     status:
-                        "paid",
-
-                    paidAt:
-                        new Date(),
-
-                    sepayTransactionId:
-                        data.id || null,
-
-                    sepayReferenceCode:
-                        data.referenceCode ||
-                        null,
+                        "amount_mismatch",
 
                     webhookReceivedAt:
                         new Date()
@@ -1581,75 +1761,182 @@ if (!user) {
                 });
 
 
-                // ------------------------------------------
-                // ACTIVATE PREMIUM
-                // ------------------------------------------
+                return res.status(400).json({
 
-                const activation =
-                    await activatePremium(
-                        db,
-                        {
-                            ...order,
-                            orderId
-                        }
-                    );
-
-
-                // ------------------------------------------
-                // MARK ACTIVATED
-                // ------------------------------------------
-
-                await orderRef.update({
-
-                    premiumActivated:
-                        true,
-
-                    premiumActivatedAt:
-                        new Date(),
-
-                    activatedPlan:
-                        activation.plan
-
-                });
-
-
-                console.log(
-                    `🎉 Payment completed: ${orderId}`
-                );
-
-
-                return res.json({
-
-                    success:
-                        true,
-
-                    status:
-                        "paid"
-
-                });
-
-            } catch (err) {
-
-                console.error(
-                    "❌ SePay Webhook Error:",
-                    err
-                );
-
-                return res.status(500).json({
-
-                    success:
-                        false,
+                    success: false,
 
                     message:
-                        "Webhook processing error"
+                        "Số tiền không khớp"
 
                 });
 
             }
 
+
+            console.log(
+                "✅ Số tiền chính xác"
+            );
+
+
+            // ==================================================
+            // MARK PAID
+            // ==================================================
+
+            console.log(
+                "💳 Đang đánh dấu order PAID..."
+            );
+
+
+            await orderRef.update({
+
+                status:
+                    "paid",
+
+                paidAt:
+                    new Date(),
+
+                sepayTransactionId:
+                    data.id || null,
+
+                sepayReferenceCode:
+                    data.referenceCode ||
+                    null,
+
+                webhookReceivedAt:
+                    new Date()
+
+            });
+
+
+            console.log(
+                "✅ Order đã chuyển sang PAID:",
+                orderId
+            );
+
+
+            // ==================================================
+            // ACTIVATE PREMIUM
+            // ==================================================
+
+            console.log(
+                "💎 Đang kích hoạt Premium..."
+            );
+
+
+            const activation =
+                await activatePremium(
+                    db,
+                    {
+                        ...order,
+                        orderId
+                    }
+                );
+
+
+            console.log(
+                "💎 Premium activation:",
+                activation
+            );
+
+
+            // ==================================================
+            // MARK ACTIVATED
+            // ==================================================
+
+            await orderRef.update({
+
+                premiumActivated:
+                    true,
+
+                premiumActivatedAt:
+                    new Date(),
+
+                activatedPlan:
+                    activation.plan
+
+            });
+
+
+            console.log(
+                "✅ Premium đã kích hoạt:"
+            );
+
+            console.log({
+
+                orderId,
+
+                userId:
+                    order.userId,
+
+                plan:
+                    activation.plan,
+
+                premiumUntil:
+                    activation.premiumUntil
+
+            });
+
+
+            // ==================================================
+            // SUCCESS
+            // ==================================================
+
+            console.log(
+                "🎉 PAYMENT COMPLETED:",
+                orderId
+            );
+
+            console.log(
+                "=========================================="
+            );
+
+
+            return res.json({
+
+                success: true,
+
+                status:
+                    "paid",
+
+                premiumActivated:
+                    true
+
+            });
+
+
+        } catch (err) {
+
+            console.error("");
+            console.error(
+                "❌❌❌ SEPAY WEBHOOK ERROR ❌❌❌"
+            );
+
+            console.error(
+                err
+            );
+
+            console.error(
+                err?.stack
+            );
+
+            console.error(
+                "=========================================="
+            );
+
+
+            return res.status(500).json({
+
+                success: false,
+
+                message:
+                    "Webhook processing error"
+
+            });
+
         }
 
-    );
+    }
+);
 
 
     // ======================================================
