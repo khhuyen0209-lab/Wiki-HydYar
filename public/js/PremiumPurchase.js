@@ -3,7 +3,7 @@
 // Tách rõ Logic và UI trong cùng 1 file
 // ==============================================
 
-
+import { auth } from "../firebase.js";
 // ==============================================
 // 🔧 LOGIC LAYER
 // Nghiệp vụ thuần túy: quản lý gói, validate, gọi API

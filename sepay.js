@@ -709,7 +709,8 @@ async function activatePremium(
 
 function registerSePayRoutes(
     app,
-    db
+    db,
+    admin
 ) {
 
     // ======================================================
@@ -751,48 +752,86 @@ function registerSePayRoutes(
                 // ------------------------------------------
 let user = req.session?.user;
 
-if (!user) {
+console.log("========== 💳 PAYMENT AUTH ==========");
+console.log(
+    "Session user:",
+    user
+        ? `${user.uid}`
+        : "NONE"
+);
 
-    const authHeader =
-        req.headers.authorization;
+const authHeader =
+    req.headers.authorization;
 
-    if (
-        authHeader &&
-        authHeader.startsWith("Bearer ")
-    ) {
+console.log(
+    "Authorization:",
+    authHeader
+        ? "Bearer PRESENT"
+        : "MISSING"
+);
 
-        try {
 
-            const token =
-                authHeader.substring(7);
+if (!user && authHeader?.startsWith("Bearer ")) {
 
-            const decoded =
-                await admin
-                    .auth()
-                    .verifyIdToken(token);
+    try {
 
-            user = {
-                uid: decoded.uid
-            };
+        const token =
+            authHeader.substring(7);
 
-        } catch (err) {
+        console.log(
+            "🔐 Firebase token received:",
+            token.length,
+            "characters"
+        );
 
-            console.error(
-                "❌ Firebase token không hợp lệ:",
-                err.message
-            );
+        const decoded =
+            await admin
+                .auth()
+                .verifyIdToken(token);
 
-        }
+        console.log(
+            "✅ Firebase token valid:",
+            decoded.uid
+        );
+
+        user = {
+            uid: decoded.uid
+        };
+
+    } catch (err) {
+
+        console.error(
+            "❌ Firebase verifyIdToken FAILED:",
+            err
+        );
+
+        return res.status(401).json({
+
+            success: false,
+
+            message:
+                "Firebase token không hợp lệ",
+
+            error:
+                process.env.NODE_ENV === "production"
+                    ? undefined
+                    : err.message
+
+        });
 
     }
 
 }
 
+
 if (!user) {
 
     return res.status(401).json({
+
         success: false,
+
         message: "Chưa đăng nhập"
+
     });
 
 }
@@ -1019,123 +1058,195 @@ if (!user) {
     // ======================================================
 
     app.get(
-        "/api/payment/status/:orderId",
-        async (req, res) => {
+    "/api/payment/status/:orderId",
+    async (req, res) => {
 
-            try {
+        try {
 
-                const orderId =
-                    req.params.orderId;
-
-
-                const snap =
-                    await db
-                        .collection("paymentOrders")
-                        .doc(orderId)
-                        .get();
+            const orderId =
+                req.params.orderId;
 
 
-                if (!snap.exists) {
+            // ==========================================
+            // 🔐 AUTH
+            // ==========================================
 
-                    return res.status(404).json({
-
-                        success:
-                            false,
-
-                        message:
-                            "Không tìm thấy đơn thanh toán"
-
-                    });
-
-                }
+            let user =
+                req.session?.user;
 
 
-                const order =
-                    snap.data();
+            // Nếu không có session → thử Firebase token
+            if (!user) {
 
-
-                // Không cho user xem order
-                // của người khác.
-                const user =
-                    req.session?.user;
-
+                const authHeader =
+                    req.headers.authorization;
 
                 if (
-                    !user ||
-                    order.userId !== user.uid
+                    authHeader &&
+                    authHeader.startsWith("Bearer ")
                 ) {
 
-                    return res.status(403).json({
+                    try {
 
-                        success:
-                            false,
+                        const token =
+                            authHeader.substring(7);
 
-                        message:
-                            "Không có quyền xem đơn này"
+                        const decoded =
+                            await admin
+                                .auth()
+                                .verifyIdToken(token);
 
-                    });
+                        user = {
+                            uid: decoded.uid
+                        };
 
-                }
+                    } catch (err) {
 
+                        console.error(
+                            "❌ Payment Status Firebase Auth Error:",
+                            err.message
+                        );
 
-                return res.json({
+                        return res.status(401).json({
 
-                    success:
-                        true,
+                            success: false,
 
-                    order: {
+                            message:
+                                "Firebase token không hợp lệ"
 
-                        orderId:
-                            order.orderId,
-
-                        package:
-                            order.package,
-
-                        packageName:
-                            order.packageName,
-
-                        amount:
-                            order.amount,
-
-                        currency:
-                            order.currency,
-
-                        status:
-                            order.status,
-
-                        premiumActivated:
-                            Boolean(
-                                order.premiumActivated
-                            ),
-
-                        paidAt:
-                            order.paidAt || null
+                        });
 
                     }
 
-                });
+                }
 
-            } catch (err) {
+            }
 
-                console.error(
-                    "❌ Payment Status Error:",
-                    err
-                );
 
-                return res.status(500).json({
+            // Không có cả session lẫn Firebase token
+            if (!user) {
 
-                    success:
-                        false,
+                return res.status(401).json({
+
+                    success: false,
 
                     message:
-                        "Không thể kiểm tra thanh toán"
+                        "Chưa đăng nhập"
 
                 });
 
             }
 
+
+            // ==========================================
+            // 📦 LOAD ORDER
+            // ==========================================
+
+            const snap =
+                await db
+                    .collection("paymentOrders")
+                    .doc(orderId)
+                    .get();
+
+
+            if (!snap.exists) {
+
+                return res.status(404).json({
+
+                    success: false,
+
+                    message:
+                        "Không tìm thấy đơn thanh toán"
+
+                });
+
+            }
+
+
+            const order =
+                snap.data();
+
+
+            // ==========================================
+            // 🔐 OWNERSHIP CHECK
+            // ==========================================
+
+            if (
+                order.userId !== user.uid
+            ) {
+
+                return res.status(403).json({
+
+                    success: false,
+
+                    message:
+                        "Không có quyền xem đơn này"
+
+                });
+
+            }
+
+
+            // ==========================================
+            // 📤 RESPONSE
+            // ==========================================
+
+            return res.json({
+
+                success: true,
+
+                order: {
+
+                    orderId:
+                        order.orderId,
+
+                    package:
+                        order.package,
+
+                    packageName:
+                        order.packageName,
+
+                    amount:
+                        order.amount,
+
+                    currency:
+                        order.currency,
+
+                    status:
+                        order.status,
+
+                    premiumActivated:
+                        Boolean(
+                            order.premiumActivated
+                        ),
+
+                    paidAt:
+                        order.paidAt || null
+
+                }
+
+            });
+
+        } catch (err) {
+
+            console.error(
+                "❌ Payment Status Error:",
+                err
+            );
+
+            return res.status(500).json({
+
+                success: false,
+
+                message:
+                    "Không thể kiểm tra thanh toán"
+
+            });
+
         }
-    );
+
+    }
+);
 
 
     // ======================================================

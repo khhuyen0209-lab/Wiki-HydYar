@@ -55,7 +55,11 @@ const {
     registerSePayRoutes
 } = require("./sepay");
 
-registerSePayRoutes(app, db);
+registerSePayRoutes(
+    app,
+    db,
+    admin
+);
 
 // ==============================
 // JSON PARSER — ĐẶT SAU SEPAY
