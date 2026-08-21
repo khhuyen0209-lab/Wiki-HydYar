@@ -1685,22 +1685,26 @@ app.get("/api/search", async (req, res) => {
     try {
 
         const keyword = (req.query.q || "")
-            .trim()
-            .toLowerCase();
+            .trim();
 
         if (!keyword) {
             return res.json({
                 success: true,
                 cached: true,
-                data: []
+                data: {
+                    articles: [],
+                    users: []
+                }
             });
         }
 
-        let result = [];
+        const searchKeyword = keyword.toLowerCase();
 
-        // ==============================
-        // Tìm trong Preview Cache
-        // ==============================
+        // ==========================================
+        // 📚 TÌM BÀI VIẾT
+        // ==========================================
+
+        let articles = [];
 
         for (const [, item] of HydYarCache.articlePreview.entries()) {
 
@@ -1711,83 +1715,172 @@ app.get("/api/search", async (req, res) => {
             if (!article) continue;
 
             if (
-                article.title?.toLowerCase().includes(keyword) ||
-                article.desc?.toLowerCase().includes(keyword) ||
-                article.keywords?.toLowerCase().includes(keyword)
+                article.title?.toLowerCase().includes(searchKeyword) ||
+                article.desc?.toLowerCase().includes(searchKeyword) ||
+                article.keywords?.toLowerCase().includes(searchKeyword)
             ) {
 
-                result.push(article);
+                articles.push(article);
 
-                if (result.length >= 20) break;
-
+                if (articles.length >= 20) break;
             }
+        }
+
+        // ==========================================
+        // 👤 TÌM USER
+        // ==========================================
+
+        let users = [];
+
+        // Chuẩn hóa HydYar ID
+        let hydyarId = keyword;
+
+        if (!hydyarId.toUpperCase().startsWith("HY")) {
+
+            hydyarId = `HY | ${hydyarId}`;
+
+        } else {
+
+            hydyarId = hydyarId
+                .replace(/^HY\s*\|\s*/i, "HY | ");
 
         }
 
-        if (result.length > 0) {
+        // ==========================================
+        // 🔎 TÌM USER THEO HYDYAR ID
+        // ==========================================
 
-            return res.json({
-                success: true,
-                cached: true,
-                data: result
+        const userSnap = await db
+            .collection("users")
+            .where("id", "==", hydyarId)
+            .limit(10)
+            .get();
+
+        userSnap.forEach(doc => {
+
+            const data = doc.data();
+
+            users.push({
+                uid: doc.id,
+                id: data.id,
+                name: data.name || "Người dùng",
+                avatar: data.avatar || "",
+                role: data.role || "user",
+                status: data.status || "active"
+            });
+
+        });
+
+        // ==========================================
+        // 📦 NẾU KHÔNG PHẢI ID → TÌM TÊN
+        // ==========================================
+
+        if (!users.length) {
+
+            const nameKeyword = keyword;
+
+            const userByName = await db
+                .collection("users")
+                .where("name", ">=", nameKeyword)
+                .where("name", "<=", nameKeyword + "\uf8ff")
+                .limit(10)
+                .get();
+
+            userByName.forEach(doc => {
+
+                const data = doc.data();
+
+                users.push({
+                    uid: doc.id,
+                    id: data.id,
+                    name: data.name || "Người dùng",
+                    avatar: data.avatar || "",
+                    role: data.role || "user",
+                    status: data.status || "active"
+                });
+
             });
 
         }
 
-        // ==============================
-        // Không có trong cache -> Firestore
-        // ==============================
+        // ==========================================
+        // 🔥 NẾU ARTICLE CACHE KHÔNG CÓ
+        // ==========================================
 
-        const snap = await db.collection("wikiArticles").get();
+        if (!articles.length) {
 
-        result = snap.docs.map(doc => {
+            const snap = await db
+                .collection("wikiArticles")
+                .get();
 
-            const data = {
-    type: "article",
-    id: doc.id,
-    ...doc.data()
-};
+            articles = snap.docs
+                .map(doc => {
 
-            if (data.createdAt?.toDate) {
-                data.createdAt = data.createdAt.toDate().toISOString();
-            }
+                    const data = {
+                        type: "article",
+                        id: doc.id,
+                        ...doc.data()
+                    };
 
-            if (data.updatedAt?.toDate) {
-                data.updatedAt = data.updatedAt.toDate().toISOString();
-            }
+                    if (data.createdAt?.toDate) {
+                        data.createdAt =
+                            data.createdAt.toDate().toISOString();
+                    }
 
-            // Lưu Preview Cache
-            cacheSet(
-                HydYarCache.articlePreview,
-                data.id,
-                data,
-                CACHE_TIME.ARTICLE,
-                CACHE_LIMIT.ARTICLE
-            );
+                    if (data.updatedAt?.toDate) {
+                        data.updatedAt =
+                            data.updatedAt.toDate().toISOString();
+                    }
 
-            return data;
+                    cacheSet(
+                        HydYarCache.articlePreview,
+                        data.id,
+                        data,
+                        CACHE_TIME.ARTICLE,
+                        CACHE_LIMIT.ARTICLE
+                    );
 
-        }).filter(article =>
+                    return data;
 
-            article.title?.toLowerCase().includes(keyword) ||
-            article.desc?.toLowerCase().includes(keyword) ||
-            article.keywords?.toLowerCase().includes(keyword)
+                })
+                .filter(article =>
+                    article.title?.toLowerCase().includes(searchKeyword) ||
+                    article.desc?.toLowerCase().includes(searchKeyword) ||
+                    article.keywords?.toLowerCase().includes(searchKeyword)
+                )
+                .slice(0, 20);
+        }
 
-        ).slice(0, 20);
+        // ==========================================
+        // 📤 RESPONSE
+        // ==========================================
 
         return res.json({
+
             success: true,
+
             cached: false,
-            data: result
+
+            data: {
+                articles,
+                users
+            }
+
         });
 
     } catch (err) {
 
-        console.error("❌ Search Error:", err);
+        console.error(
+            "❌ Search Error:",
+            err
+        );
 
         return res.status(500).json({
+
             success: false,
+
             message: "Lỗi tìm kiếm"
+
         });
 
     }
@@ -1807,259 +1900,36 @@ app.post("/api/article/:id/view", async (req, res) => {
 // 👤 API PUBLIC PROFILE
 // ==============================
 
-app.get("/api/profile/:name", async (req, res) => {
+app.get("/api/profile/:id", async (req, res) => {
+
+    const id = req.params.id.trim();
 
     try {
 
-        // ==============================
-        // 🔤 NORMALIZE TÊN TRÊN URL
-        // ==============================
+        const user = await findUserByHydYarId(id);
 
-        const profileName =
-            normalizeProfileName(
-                decodeURIComponent(req.params.name)
-            );
-
-
-        if (!profileName) {
-
-            return res.status(400).json({
-
-                success: false,
-
-                message:
-                    "Tên hồ sơ không hợp lệ"
-
-            });
-
-        }
-
-
-        // ==============================
-        // ⚡ CACHE
-        // ==============================
-
-        const cacheKey =
-            `profile:${profileName}`;
-
-
-        const cachedProfile =
-            cacheGet(
-                HydYarCache.users,
-                cacheKey
-            );
-
-
-        if (cachedProfile) {
-
-            return res.json({
-
-                success: true,
-
-                cached: true,
-
-                data:
-                    cachedProfile
-
-            });
-
-        }
-
-
-        // ==============================
-        // 🔎 LẤY USERS
-        // ==============================
-
-        const usersSnap =
-            await db
-                .collection("users")
-                .get();
-
-
-        let foundDoc = null;
-
-        let foundUser = null;
-
-
-        // ==============================
-        // 🔍 SO SÁNH NAME ĐÃ CHUẨN HÓA
-        // ==============================
-
-        for (const doc of usersSnap.docs) {
-
-            const user =
-                doc.data();
-
-
-            const normalizedName =
-                normalizeProfileName(
-                    user.name || ""
-                );
-
-
-            if (
-                normalizedName ===
-                profileName
-            ) {
-
-                foundDoc =
-                    doc;
-
-                foundUser =
-                    user;
-
-                break;
-
-            }
-
-        }
-
-
-        // ==============================
-        // ❌ KHÔNG TÌM THẤY
-        // ==============================
-
-        if (!foundDoc) {
-
+        if (!user) {
             return res.status(404).json({
-
                 success: false,
-
-                message:
-                    "Không tìm thấy người dùng"
-
+                message: "Không tìm thấy HydYar ID."
             });
-
         }
-
-
-        // ==============================
-        // 🔐 PUBLIC PROFILE
-        // ==============================
-
-        const publicProfile = {
-
-            // Firebase UID
-            uid:
-                foundDoc.id,
-
-
-            // HydYar ID
-            id:
-                foundUser.id ||
-                null,
-
-
-            // Tên hiển thị
-            name:
-                foundUser.name ||
-                "Người dùng",
-
-
-            // URL name
-            profileName,
-
-
-            // Avatar
-            avatar:
-                foundUser.avatar ||
-                "",
-
-
-            // Bio
-            bio:
-                foundUser.bio ||
-                "",
-
-
-            // Role
-            role:
-                foundUser.role ||
-                "user",
-
-
-            // Plan
-            plan:
-                foundUser.plan ||
-                "Free",
-
-
-            // Status
-            status:
-                foundUser.status ||
-                "active",
-
-
-            // Ngày tham gia
-            createdAt:
-                foundUser.createdAt?.toDate
-                    ? foundUser
-                        .createdAt
-                        .toDate()
-                        .toISOString()
-                    : null
-
-        };
-
-
-        // ==============================
-        // 💾 LƯU CACHE
-        // ==============================
-
-        cacheSet(
-
-            HydYarCache.users,
-
-            cacheKey,
-
-            publicProfile,
-
-            CACHE_TIME.USER,
-
-            CACHE_LIMIT.USER
-
-        );
-
-
-        // ==============================
-        // ✅ RESPONSE
-        // ==============================
 
         return res.json({
-
             success: true,
-
-            cached: false,
-
-            data:
-                publicProfile
-
+            data: user
         });
 
-    }
+    } catch (error) {
 
-    catch (err) {
-
-        console.error(
-
-            "❌ Public Profile Error:",
-
-            err
-
-        );
-
+        console.error("Public profile error:", error);
 
         return res.status(500).json({
-
             success: false,
-
-            message:
-                "Không thể tải hồ sơ"
-
+            message: "Không thể tải hồ sơ."
         });
 
     }
-
 });
 
 // ==============================

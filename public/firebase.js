@@ -516,7 +516,12 @@ export async function searchArticles(keyword) {
 
         const json = await res.json();
 
-        if (!json.success) return [];
+        if (!json.success) {
+            return {
+                articles: [],
+                users: []
+            };
+        }
 
         return json.data;
 
@@ -524,7 +529,10 @@ export async function searchArticles(keyword) {
 
         console.error(err);
 
-        return [];
+        return {
+            articles: [],
+            users: []
+        };
 
     }
 
