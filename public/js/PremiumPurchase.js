@@ -759,24 +759,5 @@ export default class PremiumPurchase {
         this.ui.close();
     }
 
-  applyAvatarFrame(frameName) {
-
-    const frame = document.querySelector(".avatar-frame");
-
-    if (!frame) return;
-
-    // Xóa frame cũ
-    frame.classList.remove(
-        "avatar-frame-gold",
-        "avatar-frame-purple",
-        "avatar-frame-blue"
-    );
-
-    // Thêm frame mới
-    if (frameName) {
-        frame.classList.add(`avatar-frame-${frameName}`);
-    }
-  }
-
 }
 

@@ -180,6 +180,47 @@ export default class Auth {
         }
     }
 
+    applyAvatarFrame(plan) {
+
+    console.log("💎 Plan nhận được:", plan);
+
+    const frames = document.querySelectorAll(".avatar-frame");
+
+    console.log("🎯 Số avatar frame:", frames.length);
+
+    frames.forEach(frame => {
+
+        // Xóa frame cũ
+        frame.classList.remove(
+            "border-gradient",
+            "border-gold"
+        );
+
+        // Áp frame mới
+        switch (plan) {
+
+            case "premium":
+                frame.classList.add("border-gold");
+                break;
+
+            case "premium+":
+                frame.classList.add("border-gradient");
+                break;
+
+            case "free":
+            default:
+                // CSS mặc định → trắng
+                break;
+        }
+
+        console.log(
+            "🎨 Frame:",
+            frame.className
+        );
+
+    });
+}
+
     updateUI() {
 console.log("🔥 THIS.USER =", this.user);
 console.log("🆔 HYDYAR ID =", this.user?.id);
@@ -297,6 +338,16 @@ console.log("🔥 FIREBASE UID =", this.user?.uid);
         loginBtn.remove();
 
     menuList.append(loginBtn);
+      const plan = (this.user?.plan || "free")
+    .toLowerCase()
+    .trim();
+
+console.log(
+    "💎 PLAN ĐỂ ÁP KHUNG:",
+    plan
+);
+
+this.applyAvatarFrame(plan);
 }
 
 }

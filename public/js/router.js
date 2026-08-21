@@ -262,6 +262,38 @@ export default class Router {
                 }
             },
 
+          /* =====================================================
+   👤 HỒ SƠ CÔNG KHAI
+   ===================================================== */
+
+"public-profile": {
+    path: "/profile/:name",
+
+    async handler({ name }) {
+
+        cleanupBeforeRoute("public-profile");
+
+        closeDrawer();
+
+        showMainNavigation();
+
+        clearActive();
+
+
+        document
+            .getElementById("page-public-profile")
+            ?.classList.add("active");
+
+
+        await appStatus.profile
+            .openPublicProfile(name);
+
+
+        scrollTop();
+
+    }
+},
+
             /* =====================================================
                ⭐ GÓI NÂNG CAO
                ===================================================== */
@@ -547,12 +579,53 @@ case "payment":
                     break;
 
                 case "profile":
-                    if (parts[1] === "history") {
-                        routeKey = "history";
-                    } else {
-                        routeKey = "home";
-                    }
-                    break;
+
+    // ==============================
+    // 🕘 LỊCH SỬ CÁ NHÂN
+    // ==============================
+
+    if (parts[1] === "history") {
+
+        routeKey =
+            "history";
+
+    }
+
+
+    // ==============================
+    // 👤 PROFILE NGƯỜI DÙNG
+    // ==============================
+
+    else if (parts[1]) {
+
+        routeKey =
+            "public-profile";
+
+
+        params = {
+
+            name:
+                decodeURIComponent(
+                    parts[1]
+                )
+
+        };
+
+    }
+
+
+    // ==============================
+    // ❌ KHÔNG CÓ TÊN
+    // ==============================
+
+    else {
+
+        routeKey =
+            "home";
+
+    }
+
+    break;
 
                 default:
                     if (parts.length === 2) {

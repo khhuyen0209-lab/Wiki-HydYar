@@ -89,45 +89,63 @@ export async function syncLoginToServer(user) {
 
         window.currentUser = {
 
-            // Firebase UID
-            uid:
-                serverUser.uid ||
-                user.uid,
+    // Firebase
+    uid:
+        serverUser.uid ||
+        user.uid,
 
-            // 🆔 HydYar ID
-            id:
-                serverUser.id || null,
+    // HydYar ID
+    id:
+        serverUser.id ||
+        null,
 
-            // Tên
-            name:
-                serverUser.name ||
-                user.displayName ||
-                user.email?.split("@")[0] ||
-                "Người dùng",
+    // Thông tin cá nhân
+    name:
+        serverUser.name ||
+        user.displayName ||
+        user.email?.split("@")[0] ||
+        "Người dùng",
 
-            // Avatar
-            avatar:
-                serverUser.avatar ||
-                user.photoURL ||
-                "",
+    avatar:
+        serverUser.avatar ||
+        user.photoURL ||
+        "",
 
-            // Email
-            email:
-                serverUser.email ||
-                user.email ||
-                "",
+    email:
+        serverUser.email ||
+        user.email ||
+        "",
 
-            // Quyền
-            role:
-                serverUser.role ||
-                "user",
+    // Quyền
+    role:
+        serverUser.role ||
+        "user",
 
-            // Trạng thái
-            status:
-                serverUser.status ||
-                "active"
+    status:
+        serverUser.status ||
+        "active",
 
-        };
+    // 💎 Premium
+    plan:
+        serverUser.plan ||
+        "Free",
+
+    premiumOrderId:
+        serverUser.premiumOrderId ||
+        null,
+
+    premiumSource:
+        serverUser.premiumSource ||
+        null,
+
+    premiumUntil:
+        serverUser.premiumUntil ||
+        null,
+
+    premiumUpdatedAt:
+        serverUser.premiumUpdatedAt ||
+        null
+};
 
         console.log(
     "✅ Đã đồng bộ với Server:",

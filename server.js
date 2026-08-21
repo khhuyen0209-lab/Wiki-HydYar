@@ -248,6 +248,34 @@ const {
 } */ 
 
 // ==============================
+// 🔤 HYDYAR NAME NORMALIZER
+// ==============================
+
+function normalizeProfileName(name = "") {
+
+    return name
+        .toString()
+        .trim()
+
+        // Đổi Đ/đ trước
+        .replace(/đ/g, "d")
+        .replace(/Đ/g, "D")
+
+        // Tách dấu tiếng Việt
+        .normalize("NFD")
+
+        // Xóa dấu
+        .replace(/[\u0300-\u036f]/g, "")
+
+        // Chữ thường
+        .toLowerCase()
+
+        // Chỉ giữ chữ và số
+        .replace(/[^a-z0-9]/g, "");
+
+}
+
+// ==============================
 // HYDYAR RAM CACHE SYSTEM
 // ==============================
 
@@ -1776,6 +1804,265 @@ app.post("/api/article/:id/view", async (req, res) => {
 });
 
 // ==============================
+// 👤 API PUBLIC PROFILE
+// ==============================
+
+app.get("/api/profile/:name", async (req, res) => {
+
+    try {
+
+        // ==============================
+        // 🔤 NORMALIZE TÊN TRÊN URL
+        // ==============================
+
+        const profileName =
+            normalizeProfileName(
+                decodeURIComponent(req.params.name)
+            );
+
+
+        if (!profileName) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "Tên hồ sơ không hợp lệ"
+
+            });
+
+        }
+
+
+        // ==============================
+        // ⚡ CACHE
+        // ==============================
+
+        const cacheKey =
+            `profile:${profileName}`;
+
+
+        const cachedProfile =
+            cacheGet(
+                HydYarCache.users,
+                cacheKey
+            );
+
+
+        if (cachedProfile) {
+
+            return res.json({
+
+                success: true,
+
+                cached: true,
+
+                data:
+                    cachedProfile
+
+            });
+
+        }
+
+
+        // ==============================
+        // 🔎 LẤY USERS
+        // ==============================
+
+        const usersSnap =
+            await db
+                .collection("users")
+                .get();
+
+
+        let foundDoc = null;
+
+        let foundUser = null;
+
+
+        // ==============================
+        // 🔍 SO SÁNH NAME ĐÃ CHUẨN HÓA
+        // ==============================
+
+        for (const doc of usersSnap.docs) {
+
+            const user =
+                doc.data();
+
+
+            const normalizedName =
+                normalizeProfileName(
+                    user.name || ""
+                );
+
+
+            if (
+                normalizedName ===
+                profileName
+            ) {
+
+                foundDoc =
+                    doc;
+
+                foundUser =
+                    user;
+
+                break;
+
+            }
+
+        }
+
+
+        // ==============================
+        // ❌ KHÔNG TÌM THẤY
+        // ==============================
+
+        if (!foundDoc) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message:
+                    "Không tìm thấy người dùng"
+
+            });
+
+        }
+
+
+        // ==============================
+        // 🔐 PUBLIC PROFILE
+        // ==============================
+
+        const publicProfile = {
+
+            // Firebase UID
+            uid:
+                foundDoc.id,
+
+
+            // HydYar ID
+            id:
+                foundUser.id ||
+                null,
+
+
+            // Tên hiển thị
+            name:
+                foundUser.name ||
+                "Người dùng",
+
+
+            // URL name
+            profileName,
+
+
+            // Avatar
+            avatar:
+                foundUser.avatar ||
+                "",
+
+
+            // Bio
+            bio:
+                foundUser.bio ||
+                "",
+
+
+            // Role
+            role:
+                foundUser.role ||
+                "user",
+
+
+            // Plan
+            plan:
+                foundUser.plan ||
+                "Free",
+
+
+            // Status
+            status:
+                foundUser.status ||
+                "active",
+
+
+            // Ngày tham gia
+            createdAt:
+                foundUser.createdAt?.toDate
+                    ? foundUser
+                        .createdAt
+                        .toDate()
+                        .toISOString()
+                    : null
+
+        };
+
+
+        // ==============================
+        // 💾 LƯU CACHE
+        // ==============================
+
+        cacheSet(
+
+            HydYarCache.users,
+
+            cacheKey,
+
+            publicProfile,
+
+            CACHE_TIME.USER,
+
+            CACHE_LIMIT.USER
+
+        );
+
+
+        // ==============================
+        // ✅ RESPONSE
+        // ==============================
+
+        return res.json({
+
+            success: true,
+
+            cached: false,
+
+            data:
+                publicProfile
+
+        });
+
+    }
+
+    catch (err) {
+
+        console.error(
+
+            "❌ Public Profile Error:",
+
+            err
+
+        );
+
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Không thể tải hồ sơ"
+
+        });
+
+    }
+
+});
+
+// ==============================
 // SEO + ROUTER SPA
 // ==============================
 const renderWithSEO = async (slug, req, res) => {
@@ -1801,7 +2088,23 @@ const renderWithSEO = async (slug, req, res) => {
 };
 
 app.get("/:category/:slug", (req, res) => renderWithSEO(req.params.slug, req, res));
-app.get("*", (req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
+// ==============================
+// 👤 PUBLIC PROFILE SPA ROUTE
+// ==============================
+
+app.get("/profile/:name", (req, res) => {
+
+    res.sendFile(
+
+        path.join(
+            __dirname,
+            "public",
+            "index.html"
+        )
+
+    );
+
+});
 
 // ==============================
 // KHỞI ĐỘNG
