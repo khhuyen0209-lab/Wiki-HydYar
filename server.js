@@ -1034,49 +1034,64 @@ app.post("/api/login", async (req, res) => {
 
 
     // ==============================
-    // 🔐 TẠO SESSION USER
-    // ==============================
+// 🔐 TẠO SESSION USER
+// ==============================
 
-    req.session.user = {
-
-      // Firebase UID
-      uid,
-
-
-      // HydYar ID
-      id:
-        hydyarId,
-
-
-      // Email
-      email:
-        userData.email,
-
-
-      // Tên
-      name:
-        userData.name,
-
-
-      // Avatar
-      avatar:
-        userData.avatar,
-
-
-      // Quyền
-      role:
-        userSnap.exists
-          ? userSnap.data().role
-          : "user",
-
-
-      // Trạng thái
-      status:
-        userSnap.exists
-          ? userSnap.data().status
-          : "active"
-
+const currentUserData = userSnap.exists
+    ? userSnap.data()
+    : {
+        role: "user",
+        status: "active",
+        plan: "Free"
     };
+
+req.session.user = {
+
+    // Firebase UID
+    uid,
+
+    // HydYar ID
+    id: hydyarId,
+
+    // Email
+    email: userData.email,
+
+    // Tên
+    name: userData.name,
+
+    // Avatar
+    avatar: userData.avatar,
+
+    // Quyền
+    role:
+        currentUserData.role || "user",
+
+    // Trạng thái
+    status:
+        currentUserData.status || "active",
+
+    // ==============================
+    // 💎 PLAN
+    // ==============================
+    plan:
+        currentUserData.plan || "Free",
+
+    // ==============================
+    // 💳 PREMIUM
+    // ==============================
+    premiumOrderId:
+        currentUserData.premiumOrderId || null,
+
+    premiumSource:
+        currentUserData.premiumSource || null,
+
+    premiumUntil:
+        currentUserData.premiumUntil || null,
+
+    premiumUpdatedAt:
+        currentUserData.premiumUpdatedAt || null
+
+};
 
 
     // ==============================
@@ -1157,8 +1172,108 @@ app.post("/api/logout", (req, res) => {
   });
 });
 
-app.get("/api/me", requireAuth, (req, res) => {
-  res.json({ success: true, user: req.session.user });
+app.get("/api/me", requireAuth, async (req, res) => {
+
+    try {
+
+        const uid = req.session.user.uid;
+
+        const userRef = db
+            .collection("users")
+            .doc(uid);
+
+        const userSnap = await userRef.get();
+
+        if (!userSnap.exists) {
+
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy người dùng"
+            });
+
+        }
+
+        const data = userSnap.data();
+
+        // ==============================
+        // 🔄 ĐỒNG BỘ SESSION
+        // ==============================
+
+        req.session.user = {
+
+            ...req.session.user,
+
+            role:
+                data.role || "user",
+
+            status:
+                data.status || "active",
+
+            plan:
+                data.plan || "Free",
+
+            premiumOrderId:
+                data.premiumOrderId || null,
+
+            premiumSource:
+                data.premiumSource || null,
+
+            premiumUntil:
+                data.premiumUntil || null,
+
+            premiumUpdatedAt:
+                data.premiumUpdatedAt || null
+
+        };
+
+        // ==============================
+        // 💾 LƯU SESSION
+        // ==============================
+
+        req.session.save((err) => {
+
+            if (err) {
+
+                console.error(
+                    "❌ Lỗi đồng bộ session:",
+                    err
+                );
+
+                return res.status(500).json({
+                    success: false,
+                    message: "Không thể đồng bộ phiên"
+                });
+
+            }
+
+            res.json({
+
+                success: true,
+
+                user:
+                    req.session.user
+
+            });
+
+        });
+
+    } catch (err) {
+
+        console.error(
+            "❌ /api/me Error:",
+            err
+        );
+
+        res.status(500).json({
+
+            success: false,
+
+            message: "Không thể lấy thông tin người dùng"
+
+        });
+
+    }
+
 });
 
 // 6. API kiểm tra trạng thái đăng nhập
