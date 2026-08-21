@@ -1,0 +1,501 @@
+/* =====================================================
+   👤 PUBLIC PROFILE
+   ===================================================== */
+
+.public-profile-page {
+    width: 100%;
+    min-height: 100%;
+    padding-bottom: 40px;
+}
+
+
+/* ==============================
+   HEADER
+   ============================== */
+
+.public-profile-header {
+
+    position: sticky;
+    top: 0;
+
+    z-index: 20;
+
+    display: flex;
+    align-items: center;
+
+    height: 58px;
+
+    padding: 0 16px;
+
+    background: var(--background, #fff);
+
+    border-bottom: 1px solid
+        rgba(128, 128, 128, 0.15);
+
+}
+
+
+.public-profile-back {
+
+    width: 40px;
+    height: 40px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: transparent;
+
+    font-size: 25px;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+
+
+.public-profile-back:active {
+
+    transform: scale(.92);
+
+}
+
+
+.public-profile-header-title {
+
+    margin-left: 10px;
+
+    font-size: 18px;
+
+    font-weight: 700;
+
+}
+
+
+/* ==============================
+   HERO
+   ============================== */
+
+.public-profile-hero {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    text-align: center;
+
+    padding: 35px 20px 25px;
+
+}
+
+
+.public-profile-avatar-wrap {
+
+    width: 112px;
+    height: 112px;
+
+    padding: 4px;
+
+    border-radius: 50%;
+
+    background:
+        linear-gradient(
+            135deg,
+            #6FA8FF,
+            #8F7CFF
+        );
+
+}
+
+
+.public-profile-avatar {
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    border-radius: 50%;
+
+    background: #eee;
+
+    display: block;
+
+}
+
+
+.public-profile-name-row {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    margin-top: 18px;
+
+}
+
+
+.public-profile-name {
+
+    margin: 0;
+
+    font-size: 26px;
+
+    font-weight: 800;
+
+}
+
+
+.public-profile-premium {
+
+    padding: 5px 9px;
+
+    border-radius: 999px;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    background: rgba(255, 193, 7, .15);
+
+}
+
+
+.public-profile-id {
+
+    margin-top: 6px;
+
+    font-size: 13px;
+
+    opacity: .55;
+
+}
+
+
+.public-profile-role {
+
+    margin-top: 10px;
+
+    padding: 6px 12px;
+
+    border-radius: 999px;
+
+    background: rgba(127, 127, 127, .10);
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+}
+
+
+.public-profile-bio {
+
+    max-width: 520px;
+
+    margin: 15px auto 0;
+
+    line-height: 1.6;
+
+    opacity: .75;
+
+}
+
+
+/* ==============================
+   STATS
+   ============================== */
+
+.public-profile-stats {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    max-width: 600px;
+
+    margin: 0 auto 22px;
+
+    border-top:
+        1px solid rgba(128,128,128,.15);
+
+    border-bottom:
+        1px solid rgba(128,128,128,.15);
+
+}
+
+
+.public-profile-stat {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 4px;
+
+    padding: 16px 8px;
+
+}
+
+
+.public-profile-stat strong {
+
+    font-size: 19px;
+
+}
+
+
+.public-profile-stat span {
+
+    font-size: 12px;
+
+    opacity: .6;
+
+}
+
+
+/* ==============================
+   SECTION
+   ============================== */
+
+.public-profile-section {
+
+    max-width: 600px;
+
+    margin: 0 auto 18px;
+
+    padding: 20px;
+
+}
+
+
+.public-profile-section h2 {
+
+    margin: 0 0 15px;
+
+    font-size: 18px;
+
+}
+
+
+/* ==============================
+   INFO
+   ============================== */
+
+.public-profile-info-list {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+
+}
+
+
+.public-profile-info {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 14px 16px;
+
+    border-radius: 14px;
+
+    background:
+        rgba(128,128,128,.07);
+
+}
+
+
+.public-profile-info span {
+
+    opacity: .65;
+
+    font-size: 14px;
+
+}
+
+
+.public-profile-info strong {
+
+    font-size: 14px;
+
+    text-align: right;
+
+}
+
+
+/* ==============================
+   BADGES
+   ============================== */
+
+.public-profile-badges {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+}
+
+
+.public-profile-badge {
+
+    padding: 8px 12px;
+
+    border-radius: 12px;
+
+    background:
+        rgba(127,127,127,.1);
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+}
+
+
+/* ==============================
+   LOADING
+   ============================== */
+
+.public-profile-loading {
+
+    min-height: 300px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    opacity: .65;
+
+}
+
+
+.public-profile-spinner {
+
+    width: 28px;
+    height: 28px;
+
+    border-radius: 50%;
+
+    border: 3px solid
+        rgba(128,128,128,.2);
+
+    border-top-color:
+        currentColor;
+
+    animation:
+        publicProfileSpin .7s linear infinite;
+
+}
+
+
+@keyframes publicProfileSpin {
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
+
+/* ==============================
+   ERROR
+   ============================== */
+
+.public-profile-error {
+
+    min-height: 400px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+    padding: 30px;
+
+}
+
+
+.public-profile-error-icon {
+
+    font-size: 50px;
+
+    margin-bottom: 10px;
+
+}
+
+
+.public-profile-error h2 {
+
+    margin: 0;
+
+}
+
+
+.public-profile-error p {
+
+    max-width: 400px;
+
+    opacity: .65;
+
+    line-height: 1.5;
+
+}
+
+
+.public-profile-error-button {
+
+    margin-top: 10px;
+
+    padding: 11px 18px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    font-weight: 700;
+
+}
+
+
+.hidden {
+
+    display: none !important;
+
+}

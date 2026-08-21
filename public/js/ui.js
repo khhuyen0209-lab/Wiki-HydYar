@@ -767,6 +767,364 @@ export default class Ui {
         });
     }
 
+      /* =====================================================
+       👤 PUBLIC PROFILE
+       Hiển thị hồ sơ công khai của người dùng
+       Router chịu trách nhiệm route/back
+       UI chịu trách nhiệm fetch + render
+       ===================================================== */
+    async openPublicProfile(name) {
+
+        const loading =
+            document.getElementById(
+                "publicProfileLoading"
+            );
+
+        const content =
+            document.getElementById(
+                "publicProfileContent"
+            );
+
+        const error =
+            document.getElementById(
+                "publicProfileError"
+            );
+
+        const errorText =
+            document.getElementById(
+                "publicProfileErrorText"
+            );
+
+        // ==============================
+        // RESET UI
+        // ==============================
+
+        loading?.classList.remove("hidden");
+        content?.classList.add("hidden");
+        error?.classList.add("hidden");
+
+        try {
+
+            // ==============================
+            // REQUEST
+            // ==============================
+
+            const response =
+                await fetch(
+                    `/api/profile/${encodeURIComponent(name)}`,
+                    {
+                        credentials: "include"
+                    }
+                );
+
+            const result =
+                await response.json();
+
+            if (
+                !response.ok ||
+                !result.success ||
+                !result.data
+            ) {
+                throw new Error(
+                    result.message ||
+                    "Không tìm thấy người dùng"
+                );
+            }
+
+            const user = result.data;
+
+            // ==============================
+            // AVATAR
+            // ==============================
+
+            const avatar =
+                document.getElementById(
+                    "publicProfileAvatar"
+                );
+
+            if (avatar) {
+
+                avatar.src =
+                    user.avatar ||
+                    "https://ui-avatars.com/api/?name=" +
+                    encodeURIComponent(
+                        user.name || "User"
+                    );
+
+                avatar.alt =
+                    user.name || "Avatar";
+            }
+
+            // ==============================
+            // NAME
+            // ==============================
+
+            document
+                .getElementById(
+                    "publicProfileName"
+                )
+                ?.replaceChildren(
+                    document.createTextNode(
+                        user.name ||
+                        "Người dùng"
+                    )
+                );
+
+            // ==============================
+            // ID
+            // ==============================
+
+            document
+                .getElementById(
+                    "publicProfileId"
+                )
+                ?.replaceChildren(
+                    document.createTextNode(
+                        user.id ||
+                        "Chưa có ID"
+                    )
+                );
+
+            // ==============================
+            // ROLE
+            // ==============================
+
+            const roleNames = {
+
+                admin: "Quản trị viên",
+
+                creator: "Nhà sáng tạo",
+
+                moderator: "Kiểm duyệt viên",
+
+                user: "Thành viên"
+
+            };
+
+            const role =
+                roleNames[user.role] ||
+                "Thành viên";
+
+            document
+                .getElementById(
+                    "publicProfileRole"
+                )
+                ?.replaceChildren(
+                    document.createTextNode(
+                        role
+                    )
+                );
+
+            // ==============================
+            // BIO
+            // ==============================
+
+            const bio =
+                document.getElementById(
+                    "publicProfileBio"
+                );
+
+            if (bio) {
+
+                bio.textContent =
+                    user.bio ||
+                    "Chưa có giới thiệu.";
+            }
+
+            // ==============================
+            // PREMIUM
+            // ==============================
+
+            const premium =
+                document.getElementById(
+                    "publicProfilePremium"
+                );
+
+            premium?.classList.toggle(
+                "hidden",
+                user.plan !== "Premium"
+            );
+
+            // ==============================
+            // INFO
+            // ==============================
+
+            document
+                .getElementById(
+                    "publicProfileInfoName"
+                )
+                ?.replaceChildren(
+                    document.createTextNode(
+                        user.name || "-"
+                    )
+                );
+
+            document
+                .getElementById(
+                    "publicProfileInfoId"
+                )
+                ?.replaceChildren(
+                    document.createTextNode(
+                        user.id || "-"
+                    )
+                );
+
+            document
+                .getElementById(
+                    "publicProfileInfoRole"
+                )
+                ?.replaceChildren(
+                    document.createTextNode(
+                        role
+                    )
+                );
+
+            // ==============================
+            // CREATED AT
+            // ==============================
+
+            const createdAt =
+                document.getElementById(
+                    "publicProfileCreatedAt"
+                );
+
+            if (createdAt) {
+
+                if (user.createdAt) {
+
+                    const date =
+                        new Date(
+                            user.createdAt
+                        );
+
+                    createdAt.textContent =
+                        date.toLocaleDateString(
+                            "vi-VN"
+                        );
+
+                } else {
+
+                    createdAt.textContent =
+                        "Không rõ";
+
+                }
+            }
+
+            // ==============================
+            // STATS
+            // ==============================
+
+            const articleCount =
+                document.getElementById(
+                    "publicProfileArticleCount"
+                );
+
+            if (articleCount) {
+                articleCount.textContent =
+                    user.stats?.articles ?? 0;
+            }
+
+            const commentCount =
+                document.getElementById(
+                    "publicProfileCommentCount"
+                );
+
+            if (commentCount) {
+                commentCount.textContent =
+                    user.stats?.comments ?? 0;
+            }
+
+            const badgeCount =
+                document.getElementById(
+                    "publicProfileBadgeCount"
+                );
+
+            if (badgeCount) {
+                badgeCount.textContent =
+                    user.badges?.length ?? 0;
+            }
+
+            // ==============================
+            // BADGES
+            // ==============================
+
+            const badgesSection =
+                document.getElementById(
+                    "publicProfileBadgesSection"
+                );
+
+            const badgesContainer =
+                document.getElementById(
+                    "publicProfileBadges"
+                );
+
+            if (
+                badgesContainer &&
+                Array.isArray(user.badges) &&
+                user.badges.length
+            ) {
+
+                badgesContainer.innerHTML = "";
+
+                user.badges.forEach(badge => {
+
+                    const element =
+                        document.createElement(
+                            "div"
+                        );
+
+                    element.className =
+                        "public-profile-badge";
+
+                    element.textContent =
+                        `🏆 ${badge}`;
+
+                    badgesContainer.appendChild(
+                        element
+                    );
+
+                });
+
+                badgesSection
+                    ?.classList.remove("hidden");
+
+            } else {
+
+                badgesSection
+                    ?.classList.add("hidden");
+
+            }
+
+            // ==============================
+            // HIỂN THỊ
+            // ==============================
+
+            loading?.classList.add("hidden");
+            error?.classList.add("hidden");
+            content?.classList.remove("hidden");
+
+        } catch (err) {
+
+            console.error(
+                "❌ Public Profile:",
+                err
+            );
+
+            loading?.classList.add("hidden");
+            content?.classList.add("hidden");
+            error?.classList.remove("hidden");
+
+            if (errorText) {
+
+                errorText.textContent =
+                    err.message ||
+                    "Không thể tải hồ sơ.";
+
+            }
+
+        }
+    }
+
     /**
      * ✅ Destroy Settings — gỡ toàn bộ listener
      * Dùng khi cần reset hoàn toàn module

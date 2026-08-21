@@ -33,6 +33,7 @@
     <link rel="stylesheet" href="css/DravNavigation.css">
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/premium.css">
+   <link rel="stylesheet" href="css/Profile.css">
 </head>
 
 
@@ -2043,6 +2044,254 @@
         </section>
 
     </main>
+
+
+
+  <!-- =====================================================
+     👤 PUBLIC PROFILE
+     ===================================================== -->
+
+<section id="page-public-profile" class="page">
+
+    <div class="public-profile-page">
+
+        <!-- Header -->
+        <div class="public-profile-header">
+
+            <button
+                class="public-profile-back"
+                id="publicProfileBack"
+                type="button"
+                aria-label="Quay lại"
+            >
+                ←
+            </button>
+
+            <div class="public-profile-header-title">
+                Hồ sơ
+            </div>
+
+        </div>
+
+
+        <!-- Loading -->
+        <div
+            id="publicProfileLoading"
+            class="public-profile-loading"
+        >
+
+            <div class="public-profile-spinner"></div>
+
+            <span>Đang tải hồ sơ...</span>
+
+        </div>
+
+
+        <!-- Error -->
+        <div
+            id="publicProfileError"
+            class="public-profile-error hidden"
+        >
+
+            <div class="public-profile-error-icon">
+                😵
+            </div>
+
+            <h2>Không tìm thấy hồ sơ</h2>
+
+            <p id="publicProfileErrorText">
+                Người dùng này không tồn tại hoặc hồ sơ đã bị xóa.
+            </p>
+
+            <button
+                id="publicProfileErrorBack"
+                class="public-profile-error-button"
+                type="button"
+            >
+                Quay lại
+            </button>
+
+        </div>
+
+
+        <!-- Profile -->
+        <div
+            id="publicProfileContent"
+            class="public-profile-content hidden"
+        >
+
+            <!-- Hero -->
+            <div class="public-profile-hero">
+
+                <div class="public-profile-avatar-wrap">
+
+                    <img
+                        id="publicProfileAvatar"
+                        class="public-profile-avatar"
+                        src=""
+                        alt="Avatar"
+                    >
+
+                </div>
+
+
+                <div class="public-profile-name-row">
+
+                    <h1
+                        id="publicProfileName"
+                        class="public-profile-name"
+                    >
+                        Người dùng
+                    </h1>
+
+                    <span
+                        id="publicProfilePremium"
+                        class="public-profile-premium hidden"
+                    >
+                        ✦ Premium
+                    </span>
+
+                </div>
+
+
+                <div
+                    id="publicProfileId"
+                    class="public-profile-id"
+                >
+                    HY | 000000
+                </div>
+
+
+                <div
+                    id="publicProfileRole"
+                    class="public-profile-role"
+                >
+                    Thành viên
+                </div>
+
+
+                <p
+                    id="publicProfileBio"
+                    class="public-profile-bio"
+                >
+                </p>
+
+            </div>
+
+
+            <!-- Stats -->
+            <div class="public-profile-stats">
+
+                <div class="public-profile-stat">
+
+                    <strong id="publicProfileArticleCount">
+                        0
+                    </strong>
+
+                    <span>Bài viết</span>
+
+                </div>
+
+
+                <div class="public-profile-stat">
+
+                    <strong id="publicProfileCommentCount">
+                        0
+                    </strong>
+
+                    <span>Bình luận</span>
+
+                </div>
+
+
+                <div class="public-profile-stat">
+
+                    <strong id="publicProfileBadgeCount">
+                        0
+                    </strong>
+
+                    <span>Huy hiệu</span>
+
+                </div>
+
+            </div>
+
+
+            <!-- Info -->
+            <div class="public-profile-section">
+
+                <h2>Thông tin</h2>
+
+                <div class="public-profile-info-list">
+
+                    <div class="public-profile-info">
+
+                        <span>👤 Tên</span>
+
+                        <strong id="publicProfileInfoName">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="public-profile-info">
+
+                        <span>🆔 HydYar ID</span>
+
+                        <strong id="publicProfileInfoId">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="public-profile-info">
+
+                        <span>⭐ Vai trò</span>
+
+                        <strong id="publicProfileInfoRole">
+                            -
+                        </strong>
+
+                    </div>
+
+
+                    <div class="public-profile-info">
+
+                        <span>📅 Tham gia</span>
+
+                        <strong id="publicProfileCreatedAt">
+                            -
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Badges -->
+            <div
+                id="publicProfileBadgesSection"
+                class="public-profile-section hidden"
+            >
+
+                <h2>Huy hiệu</h2>
+
+                <div
+                    id="publicProfileBadges"
+                    class="public-profile-badges"
+                ></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
 
 
     <!-- =========================================================
