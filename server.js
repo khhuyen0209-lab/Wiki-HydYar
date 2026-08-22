@@ -276,6 +276,105 @@ function normalizeProfileName(name = "") {
 }
 
 // ==============================
+// 👤 FIND USER BY HYDYAR ID
+// ==============================
+
+async function findUserByHydYarId(hydyarId) {
+
+    if (!hydyarId || typeof hydyarId !== "string") {
+        return null;
+    }
+
+    let id = hydyarId.trim();
+
+    // ==============================
+    // 🆔 NORMALIZE HYDYAR ID
+    // ==============================
+
+    if (!id.toUpperCase().startsWith("HY")) {
+
+        id = `HY | ${id}`;
+
+    } else {
+
+        id = id
+            .replace(/^HY\s*\|\s*/i, "HY | ")
+            .trim();
+
+    }
+
+    // ==============================
+    // 🔎 FIRESTORE
+    // ==============================
+
+    const snap = await db
+        .collection("users")
+        .where("id", "==", id)
+        .limit(1)
+        .get();
+
+    if (snap.empty) {
+        return null;
+    }
+
+    const doc = snap.docs[0];
+    const data = doc.data();
+
+    // ==============================
+    // 📦 PUBLIC PROFILE
+    // ==============================
+
+    const user = {
+
+        uid: doc.id,
+
+        id: data.id || id,
+
+        name: data.name || "Người dùng",
+
+        avatar: data.avatar || "",
+
+        role: data.role || "user",
+
+        status: data.status || "active",
+
+        bio: data.bio || "",
+
+        plan: data.plan || "Free",
+
+        badges: Array.isArray(data.badges)
+            ? data.badges
+            : [],
+
+        stats: {
+
+            articles:
+                data.stats?.articles ?? 0,
+
+            comments:
+                data.stats?.comments ?? 0
+
+        },
+
+        createdAt: data.createdAt || null
+
+    };
+
+    // ==============================
+    // 📅 FIRESTORE TIMESTAMP
+    // ==============================
+
+    if (user.createdAt?.toDate) {
+
+        user.createdAt =
+            user.createdAt.toDate().toISOString();
+
+    }
+
+    return user;
+}
+
+// ==============================
 // HYDYAR RAM CACHE SYSTEM
 // ==============================
 

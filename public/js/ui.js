@@ -782,6 +782,10 @@ export default class Ui {
    ===================================================== */
 async openPublicProfile(hydyarId) {
 
+  console.log("👤 openPublicProfile()");
+    console.log("hydyarId =", hydyarId);
+    console.log("typeof =", typeof hydyarId);
+
     const loading =
         document.getElementById("publicProfileLoading");
 
@@ -849,20 +853,24 @@ async openPublicProfile(hydyarId) {
         // REQUEST
         // ==============================
 
-        const response =
-            await fetch(
-                `/api/profile/${encodeURIComponent(id)}`,
-                {
-                    method: "GET",
-                    credentials: "include",
-                    headers: {
-                        "Accept": "application/json"
-                    }
-                }
-            );
+        console.log("🚀 FETCH PROFILE:", id);
 
-        const result =
-            await response.json();
+const response = await fetch(
+    `/api/profile/${encodeURIComponent(id)}`,
+    {
+        method: "GET",
+        credentials: "include",
+        headers: {
+            "Accept": "application/json"
+        }
+    }
+);
+
+console.log("📡 RESPONSE:", response.status, response.statusText);
+
+const result = await response.json();
+
+console.log("📦 RESULT:", result);
 
         // ==============================
         // VALIDATE RESPONSE

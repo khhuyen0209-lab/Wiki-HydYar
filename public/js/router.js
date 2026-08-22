@@ -267,9 +267,13 @@ export default class Router {
    ===================================================== */
 
 "public-profile": {
-    path: "/profile/:name",
+    path: "/profile/:hydyarId",
 
-    async handler({ name }) {
+    async handler({ hydyarId }) {
+
+        console.log("🔍 ROUTER PUBLIC PROFILE");
+        console.log("hydyarId =", hydyarId);
+        console.log("typeof hydyarId =", typeof hydyarId);
 
         cleanupBeforeRoute("public-profile");
 
@@ -279,18 +283,13 @@ export default class Router {
 
         clearActive();
 
-
         document
             .getElementById("page-public-profile")
             ?.classList.add("active");
 
-
-        await appStatus.profile
-            .openPublicProfile(name);
-
+        await appStatus.profile.openPublicProfile(hydyarId);
 
         scrollTop();
-
     }
 },
 
@@ -603,13 +602,8 @@ case "payment":
 
 
         params = {
-
-            name:
-                decodeURIComponent(
-                    parts[1]
-                )
-
-        };
+    hydyarId: decodeURIComponent(parts[1])
+};
 
     }
 
