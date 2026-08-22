@@ -1030,6 +1030,19 @@ appStatus.premiumPurchase =
         back: () =>
             appStatus.router.goBack(),
 
+        debug: {
+
+            profile: (id) =>
+                appStatus.profile.openPublicProfile(id),
+
+            router: () =>
+                appStatus.router,
+
+            status: () =>
+                appStatus
+
+        },
+
         log: {
 
             enabled: () =>

@@ -287,7 +287,7 @@ export default class Router {
             .getElementById("page-public-profile")
             ?.classList.add("active");
 
-        await appStatus.profile.openPublicProfile(hydyarId);
+        await appStatus.ui.openPublicProfile(hydyarId);
 
         scrollTop();
     }
