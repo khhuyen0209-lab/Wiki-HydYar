@@ -971,6 +971,22 @@ async function generateHydYarUserId() {
 }
 
 // ==============================
+// 🤖 ROBOTS.TXT — SEO
+// ==============================
+app.get("/robots.txt", (req, res) => {
+
+    res.type("text/plain");
+
+    res.send(
+`User-agent: *
+Allow: /
+
+Sitemap: https://wiki-hydyar.onrender.com/sitemap.xml`
+    );
+
+});
+
+// ==============================
 // FILE TĨNH
 // ==============================
 app.use(express.static(path.join(__dirname, "public")));
