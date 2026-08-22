@@ -975,15 +975,22 @@ async function generateHydYarUserId() {
 // ==============================
 app.get("/robots.txt", (req, res) => {
 
-    res.type("text/plain");
+    console.log("🤖 ROBOTS REQUEST:", {
+        userAgent: req.get("user-agent"),
+        ip: req.ip,
+        host: req.get("host")
+    });
 
-    res.send(
+    res
+        .status(200)
+        .type("text/plain")
+        .send(
 `User-agent: *
 Allow: /
 
-Sitemap: https://wiki-hydyar.onrender.com/sitemap.xml`
-    );
-
+Sitemap: https://wiki-hydyar.onrender.com/sitemap.xml
+`
+        );
 });
 
 // ==============================
