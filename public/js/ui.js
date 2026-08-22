@@ -1158,22 +1158,27 @@ const response = await fetch(url, {
 
         }
 
-        // =====================================================
-        // BIO
-        // =====================================================
+// =====================================================
+// BIO
+// =====================================================
 
-        const bio =
-            document.getElementById(
-                "publicProfileBio"
-            );
+const bio =
+    document.getElementById(
+        "publicProfileBio"
+    );
 
-        if (bio) {
+if (bio) {
 
-            bio.textContent =
-                user.bio ||
-                "Chưa có giới thiệu.";
+    const userBio =
+        typeof user.bio === "string"
+            ? user.bio.trim()
+            : "";
 
-        }
+    bio.textContent =
+        userBio ||
+        "Chưa có giới thiệu.";
+
+}
 
         // =====================================================
         // PREMIUM
